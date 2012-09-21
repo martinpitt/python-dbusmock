@@ -77,7 +77,48 @@ class DBusTestCase(unittest.TestCase):
             timeout -= 1
             time.sleep(0.1)
         if timeout <= 0:
-            assert timeout > 0, 'timed out waiting for gnome-session startup'
+            assert timeout > 0, 'timed out waiting for D-BUS object %s' % path
+
+class TestAPI(DBusTestCase):
+    '''Test dbus-mock API'''
+
+    def setUp(self):
+        self.mock_log = tempfile.NamedTemporaryFile()
+        self.p_mock = subprocess.Popen([os.path.join(os.path.dirname(__file__), 'dbus-mock'),
+                                        '--system', 'org.freedesktop.Test',
+                                       '/',
+                                        'org.freedesktop.Test.Main'],
+                                        stdout=self.mock_log)
+        self.wait_for_bus_object(self.system_bus_con, 'org.freedesktop.Test', '/')
+
+        self.dbus_test = Gio.DBusProxy.new_sync(
+            self.system_bus_con, Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
+            'org.freedesktop.Test', '/', 'org.freedesktop.Test.Main', None)
+
+        self.dbus_mock = Gio.DBusProxy.new_sync(
+            self.system_bus_con, Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
+            'org.freedesktop.Test', '/', 'org.freedesktop.DBus.Mock', None)
+
+    def test_noarg_noret(self):
+        '''no arguments, no return value'''
+
+        self.dbus_mock.AddMethod('(ssss)', 'Do', '', '', '')
+
+        self.assertEqual(self.dbus_test.Do(), None)
+
+    def test_onearg_noret(self):
+        '''one argument, no return value'''
+
+        self.dbus_mock.AddMethod('(ssss)', 'Do', 's', '', '')
+
+        self.assertEqual(self.dbus_test.Do('(s)', 'Hello'), None)
+
+    def test_onearg_ret(self):
+        '''one argument, code for return value'''
+
+        self.dbus_mock.AddMethod('(ssss)', 'Do', 's', 's', 'ret = args[0]')
+        self.assertEqual(self.dbus_test.Do('(s)', 'Hello'), 'Hello')
+
 
 class TestUPower(DBusTestCase):
     '''Test mocking upowerd'''

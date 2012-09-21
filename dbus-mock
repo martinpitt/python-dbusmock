@@ -116,7 +116,7 @@ class DBusMockObject(dbus.service.Object):
         self.log(dbus_method)
         (in_sig, out_sig, code) = self.methods[dbus_method]
         if code:
-            loc = {}
+            loc = locals().copy()
             exec(code, globals(), loc)
             if 'ret' in loc:
                 return loc['ret']
