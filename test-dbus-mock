@@ -1,0 +1,141 @@
+#!/usr/bin/python3
+
+import subprocess
+import unittest
+import os
+import os.path
+import signal
+import sys
+import time
+import tempfile
+
+from gi.repository import Gio, GLib
+
+class DBusTestCase(unittest.TestCase):
+    '''Base class for D-BUS mock tests'''
+
+    @classmethod
+    def setUpClass(klass):
+        # set up a fake session bus
+        (klass.session_bus_pid, addr) = klass.start_dbus()
+        os.environ['DBUS_SESSION_BUS_ADDRESS'] = addr
+        klass.session_bus_con = Gio.bus_get_sync(Gio.BusType.SESSION, None)
+
+        # set up a fake system bus
+        (klass.system_bus_pid, addr) = klass.start_dbus()
+        os.environ['DBUS_SYSTEM_BUS_ADDRESS'] = addr
+        klass.system_bus_con = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
+
+    @classmethod
+    def tearDownClass(klass):
+        klass.stop_dbus(klass.session_bus_pid)
+        klass.stop_dbus(klass.system_bus_pid)
+
+    @classmethod
+    def start_dbus(klass):
+        '''Start a D-BUS daemon.
+
+        Return (pid, address) pair.
+        '''
+        out = subprocess.check_output(['dbus-launch'], universal_newlines=True)
+        variables = {}
+        for line in out.splitlines():
+            (k, v) = line.split('=', 1)
+            variables[k] = v
+        return (int(variables['DBUS_SESSION_BUS_PID']),
+                variables['DBUS_SESSION_BUS_ADDRESS'])
+
+    @classmethod
+    def stop_dbus(klass, pid):
+        '''Stop a D-BUS daemon'''
+
+        os.kill(klass.session_bus_pid, signal.SIGTERM)
+        try:
+            os.waitpid(klass.session_bus_pid, 0)
+        except OSError:
+            pass
+
+    @classmethod
+    def wait_for_bus_object(klass, con, dest, path):
+        '''Wait for an object to appear on D-BUS
+        
+        Raise an exception if object does not appear within 5 seconds.
+        '''
+        timeout = 50
+        while timeout > 0:
+            try:
+                p = Gio.DBusProxy.new_sync(
+                    con,
+                    Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
+                    dest, path,
+                    'org.freedesktop.DBus.Introspectable',
+                    None)
+                p.Introspect()
+                break
+            except GLib.GError as e:
+                pass
+            timeout -= 1
+            time.sleep(0.1)
+        if timeout <= 0:
+            assert timeout > 0, 'timed out waiting for gnome-session startup'
+
+class TestUPower(DBusTestCase):
+    '''Test mocking upowerd'''
+
+    def setUp(self):
+        self.mock_log = tempfile.NamedTemporaryFile()
+        self.p_mock = subprocess.Popen([os.path.join(os.path.dirname(__file__), 'dbus-mock'),
+                                        '--system', 'org.freedesktop.UPower'],
+                                        stdout=self.mock_log)
+        self.wait_for_bus_object(self.system_bus_con,
+                                  'org.freedesktop.UPower',
+                                  '/org/freedesktop/UPower')
+
+        self.dbus_upower = Gio.DBusProxy.new_sync(
+            self.system_bus_con, Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
+            'org.freedesktop.UPower', '/org/freedesktop/UPower',
+            'org.freedesktop.UPower', None)
+
+        self.dbus_mock = Gio.DBusProxy.new_sync(
+            self.system_bus_con, Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
+            'org.freedesktop.UPower', '/org/freedesktop/UPower',
+            'org.freedesktop.DBus.Mock', None)
+
+        self.dbus_mock.AddMethod('(ssss)', 'Suspend', '', '', '')
+        self.dbus_mock.AddMethod('(ssss)', 'OneArg', 's', '', '')
+
+    def tearDown(self):
+        self.p_mock.terminate()
+        self.p_mock.wait()
+
+    def test_no_devices(self):
+        out = subprocess.check_output(['upower', '--dump'], universal_newlines=True)
+        self.assertFalse('Device' in out, out)
+        self.assertRegex(out, 'on-battery:\s+no')
+
+    def test_one_ac(self):
+        self.dbus_mock.AddObject('(ssa{sv}',
+                                 '/org/freedesktop/UPower/devices/mock_AC',
+                                 'org.freedesktop.UPower.Device',
+                                 {
+                                     'PowerSupply': GLib.Variant('b', True),
+                                     'Model': GLib.Variant('s', 'Mock AC'),
+                                 })
+
+        out = subprocess.check_output(['upower', '--dump'], universal_newlines=True)
+        self.assertRegex(out, 'Device: /org/freedesktop/UPower/devices/mock_AC')
+        self.assertRegex(out, 'on-battery:\s+no')
+        #print('--------- out --------\n%s\n------------' % out)
+
+    def test_suspend(self):
+        self.dbus_upower.Suspend()
+        with open(self.mock_log.name) as f:
+            self.assertRegex(f.read(), '^[0-9.]+ Suspend$')
+
+    def test_one_arg(self):
+        self.dbus_upower.OneArg('(s)', 'hello')
+
+# avoid writing to stderr
+unittest.main(testRunner=unittest.TextTestRunner(stream=sys.stdout, verbosity=2))
+
+

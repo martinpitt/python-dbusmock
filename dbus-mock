@@ -1,0 +1,158 @@
+#!/usr/bin/python3
+'''Mock D-BUS objects for test suites.'''
+
+import argparse
+import time
+import sys
+
+import dbus
+import dbus.mainloop.glib
+import dbus.service
+from gi.repository import GObject, GLib
+
+# global path -> DBusMockObject mapping
+objects = {}
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='mock D-BUS object')
+    parser.add_argument('-s', '--system', action='store_true',
+                        help='put object(s) on system bus (default: session bus)')
+    parser.add_argument('-l', '--logfile', metavar='PATH',
+                        help='path of log file')
+    parser.add_argument('name', metavar='NAME',
+                        help='D-BUS name to claim (e. g. "com.example.MyService")')
+    return parser.parse_args()
+
+
+class DBusMockObject(dbus.service.Object):
+    def __init__(self, bus_name, path, interface, props, logfile=None):
+        super().__init__(bus_name, path)
+
+        self.bus_name = bus_name
+        self.interface = interface
+        self.props = props
+        # name -> (in_signature, out_signature, code)
+        self.methods = {}
+
+        if logfile:
+            self.logfile = open(logfile, 'w')
+        else:
+            self.logfile = None
+
+    def __del__(self):
+        if self.logfile:
+            print('DBusMockObject __del__ closing log')
+            self.logfile.close()
+
+    @dbus.service.method(dbus.PROPERTIES_IFACE,
+                         in_signature='ss', out_signature='v')
+    def Get(self, interface_name, property_name):
+        return self.GetAll(interface_name)[property_name]
+
+    @dbus.service.method(dbus.PROPERTIES_IFACE,
+                         in_signature='s', out_signature='a{sv}')
+    def GetAll(self, interface_name, *args, **kwargs):
+        if interface_name == self.interface:
+            return self.props
+        else:
+            raise dbus.exceptions.DBusException(
+                self.interface + '.UnknownInterface',
+                'no such interface ' + interface_name)
+
+    @dbus.service.method('org.freedesktop.DBus.Mock',
+                         in_signature='ssa{sv}',
+                         out_signature='')
+    def AddObject(self, path, main_interface, properties):
+        '''Add a new object to the daemon.'''
+        
+        if path in objects:
+            raise dbus.exceptions.DBusException(
+                'org.freedesktop.DBus.Mock.NameError',
+                'object %s already exists' % path)
+
+        objects[path] = DBusMockObject(self.bus_name,
+                                       path,
+                                       main_interface,
+                                       properties)
+
+    @dbus.service.method('org.freedesktop.DBus.Mock',
+                         in_signature='s',
+                         out_signature='')
+    def RemoveObject(self, path):
+        '''Remove an object from the daemon.'''
+
+        try:
+            del objects[path]
+        except KeyError:
+            raise dbus.exceptions.DBusException(
+                'org.freedesktop.DBus.Mock.NameError',
+                'object %s does not exist' % path)
+
+    @dbus.service.method('org.freedesktop.DBus.Mock',
+                         in_signature='ssss',
+                         out_signature='')
+    def AddMethod(self, name, in_sig, out_sig, code):
+        '''Add a method to this object'''
+
+        n_args = len(dbus.Signature(in_sig))
+        self.methods[name] = (in_sig, out_sig, code)
+
+        # we need to have separate methods for dbus-python, so clone
+        # mock_method(); using message_keyword with this dynamic approach fails
+        # because inspect cannot handle those, so pass it on as first
+        # positional argument
+        method = lambda self, *args, **kwargs: DBusMockObject.mock_method(self, name, *args, **kwargs)
+
+        dbus_method = dbus.service.method(self.interface,
+                                          out_signature=out_sig)(method)
+        setattr(self.__class__, name, dbus_method)
+
+    def mock_method(self, dbus_method, *args, **kwargs):
+        print('mock_method', dbus_method, self, args, kwargs, file=sys.stderr)
+        self.log(dbus_method)
+
+    def log(self, msg):
+        '''Log a message, prefixed with a timestamp.
+
+        If a log file was specified in the constructor, it is written there,
+        otherwise it goes to stdout.
+        '''
+        if self.logfile:
+            fd = self.logfile
+        else:
+            fd = sys.stdout
+
+        fd.write('%.3f %s\n' % (time.time(), msg))
+        fd.flush()
+
+
+class UPowerDaemon(DBusMockObject):
+    def __init__(self, bus_name, logfile):
+        super().__init__(bus_name,
+                         '/org/freedesktop/UPower',
+                         'org.freedesktop.UPower',
+                         {
+                             'DaemonVersion': dbus.String('0.8.15', variant_level=1),
+                         },
+                         logfile)
+
+    @dbus.service.method('org.freedesktop.UPower',
+                         in_signature='',
+                         out_signature='ao')
+    def EnumerateDevices(self):
+        self.log('EnumerateDevices')
+        return objects.keys()
+
+
+args = parse_args()
+
+dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+
+bus_name = dbus.service.BusName(args.name,
+                                args.system and dbus.SystemBus() or dbus.SessionBus(),
+                                allow_replacement=True,
+                                replace_existing=True,
+                                do_not_queue=True)
+
+upowerd = UPowerDaemon(bus_name, args.logfile)
+GObject.MainLoop().run()
