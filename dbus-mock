@@ -21,6 +21,10 @@ def parse_args():
                         help='path of log file')
     parser.add_argument('name', metavar='NAME',
                         help='D-BUS name to claim (e. g. "com.example.MyService")')
+    parser.add_argument('path', metavar='PATH',
+                        help='D-BUS object path for initial/main object')
+    parser.add_argument('interface', metavar='INTERFACE',
+                        help='main D-BUS interface name for initial object')
     return parser.parse_args()
 
 
@@ -108,8 +112,14 @@ class DBusMockObject(dbus.service.Object):
         setattr(self.__class__, name, dbus_method)
 
     def mock_method(self, dbus_method, *args, **kwargs):
-        print('mock_method', dbus_method, self, args, kwargs, file=sys.stderr)
+        #print('mock_method', dbus_method, self, args, kwargs, file=sys.stderr)
         self.log(dbus_method)
+        (in_sig, out_sig, code) = self.methods[dbus_method]
+        if code:
+            loc = {}
+            exec(code, globals(), loc)
+            if 'ret' in loc:
+                return loc['ret']
 
     def log(self, msg):
         '''Log a message, prefixed with a timestamp.
@@ -126,24 +136,6 @@ class DBusMockObject(dbus.service.Object):
         fd.flush()
 
 
-class UPowerDaemon(DBusMockObject):
-    def __init__(self, bus_name, logfile):
-        super().__init__(bus_name,
-                         '/org/freedesktop/UPower',
-                         'org.freedesktop.UPower',
-                         {
-                             'DaemonVersion': dbus.String('0.8.15', variant_level=1),
-                         },
-                         logfile)
-
-    @dbus.service.method('org.freedesktop.UPower',
-                         in_signature='',
-                         out_signature='ao')
-    def EnumerateDevices(self):
-        self.log('EnumerateDevices')
-        return objects.keys()
-
-
 args = parse_args()
 
 dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
@@ -154,5 +146,5 @@ bus_name = dbus.service.BusName(args.name,
                                 replace_existing=True,
                                 do_not_queue=True)
 
-upowerd = UPowerDaemon(bus_name, args.logfile)
+main_object = DBusMockObject(bus_name, args.path, args.interface, {}, args.logfile)
 GObject.MainLoop().run()

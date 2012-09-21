@@ -85,7 +85,9 @@ class TestUPower(DBusTestCase):
     def setUp(self):
         self.mock_log = tempfile.NamedTemporaryFile()
         self.p_mock = subprocess.Popen([os.path.join(os.path.dirname(__file__), 'dbus-mock'),
-                                        '--system', 'org.freedesktop.UPower'],
+                                        '--system', 'org.freedesktop.UPower',
+                                       '/org/freedesktop/UPower',
+                                        'org.freedesktop.UPower'],
                                         stdout=self.mock_log)
         self.wait_for_bus_object(self.system_bus_con,
                                   'org.freedesktop.UPower',
@@ -102,7 +104,8 @@ class TestUPower(DBusTestCase):
             'org.freedesktop.DBus.Mock', None)
 
         self.dbus_mock.AddMethod('(ssss)', 'Suspend', '', '', '')
-        self.dbus_mock.AddMethod('(ssss)', 'OneArg', 's', '', '')
+        self.dbus_mock.AddMethod('(ssss)', 'EnumerateDevices', '', 'ao',
+                                 'ret = objects.keys()')
 
     def tearDown(self):
         self.p_mock.terminate()
@@ -131,9 +134,6 @@ class TestUPower(DBusTestCase):
         self.dbus_upower.Suspend()
         with open(self.mock_log.name) as f:
             self.assertRegex(f.read(), '^[0-9.]+ Suspend$')
-
-    def test_one_arg(self):
-        self.dbus_upower.OneArg('(s)', 'hello')
 
 # avoid writing to stderr
 unittest.main(testRunner=unittest.TextTestRunner(stream=sys.stdout, verbosity=2))
