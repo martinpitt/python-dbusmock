@@ -99,6 +99,10 @@ class TestAPI(DBusTestCase):
             self.system_bus_con, Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
             'org.freedesktop.Test', '/', 'org.freedesktop.DBus.Mock', None)
 
+        self.dbus_props = Gio.DBusProxy.new_sync(
+            self.system_bus_con, Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
+            'org.freedesktop.Test', '/', 'org.freedesktop.DBus.Properties', None)
+
     def tearDown(self):
         self.p_mock.terminate()
         self.p_mock.wait()
@@ -161,6 +165,36 @@ class TestAPI(DBusTestCase):
             'org.freedesktop.Test', '/obj1', 'org.freedesktop.DBus.Mock', None)
         self.dbus_obj1_mock.AddMethod('(ssss)', 'Do', '', 's', 'ret = "hello"')
         self.assertEqual(self.dbus_obj1.Do(), 'hello')
+
+    def test_properties(self):
+        '''add and change properties'''
+
+        # no such property
+        self.assertRaises(GLib.GError,
+                          self.dbus_props.Get,
+                          '(ss)',
+                          'org.freedesktop.Test.Main',
+                          'version')
+        self.assertRaises(GLib.GError,
+                          self.dbus_props.Set,
+                          '(ssv)',
+                          'org.freedesktop.Test.Main',
+                          'version',
+                          GLib.Variant('i', 2))
+
+        self.dbus_mock.AddProperty('(ssv)',
+                                   'org.freedesktop.Test.Main',
+                                   'version',
+                                   GLib.Variant('i', 2))
+
+        self.assertEqual(self.dbus_props.Get('(ss)', 'org.freedesktop.Test.Main', 'version'),
+                         2)
+
+        # change property
+        self.dbus_props.Set('(ssv)', 'org.freedesktop.Test.Main', 'version',
+                            GLib.Variant('i', 4))
+        self.assertEqual(self.dbus_props.Get('(ss)', 'org.freedesktop.Test.Main', 'version'),
+                         4)
 
 
 class TestUPower(DBusTestCase):
