@@ -49,9 +49,9 @@ class DBusTestCase(unittest.TestCase):
     def stop_dbus(klass, pid):
         '''Stop a D-BUS daemon'''
 
-        os.kill(klass.session_bus_pid, signal.SIGTERM)
+        os.kill(pid, signal.SIGTERM)
         try:
-            os.waitpid(klass.session_bus_pid, 0)
+            os.waitpid(pid, 0)
         except OSError:
             pass
 
@@ -99,6 +99,10 @@ class TestAPI(DBusTestCase):
             self.system_bus_con, Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
             'org.freedesktop.Test', '/', 'org.freedesktop.DBus.Mock', None)
 
+    def tearDown(self):
+        self.p_mock.terminate()
+        self.p_mock.wait()
+
     def test_noarg_noret(self):
         '''no arguments, no return value'''
 
@@ -118,6 +122,45 @@ class TestAPI(DBusTestCase):
 
         self.dbus_mock.AddMethod('(ssss)', 'Do', 's', 's', 'ret = args[0]')
         self.assertEqual(self.dbus_test.Do('(s)', 'Hello'), 'Hello')
+
+    def test_twoarg_ret(self):
+        '''two arguments, code for return value'''
+
+        self.dbus_mock.AddMethod('(ssss)', 'Do', 'si', 's', 'ret = args[0] * args[1]')
+        self.assertEqual(self.dbus_test.Do('(si)', 'foo', 3), 'foofoofoo')
+
+    def test_add_object(self):
+        '''add a new object'''
+
+        self.dbus_mock.AddObject('(ssa{sv}',
+                                 '/obj1',
+                                 'org.freedesktop.Test.Sub',
+                                 {
+                                     'state': GLib.Variant('s', 'online'),
+                                     'cute': GLib.Variant('b', 'True'),
+                                 })
+
+        self.dbus_obj1 = Gio.DBusProxy.new_sync(
+            self.system_bus_con, Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
+            'org.freedesktop.Test', '/obj1', 'org.freedesktop.Test.Sub', None)
+
+        # check properties
+        self.dbus_obj1_props = Gio.DBusProxy.new_sync(
+            self.system_bus_con, Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
+            'org.freedesktop.Test', '/obj1', 'org.freedesktop.DBus.Properties', None)
+        self.assertEqual(self.dbus_obj1_props.Get('(ss)', 'org.freedesktop.Test.Sub', 'state'),
+                         'online')
+        self.assertEqual(self.dbus_obj1_props.Get('(ss)', 'org.freedesktop.Test.Sub', 'cute'),
+                         True)
+        self.assertEqual(self.dbus_obj1_props.GetAll('(s)', 'org.freedesktop.Test.Sub'),
+                         {'state': 'online', 'cute': True})
+
+        # add new method
+        self.dbus_obj1_mock = Gio.DBusProxy.new_sync(
+            self.system_bus_con, Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
+            'org.freedesktop.Test', '/obj1', 'org.freedesktop.DBus.Mock', None)
+        self.dbus_obj1_mock.AddMethod('(ssss)', 'Do', '', 's', 'ret = "hello"')
+        self.assertEqual(self.dbus_obj1.Do(), 'hello')
 
 
 class TestUPower(DBusTestCase):
