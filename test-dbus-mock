@@ -193,5 +193,91 @@ class TestUPower(dbus_mock.DBusTestCase):
         with open(self.mock_log.name) as f:
             self.assertRegex(f.read(), '^[0-9.]+ Suspend$')
 
+class TestConsoleKit(dbus_mock.DBusTestCase):
+    @classmethod
+    def setUpClass(klass):
+        klass.start_system_bus()
+        klass.dbus_con = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
+
+    def setUp(self):
+        self.p_mock = self.spawn_server('org.freedesktop.ConsoleKit',
+                                        '/org/freedesktop/ConsoleKit/Manager',
+                                        'org.freedesktop.ConsoleKit.Manager',
+                                        system_bus=True,
+                                        stdout=subprocess.PIPE)
+
+        self.dbus_manager = Gio.DBusProxy.new_sync(
+            self.dbus_con, Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
+            'org.freedesktop.ConsoleKit', '/org/freedesktop/ConsoleKit/Manager',
+            'org.freedesktop.ConsoleKit.Manager', None)
+
+        self.dbus_mock = Gio.DBusProxy.new_sync(
+            self.dbus_con, Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
+            'org.freedesktop.ConsoleKit', '/org/freedesktop/ConsoleKit/Manager',
+            'org.freedesktop.DBus.Mock', None)
+
+    def tearDown(self):
+        self.p_mock.terminate()
+        self.p_mock.wait()
+
+    def test_one_active_session(self):
+        self.dbus_mock.AddMethod('(ssss)', 'GetSessions', '', 'ao',
+                                 'ret = ["/org/freedesktop/ConsoleKit/MockSession"]')
+        self.dbus_mock.AddMethod('(ssss)', 'GetCurrentSession', '', 'o',
+                                 'ret = "/org/freedesktop/ConsoleKit/MockSession"')
+        self.dbus_mock.AddMethod('(ssss)', 'GetSeats', '', 'ao',
+                                 'ret = ["/org/freedesktop/ConsoleKit/MockSeat"]')
+
+        self.dbus_mock.AddObject('(ssa{sv}',
+                                 '/org/freedesktop/ConsoleKit/MockSeat',
+                                 'org.freedesktop.ConsoleKit.Seat',
+                                 {})
+        self.dbus_seat_mock = Gio.DBusProxy.new_sync(
+            self.dbus_con, Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
+            'org.freedesktop.ConsoleKit', '/org/freedesktop/ConsoleKit/MockSeat',
+            'org.freedesktop.DBus.Mock', None)
+        self.dbus_seat_mock.AddMethod('(ssss)', 'GetSessions', '', 'ao',
+                                 'ret = ["/org/freedesktop/ConsoleKit/MockSession"]')
+
+        self.dbus_mock.AddObject('(ssa{sv}',
+                                 '/org/freedesktop/ConsoleKit/MockSession',
+                                 'org.freedesktop.ConsoleKit.Session',
+                                 {})
+        self.dbus_session_mock = Gio.DBusProxy.new_sync(
+            self.dbus_con, Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
+            'org.freedesktop.ConsoleKit', '/org/freedesktop/ConsoleKit/MockSession',
+            'org.freedesktop.DBus.Mock', None)
+
+        self.dbus_session_mock.AddMethod('(ssss)', 'GetSeatId', '', 'o',
+                                         'ret = "/org/freedesktop/ConsoleKit/MockSeat"')
+        self.dbus_session_mock.AddMethod('(ssss)', 'GetUnixUser', '', 'u',
+                                         'ret = os.geteuid()')
+        self.dbus_session_mock.AddMethod('(ssss)', 'GetCreationTime', '', 's',
+                                         'ret = "2012-01-01T01:23:45.600000Z"')
+        self.dbus_session_mock.AddMethod('(ssss)', 'GetIdleSinceHint', '', 's',
+                                         'ret = "2012-01-01T02:23:45.600000Z"')
+        self.dbus_session_mock.AddMethod('(ssss)', 'IsLocal', '', 'b',
+                                         'ret = True')
+        self.dbus_session_mock.AddMethod('(ssss)', 'IsActive', '', 'b',
+                                         'ret = True')
+        self.dbus_session_mock.AddMethod('(ssss)', 'GetDisplayDevice', '', 's',
+                                         'ret = ""')
+        self.dbus_session_mock.AddMethod('(ssss)', 'GetX11DisplayDevice', '', 's',
+                                         'ret = "/dev/tty7"')
+        self.dbus_session_mock.AddMethod('(ssss)', 'GetX11Display', '', 's',
+                                         'ret = os.environ.get("DISPLAY", "95:0")')
+        self.dbus_session_mock.AddMethod('(ssss)', 'GetRemoteHostName', '', 's',
+                                         'ret = ""')
+        self.dbus_session_mock.AddMethod('(ssss)', 'GetSessionType', '', 's',
+                                         'ret = ""')
+        self.dbus_session_mock.AddMethod('(ssss)', 'GetLoginSessionId', '', 's',
+                                         'ret = "12345"')
+
+
+        out = subprocess.check_output(['ck-list-sessions'], universal_newlines=True)
+        self.assertRegex(out, '^MockSession:')
+        self.assertRegex(out, 'is-local = TRUE')
+        self.assertRegex(out, "login-session-id = '12345'")
+
 # avoid writing to stderr
 unittest.main(testRunner=unittest.TextTestRunner(stream=sys.stdout, verbosity=2))
