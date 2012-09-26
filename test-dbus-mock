@@ -48,6 +48,10 @@ class TestAPI(dbus_mock.DBusTestCase):
 
         self.assertEqual(self.dbus_test.Do(), None)
 
+        # check that it's logged correctly
+        with open(self.mock_log.name) as f:
+            self.assertRegex(f.read(), '^[0-9.]+ Do$')
+
     def test_onearg_noret(self):
         '''one argument, no return value'''
 
