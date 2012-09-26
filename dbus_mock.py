@@ -206,8 +206,12 @@ class DBusTestCase(unittest.TestCase):
 
         if klass.session_bus_pid is not None:
             klass.stop_dbus(klass.session_bus_pid)
+            del os.environ['DBUS_SESSION_BUS_ADDRESS']
+            klass.session_bus_pid = None
         if klass.system_bus_pid is not None:
             klass.stop_dbus(klass.system_bus_pid)
+            del os.environ['DBUS_SYSTEM_BUS_ADDRESS']
+            klass.system_bus_pid = None
 
     @classmethod
     def start_dbus(klass):
@@ -279,19 +283,9 @@ class DBusTestCase(unittest.TestCase):
 
         daemon = subprocess.Popen(argv, stdout=stdout)
 
-        # wait until the daemon is up on the bus
-        if system_bus:
-            bus = dbus.SystemBus()
-        else:
-            bus = dbus.SessionBus()
-
-        timeout = 50
-        while timeout > 0 and not bus.name_has_owner(name):
-            timeout -= 1
-            time.sleep(0.1)
-        assert timeout > 0, 'DBusMockObject process failed to start up'
-
-        assert daemon.poll() == None, 'DBusMockObject process crashed'
+        # wait for daemon to start up
+        b = Gio.bus_get_sync(system_bus and Gio.BusType.SYSTEM or Gio.BusType.SESSION, None)
+        klass.wait_for_bus_object(b, name, path)
 
         return daemon
 
