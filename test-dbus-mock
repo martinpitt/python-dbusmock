@@ -1,106 +1,40 @@
 #!/usr/bin/python3
 
-import subprocess
 import unittest
-import os
-import os.path
-import signal
 import sys
 import time
 import tempfile
+import subprocess
+
+import dbus_mock
 
 from gi.repository import Gio, GLib
 
-class DBusTestCase(unittest.TestCase):
-    '''Base class for D-BUS mock tests'''
+class TestAPI(dbus_mock.DBusTestCase):
+    '''Test dbus-mock API'''
 
     @classmethod
     def setUpClass(klass):
-        # set up a fake session bus
-        (klass.session_bus_pid, addr) = klass.start_dbus()
-        os.environ['DBUS_SESSION_BUS_ADDRESS'] = addr
-        klass.session_bus_con = Gio.bus_get_sync(Gio.BusType.SESSION, None)
-
-        # set up a fake system bus
-        (klass.system_bus_pid, addr) = klass.start_dbus()
-        os.environ['DBUS_SYSTEM_BUS_ADDRESS'] = addr
-        klass.system_bus_con = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
-
-    @classmethod
-    def tearDownClass(klass):
-        klass.stop_dbus(klass.session_bus_pid)
-        klass.stop_dbus(klass.system_bus_pid)
-
-    @classmethod
-    def start_dbus(klass):
-        '''Start a D-BUS daemon.
-
-        Return (pid, address) pair.
-        '''
-        out = subprocess.check_output(['dbus-launch'], universal_newlines=True)
-        variables = {}
-        for line in out.splitlines():
-            (k, v) = line.split('=', 1)
-            variables[k] = v
-        return (int(variables['DBUS_SESSION_BUS_PID']),
-                variables['DBUS_SESSION_BUS_ADDRESS'])
-
-    @classmethod
-    def stop_dbus(klass, pid):
-        '''Stop a D-BUS daemon'''
-
-        os.kill(pid, signal.SIGTERM)
-        try:
-            os.waitpid(pid, 0)
-        except OSError:
-            pass
-
-    @classmethod
-    def wait_for_bus_object(klass, con, dest, path):
-        '''Wait for an object to appear on D-BUS
-        
-        Raise an exception if object does not appear within 5 seconds.
-        '''
-        timeout = 50
-        while timeout > 0:
-            try:
-                p = Gio.DBusProxy.new_sync(
-                    con,
-                    Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
-                    dest, path,
-                    'org.freedesktop.DBus.Introspectable',
-                    None)
-                p.Introspect()
-                break
-            except GLib.GError as e:
-                pass
-            timeout -= 1
-            time.sleep(0.1)
-        if timeout <= 0:
-            assert timeout > 0, 'timed out waiting for D-BUS object %s' % path
-
-class TestAPI(DBusTestCase):
-    '''Test dbus-mock API'''
+        klass.start_session_bus()
+        klass.dbus_con = Gio.bus_get_sync(Gio.BusType.SESSION, None)
 
     def setUp(self):
         self.mock_log = tempfile.NamedTemporaryFile()
-        self.p_mock = subprocess.Popen([os.path.join(os.path.dirname(__file__), 'dbus-mock'),
-                                        '--system', 'org.freedesktop.Test',
-                                       '/',
-                                        'org.freedesktop.Test.Main'],
+        self.p_mock = self.spawn_server('org.freedesktop.Test',
+                                        '/',
+                                        'org.freedesktop.Test.Main',
                                         stdout=self.mock_log)
-        self.wait_for_bus_object(self.system_bus_con, 'org.freedesktop.Test', '/')
 
         self.dbus_test = Gio.DBusProxy.new_sync(
-            self.system_bus_con, Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
+            self.dbus_con, Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
             'org.freedesktop.Test', '/', 'org.freedesktop.Test.Main', None)
 
         self.dbus_mock = Gio.DBusProxy.new_sync(
-            self.system_bus_con, Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
+            self.dbus_con, Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
             'org.freedesktop.Test', '/', 'org.freedesktop.DBus.Mock', None)
 
         self.dbus_props = Gio.DBusProxy.new_sync(
-            self.system_bus_con, Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
+            self.dbus_con, Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
             'org.freedesktop.Test', '/', 'org.freedesktop.DBus.Properties', None)
 
     def tearDown(self):
@@ -145,12 +79,12 @@ class TestAPI(DBusTestCase):
                                  })
 
         self.dbus_obj1 = Gio.DBusProxy.new_sync(
-            self.system_bus_con, Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
+            self.dbus_con, Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
             'org.freedesktop.Test', '/obj1', 'org.freedesktop.Test.Sub', None)
 
         # check properties
         self.dbus_obj1_props = Gio.DBusProxy.new_sync(
-            self.system_bus_con, Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
+            self.dbus_con, Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
             'org.freedesktop.Test', '/obj1', 'org.freedesktop.DBus.Properties', None)
         self.assertEqual(self.dbus_obj1_props.Get('(ss)', 'org.freedesktop.Test.Sub', 'state'),
                          'online')
@@ -161,7 +95,7 @@ class TestAPI(DBusTestCase):
 
         # add new method
         self.dbus_obj1_mock = Gio.DBusProxy.new_sync(
-            self.system_bus_con, Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
+            self.dbus_con, Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
             'org.freedesktop.Test', '/obj1', 'org.freedesktop.DBus.Mock', None)
         self.dbus_obj1_mock.AddMethod('(ssss)', 'Do', '', 's', 'ret = "hello"')
         self.assertEqual(self.dbus_obj1.Do(), 'hello')
@@ -197,27 +131,29 @@ class TestAPI(DBusTestCase):
                          4)
 
 
-class TestUPower(DBusTestCase):
+class TestUPower(dbus_mock.DBusTestCase):
     '''Test mocking upowerd'''
+
+    @classmethod
+    def setUpClass(klass):
+        klass.start_system_bus()
+        klass.dbus_con = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
 
     def setUp(self):
         self.mock_log = tempfile.NamedTemporaryFile()
-        self.p_mock = subprocess.Popen([os.path.join(os.path.dirname(__file__), 'dbus-mock'),
-                                        '--system', 'org.freedesktop.UPower',
-                                       '/org/freedesktop/UPower',
-                                        'org.freedesktop.UPower'],
+        self.p_mock = self.spawn_server('org.freedesktop.UPower',
+                                        '/org/freedesktop/UPower',
+                                        'org.freedesktop.UPower',
+                                        system_bus=True,
                                         stdout=self.mock_log)
-        self.wait_for_bus_object(self.system_bus_con,
-                                  'org.freedesktop.UPower',
-                                  '/org/freedesktop/UPower')
 
         self.dbus_upower = Gio.DBusProxy.new_sync(
-            self.system_bus_con, Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
+            self.dbus_con, Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
             'org.freedesktop.UPower', '/org/freedesktop/UPower',
             'org.freedesktop.UPower', None)
 
         self.dbus_mock = Gio.DBusProxy.new_sync(
-            self.system_bus_con, Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
+            self.dbus_con, Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
             'org.freedesktop.UPower', '/org/freedesktop/UPower',
             'org.freedesktop.DBus.Mock', None)
 
@@ -255,5 +191,3 @@ class TestUPower(DBusTestCase):
 
 # avoid writing to stderr
 unittest.main(testRunner=unittest.TextTestRunner(stream=sys.stdout, verbosity=2))
-
-

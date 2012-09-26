@@ -4,11 +4,15 @@
 import argparse
 import time
 import sys
+import unittest
+import subprocess
+import signal
+import os
 
 import dbus
 import dbus.mainloop.glib
 import dbus.service
-from gi.repository import GObject, GLib
+from gi.repository import GObject, GLib, Gio
 
 # global path -> DBusMockObject mapping
 objects = {}
@@ -172,15 +176,136 @@ class DBusMockObject(dbus.service.Object):
         fd.flush()
 
 
-args = parse_args()
+class DBusTestCase(unittest.TestCase):
+    '''Base class for D-BUS mock tests'''
 
-dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+    session_bus_pid = None
+    system_bus_pid = None
 
-bus_name = dbus.service.BusName(args.name,
-                                args.system and dbus.SystemBus() or dbus.SessionBus(),
-                                allow_replacement=True,
-                                replace_existing=True,
-                                do_not_queue=True)
+    @classmethod
+    def start_session_bus(klass):
+        '''Set up a fake session bus.
+        
+        This gets stopped in tearDownClass().
+        '''
+        (klass.session_bus_pid, addr) = klass.start_dbus()
+        os.environ['DBUS_SESSION_BUS_ADDRESS'] = addr
 
-main_object = DBusMockObject(bus_name, args.path, args.interface, {}, args.logfile)
-GObject.MainLoop().run()
+    @classmethod
+    def start_system_bus(klass):
+        '''Set up a fake system bus.
+        
+        This gets stopped in tearDownClass().
+        '''
+        (klass.system_bus_pid, addr) = klass.start_dbus()
+        os.environ['DBUS_SYSTEM_BUS_ADDRESS'] = addr
+
+    @classmethod
+    def tearDownClass(klass):
+        '''Stop fake session/system buses.'''
+
+        if klass.session_bus_pid is not None:
+            klass.stop_dbus(klass.session_bus_pid)
+        if klass.system_bus_pid is not None:
+            klass.stop_dbus(klass.system_bus_pid)
+
+    @classmethod
+    def start_dbus(klass):
+        '''Start a D-BUS daemon.
+
+        Return (pid, address) pair.
+        '''
+        out = subprocess.check_output(['dbus-launch'], universal_newlines=True)
+        variables = {}
+        for line in out.splitlines():
+            (k, v) = line.split('=', 1)
+            variables[k] = v
+        return (int(variables['DBUS_SESSION_BUS_PID']),
+                variables['DBUS_SESSION_BUS_ADDRESS'])
+
+    @classmethod
+    def stop_dbus(klass, pid):
+        '''Stop a D-BUS daemon'''
+
+        os.kill(pid, signal.SIGTERM)
+        try:
+            os.waitpid(pid, 0)
+        except OSError:
+            pass
+
+    @classmethod
+    def wait_for_bus_object(klass, con, dest, path):
+        '''Wait for an object to appear on D-BUS
+        
+        Raise an exception if object does not appear within 5 seconds.
+        '''
+        timeout = 50
+        while timeout > 0:
+            try:
+                p = Gio.DBusProxy.new_sync(
+                    con,
+                    Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
+                    dest, path,
+                    'org.freedesktop.DBus.Introspectable',
+                    None)
+                p.Introspect()
+                break
+            except GLib.GError as e:
+                pass
+            timeout -= 1
+            time.sleep(0.1)
+        if timeout <= 0:
+            assert timeout > 0, 'timed out waiting for D-BUS object %s' % path
+
+    @classmethod
+    def spawn_server(klass, name, path, interface, system_bus=False, stdout=None):
+        '''Run a DBusMockObject instance in a separate process.
+
+        The daemon will terminate automatically when the D-BUS that it connects
+        to goes down.  If that does not happen (e. g. you test on the actual
+        system/session bus), you need to kill it manually.
+
+        This function blocks until the spawned DBusMockObject is ready and
+        listening on the bus.
+
+        Returns the Popen object of the spawned daemon.
+        '''
+        argv = [__file__]
+        if system_bus:
+            argv.append('--system')
+        argv.append(name)
+        argv.append(path)
+        argv.append(interface)
+
+        daemon = subprocess.Popen(argv, stdout=stdout)
+
+        # wait until the daemon is up on the bus
+        if system_bus:
+            bus = dbus.SystemBus()
+        else:
+            bus = dbus.SessionBus()
+
+        timeout = 50
+        while timeout > 0 and not bus.name_has_owner(name):
+            timeout -= 1
+            time.sleep(0.1)
+        assert timeout > 0, 'DBusMockObject process failed to start up'
+
+        assert daemon.poll() == None, 'DBusMockObject process crashed'
+
+        return daemon
+
+
+if __name__ == '__main__':
+    args = parse_args()
+
+    dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+
+    bus_name = dbus.service.BusName(args.name,
+                                    args.system and dbus.SystemBus() or dbus.SessionBus(),
+                                    allow_replacement=True,
+                                    replace_existing=True,
+                                    do_not_queue=True)
+
+    main_object = DBusMockObject(bus_name, args.path, args.interface, {}, args.logfile)
+    GObject.MainLoop().run()
