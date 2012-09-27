@@ -88,9 +88,9 @@ class DBusMockObject(dbus.service.Object):
                 'no such interface ' + interface_name)
 
     @dbus.service.method('org.freedesktop.DBus.Mock',
-                         in_signature='ssa{sv}',
+                         in_signature='ssa{sv}a(ssss)',
                          out_signature='')
-    def AddObject(self, path, main_interface, properties):
+    def AddObject(self, path, main_interface, properties, methods):
         '''Add a new object to the daemon.'''
         
         if path in objects:
@@ -98,10 +98,13 @@ class DBusMockObject(dbus.service.Object):
                 'org.freedesktop.DBus.Mock.NameError',
                 'object %s already exists' % path)
 
-        objects[path] = DBusMockObject(self.bus_name,
-                                       path,
-                                       main_interface,
-                                       properties)
+        obj = DBusMockObject(self.bus_name,
+                             path,
+                             main_interface,
+                             properties)
+        obj.AddMethods(methods)
+
+        objects[path] = obj
 
     @dbus.service.method('org.freedesktop.DBus.Mock',
                          in_signature='s',
@@ -134,6 +137,15 @@ class DBusMockObject(dbus.service.Object):
         dbus_method = dbus.service.method(self.interface,
                                           out_signature=out_sig)(method)
         setattr(self.__class__, name, dbus_method)
+
+    @dbus.service.method('org.freedesktop.DBus.Mock',
+                         in_signature='a(ssss)',
+                         out_signature='')
+    def AddMethods(self, methods):
+        '''Add methods to this object'''
+
+        for method in methods:
+            self.AddMethod(*method)
 
     @dbus.service.method('org.freedesktop.DBus.Mock',
                          in_signature='ssv',
