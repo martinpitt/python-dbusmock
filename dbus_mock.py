@@ -39,7 +39,7 @@ class DBusMockObject(dbus.service.Object):
         self.bus_name = bus_name
         self.interface = interface
         self.props = props
-        # name -> (in_signature, out_signature, code)
+        # name -> (in_signature, out_signature, code, dbus_wrapper_fn)
         self.methods = {}
 
         if logfile:
@@ -126,7 +126,6 @@ class DBusMockObject(dbus.service.Object):
         '''Add a method to this object'''
 
         n_args = len(dbus.Signature(in_sig))
-        self.methods[name] = (in_sig, out_sig, code)
 
         # we need to have separate methods for dbus-python, so clone
         # mock_method(); using message_keyword with this dynamic approach fails
@@ -134,9 +133,18 @@ class DBusMockObject(dbus.service.Object):
         # positional argument
         method = lambda self, *args, **kwargs: DBusMockObject.mock_method(self, name, *args, **kwargs)
 
+        # we cannot specify in_signature here, as that trips over a consistency
+        # check in dbus-python; we need to set it manually instead
         dbus_method = dbus.service.method(self.interface,
                                           out_signature=out_sig)(method)
+        dbus_method.__name__ = name
+        dbus_method._dbus_in_signature = in_sig
+        dbus_method._dbus_args = ['arg%i' % i for i in range(1, n_args + 1)]
+
         setattr(self.__class__, name, dbus_method)
+
+        self.methods[str(name)] = (in_sig, out_sig, code, dbus_method)
+
 
     @dbus.service.method('org.freedesktop.DBus.Mock',
                          in_signature='a(ssss)',
@@ -166,7 +174,7 @@ class DBusMockObject(dbus.service.Object):
     def mock_method(self, dbus_method, *args, **kwargs):
         #print('mock_method', dbus_method, self, args, kwargs, file=sys.stderr)
         self.log(dbus_method)
-        (in_sig, out_sig, code) = self.methods[dbus_method]
+        code = self.methods[dbus_method][2]
         if code:
             loc = locals().copy()
             exec(code, globals(), loc)
@@ -186,6 +194,34 @@ class DBusMockObject(dbus.service.Object):
 
         fd.write('%.3f %s\n' % (time.time(), msg))
         fd.flush()
+
+    @dbus.service.method(dbus.INTROSPECTABLE_IFACE,
+                         in_signature='',
+                         out_signature='s',
+                         path_keyword='object_path',
+                         connection_keyword='connection')
+    def Introspect(self, object_path, connection):
+        '''Return a string of XML encoding this object's supported interfaces,
+        methods and signals.
+
+        This wraps dbus-python's method to include the dynamic methods and
+        attributes.
+        '''
+        # temporarily add our dynamic methods
+        cls = self.__class__.__module__ + '.' + self.__class__.__name__
+        orig_interfaces = self._dbus_class_table[cls]
+
+        mock_interfaces = orig_interfaces.copy()
+        for method in self.methods:
+            mock_interfaces.setdefault(self.interface, {})[method] = self.methods[method][3]
+        self._dbus_class_table[cls] = mock_interfaces
+
+        xml = super().Introspect(object_path, connection)
+
+        # restore original class table
+        self._dbus_class_table[cls] = orig_interfaces
+
+        return xml
 
 
 class DBusTestCase(unittest.TestCase):

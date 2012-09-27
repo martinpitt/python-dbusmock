@@ -135,6 +135,28 @@ class TestAPI(dbus_mock.DBusTestCase):
         self.assertEqual(self.dbus_props.Get('(ss)', 'org.freedesktop.Test.Main', 'version'),
                          4)
 
+    def test_introspection_methods(self):
+        '''dynamically added methods appear in introspection'''
+
+        self.dbus_introspect = Gio.DBusProxy.new_sync(
+            self.dbus_con, Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
+            'org.freedesktop.Test', '/', 'org.freedesktop.DBus.Introspectable', None)
+
+        xml_empty = self.dbus_introspect.Introspect()
+        self.assertTrue('<interface name="org.freedesktop.DBus.Mock">' in xml_empty, xml_empty)
+        self.assertTrue('<method name="AddMethod">' in xml_empty, xml_empty)
+
+        self.dbus_mock.AddMethod('(ssss)', 'Do', 'saiv', 'i', 'ret = 42')
+
+        xml_method = self.dbus_introspect.Introspect()
+        self.assertFalse(xml_empty == xml_method, 'No change from empty XML')
+        self.assertTrue('<interface name="org.freedesktop.Test.Main">' in xml_method, xml_method)
+        self.assertTrue('''<method name="Do">
+      <arg direction="in"  type="s" name="arg1" />
+      <arg direction="in"  type="ai" name="arg2" />
+      <arg direction="in"  type="v" name="arg3" />
+      <arg direction="out" type="i" />
+    </method>''' in xml_method, xml_method)
 
 class TestUPower(dbus_mock.DBusTestCase):
     '''Test mocking upowerd'''
