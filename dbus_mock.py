@@ -250,15 +250,30 @@ class DBusTestCase(unittest.TestCase):
             pass
 
     @classmethod
+    def get_dbus(klass, system_bus=False):
+        '''Get dbus.bus.BusConnection() object.
+
+        This is preferrable to dbus.SystemBus() and dbus.SessionBus() as those
+        do not get along with multiple changing local test buses.
+        '''
+        if system_bus:
+            if os.environ.get('DBUS_SYSTEM_BUS_ADDRESS'):
+                return dbus.bus.BusConnection(os.environ['DBUS_SYSTEM_BUS_ADDRESS'])
+            else:
+                return dbus.SystemBus()
+        else:
+            if os.environ.get('DBUS_SESSION_BUS_ADDRESS'):
+                return dbus.bus.BusConnection(os.environ['DBUS_SESSION_BUS_ADDRESS'])
+            else:
+                return dbus.SessionBus()
+
+    @classmethod
     def wait_for_bus_object(klass, dest, path, system_bus=False):
         '''Wait for an object to appear on D-BUS
         
         Raise an exception if object does not appear within 5 seconds.
         '''
-        if system_bus:
-            bus = dbus.SystemBus(private=True)
-        else:
-            bus = dbus.SessionBus(private=True)
+        bus = klass.get_dbus(system_bus)
 
         timeout = 50
         last_exc = None
@@ -313,7 +328,7 @@ if __name__ == '__main__':
     dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 
     bus_name = dbus.service.BusName(args.name,
-                                    args.system and dbus.SystemBus() or dbus.SessionBus(),
+                                    DBusTestCase.get_dbus(args.system),
                                     allow_replacement=True,
                                     replace_existing=True,
                                     do_not_queue=True)
