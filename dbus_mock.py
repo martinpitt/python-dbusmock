@@ -12,7 +12,7 @@ import os
 import dbus
 import dbus.mainloop.glib
 import dbus.service
-from gi.repository import GObject, GLib, Gio
+from gi.repository import GObject
 
 # global path -> DBusMockObject mapping
 objects = {}
@@ -250,28 +250,34 @@ class DBusTestCase(unittest.TestCase):
             pass
 
     @classmethod
-    def wait_for_bus_object(klass, con, dest, path):
+    def wait_for_bus_object(klass, dest, path, system_bus=False):
         '''Wait for an object to appear on D-BUS
         
         Raise an exception if object does not appear within 5 seconds.
         '''
+        if system_bus:
+            bus = dbus.SystemBus(private=True)
+        else:
+            bus = dbus.SessionBus(private=True)
+
         timeout = 50
+        last_exc = None
         while timeout > 0:
             try:
-                p = Gio.DBusProxy.new_sync(
-                    con,
-                    Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
-                    dest, path,
-                    'org.freedesktop.DBus.Introspectable',
-                    None)
-                p.Introspect()
+                p = dbus.Interface(bus.get_object(dest, path),
+                                   dbus_interface=dbus.PROPERTIES_IFACE)
+                p.GetAll('org.freedesktop.DBus.BogusIface')
                 break
-            except GLib.GError as e:
+            except dbus.exceptions.DBusException as e:
+                last_exc = e
+                if '.UnknownInterface' in str(e):
+                    break
                 pass
+
             timeout -= 1
             time.sleep(0.1)
         if timeout <= 0:
-            assert timeout > 0, 'timed out waiting for D-BUS object %s' % path
+            assert timeout > 0, 'timed out waiting for D-BUS object %s: %s' % (path, last_exc)
 
     @classmethod
     def spawn_server(klass, name, path, interface, system_bus=False, stdout=None):
@@ -296,8 +302,7 @@ class DBusTestCase(unittest.TestCase):
         daemon = subprocess.Popen(argv, stdout=stdout)
 
         # wait for daemon to start up
-        b = Gio.bus_get_sync(system_bus and Gio.BusType.SYSTEM or Gio.BusType.SESSION, None)
-        klass.wait_for_bus_object(b, name, path)
+        klass.wait_for_bus_object(name, path, system_bus)
 
         return daemon
 
