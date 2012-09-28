@@ -6,9 +6,9 @@ import time
 import tempfile
 import subprocess
 
-import dbus_mock
+import dbus
 
-from gi.repository import Gio, GLib
+import dbus_mock
 
 class TestAPI(dbus_mock.DBusTestCase):
     '''Test dbus-mock API'''
@@ -16,7 +16,7 @@ class TestAPI(dbus_mock.DBusTestCase):
     @classmethod
     def setUpClass(klass):
         klass.start_session_bus()
-        klass.dbus_con = Gio.bus_get_sync(Gio.BusType.SESSION, None)
+        klass.dbus_con = klass.get_dbus()
 
     def setUp(self):
         self.mock_log = tempfile.NamedTemporaryFile()
@@ -25,17 +25,10 @@ class TestAPI(dbus_mock.DBusTestCase):
                                         'org.freedesktop.Test.Main',
                                         stdout=self.mock_log)
 
-        self.dbus_test = Gio.DBusProxy.new_sync(
-            self.dbus_con, Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
-            'org.freedesktop.Test', '/', 'org.freedesktop.Test.Main', None)
-
-        self.dbus_mock = Gio.DBusProxy.new_sync(
-            self.dbus_con, Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
-            'org.freedesktop.Test', '/', 'org.freedesktop.DBus.Mock', None)
-
-        self.dbus_props = Gio.DBusProxy.new_sync(
-            self.dbus_con, Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
-            'org.freedesktop.Test', '/', 'org.freedesktop.DBus.Properties', None)
+        self.obj_test = self.dbus_con.get_object('org.freedesktop.Test', '/')
+        self.dbus_test = dbus.Interface(self.obj_test, 'org.freedesktop.Test.Main')
+        self.dbus_mock = dbus.Interface(self.obj_test, 'org.freedesktop.DBus.Mock')
+        self.dbus_props = dbus.Interface(self.obj_test, dbus.PROPERTIES_IFACE)
 
     def tearDown(self):
         self.p_mock.terminate()
@@ -44,8 +37,7 @@ class TestAPI(dbus_mock.DBusTestCase):
     def test_noarg_noret(self):
         '''no arguments, no return value'''
 
-        self.dbus_mock.AddMethod('(ssss)', 'Do', '', '', '')
-
+        self.dbus_mock.AddMethod('Do', '', '', '')
         self.assertEqual(self.dbus_test.Do(), None)
 
         # check that it's logged correctly
@@ -55,100 +47,84 @@ class TestAPI(dbus_mock.DBusTestCase):
     def test_onearg_noret(self):
         '''one argument, no return value'''
 
-        self.dbus_mock.AddMethod('(ssss)', 'Do', 's', '', '')
-
-        self.assertEqual(self.dbus_test.Do('(s)', 'Hello'), None)
+        self.dbus_mock.AddMethod('Do', 's', '', '')
+        self.assertEqual(self.dbus_test.Do('Hello'), None)
 
     def test_onearg_ret(self):
         '''one argument, code for return value'''
 
-        self.dbus_mock.AddMethod('(ssss)', 'Do', 's', 's', 'ret = args[0]')
-        self.assertEqual(self.dbus_test.Do('(s)', 'Hello'), 'Hello')
+        self.dbus_mock.AddMethod('Do', 's', 's', 'ret = args[0]')
+        self.assertEqual(self.dbus_test.Do('Hello'), 'Hello')
 
     def test_twoarg_ret(self):
         '''two arguments, code for return value'''
 
-        self.dbus_mock.AddMethod('(ssss)', 'Do', 'si', 's', 'ret = args[0] * args[1]')
-        self.assertEqual(self.dbus_test.Do('(si)', 'foo', 3), 'foofoofoo')
+        self.dbus_mock.AddMethod('Do', 'si', 's', 'ret = args[0] * args[1]')
+        self.assertEqual(self.dbus_test.Do('foo', 3), 'foofoofoo')
 
     def test_add_object(self):
         '''add a new object'''
 
-        self.dbus_mock.AddObject('(ssa{sv}a(ssss))',
-                                 '/obj1',
+        self.dbus_mock.AddObject('/obj1',
                                  'org.freedesktop.Test.Sub',
                                  {
-                                     'state': GLib.Variant('s', 'online'),
-                                     'cute': GLib.Variant('b', 'True'),
+                                     'state': dbus.String('online', variant_level=1),
+                                     'cute': dbus.Boolean(True, variant_level=1),
                                  },
                                  [])
 
-        self.dbus_obj1 = Gio.DBusProxy.new_sync(
-            self.dbus_con, Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
-            'org.freedesktop.Test', '/obj1', 'org.freedesktop.Test.Sub', None)
+        obj1 = self.dbus_con.get_object('org.freedesktop.Test', '/obj1')
+        dbus_sub = dbus.Interface(obj1, 'org.freedesktop.Test.Sub')
+        dbus_props = dbus.Interface(obj1, dbus.PROPERTIES_IFACE)
+        dbus_mock = dbus.Interface(obj1, 'org.freedesktop.DBus.Mock')
 
         # check properties
-        self.dbus_obj1_props = Gio.DBusProxy.new_sync(
-            self.dbus_con, Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
-            'org.freedesktop.Test', '/obj1', 'org.freedesktop.DBus.Properties', None)
-        self.assertEqual(self.dbus_obj1_props.Get('(ss)', 'org.freedesktop.Test.Sub', 'state'),
-                         'online')
-        self.assertEqual(self.dbus_obj1_props.Get('(ss)', 'org.freedesktop.Test.Sub', 'cute'),
-                         True)
-        self.assertEqual(self.dbus_obj1_props.GetAll('(s)', 'org.freedesktop.Test.Sub'),
+        self.assertEqual(dbus_props.Get('org.freedesktop.Test.Sub', 'state'), 'online')
+        self.assertEqual(dbus_props.Get('org.freedesktop.Test.Sub', 'cute'), True)
+        self.assertEqual(dbus_props.GetAll('org.freedesktop.Test.Sub'),
                          {'state': 'online', 'cute': True})
 
         # add new method
-        self.dbus_obj1_mock = Gio.DBusProxy.new_sync(
-            self.dbus_con, Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
-            'org.freedesktop.Test', '/obj1', 'org.freedesktop.DBus.Mock', None)
-        self.dbus_obj1_mock.AddMethod('(ssss)', 'Do', '', 's', 'ret = "hello"')
-        self.assertEqual(self.dbus_obj1.Do(), 'hello')
+        dbus_mock.AddMethod('Do', '', 's', 'ret = "hello"')
+        self.assertEqual(dbus_sub.Do(), 'hello')
 
     def test_properties(self):
         '''add and change properties'''
 
         # no such property
-        self.assertRaises(GLib.GError,
+        self.assertRaises(dbus.exceptions.DBusException,
                           self.dbus_props.Get,
-                          '(ss)',
                           'org.freedesktop.Test.Main',
                           'version')
-        self.assertRaises(GLib.GError,
+        self.assertRaises(dbus.exceptions.DBusException,
                           self.dbus_props.Set,
-                          '(ssv)',
                           'org.freedesktop.Test.Main',
                           'version',
-                          GLib.Variant('i', 2))
+                          dbus.Int32(2, variant_level=1))
 
-        self.dbus_mock.AddProperty('(ssv)',
-                                   'org.freedesktop.Test.Main',
+        self.dbus_mock.AddProperty('org.freedesktop.Test.Main',
                                    'version',
-                                   GLib.Variant('i', 2))
+                                   dbus.Int32(2, variant_level=1))
 
-        self.assertEqual(self.dbus_props.Get('(ss)', 'org.freedesktop.Test.Main', 'version'),
-                         2)
+        self.assertEqual(self.dbus_props.Get('org.freedesktop.Test.Main', 'version'), 2)
 
         # change property
-        self.dbus_props.Set('(ssv)', 'org.freedesktop.Test.Main', 'version',
-                            GLib.Variant('i', 4))
-        self.assertEqual(self.dbus_props.Get('(ss)', 'org.freedesktop.Test.Main', 'version'),
-                         4)
+        self.dbus_props.Set('org.freedesktop.Test.Main', 'version',
+                            dbus.Int32(4, variant_level=1))
+        self.assertEqual(self.dbus_props.Get('org.freedesktop.Test.Main', 'version'), 4)
 
     def test_introspection_methods(self):
         '''dynamically added methods appear in introspection'''
 
-        self.dbus_introspect = Gio.DBusProxy.new_sync(
-            self.dbus_con, Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
-            'org.freedesktop.Test', '/', 'org.freedesktop.DBus.Introspectable', None)
+        dbus_introspect = dbus.Interface(self.obj_test, dbus.INTROSPECTABLE_IFACE)
 
-        xml_empty = self.dbus_introspect.Introspect()
+        xml_empty = dbus_introspect.Introspect()
         self.assertTrue('<interface name="org.freedesktop.DBus.Mock">' in xml_empty, xml_empty)
         self.assertTrue('<method name="AddMethod">' in xml_empty, xml_empty)
 
-        self.dbus_mock.AddMethod('(ssss)', 'Do', 'saiv', 'i', 'ret = 42')
+        self.dbus_mock.AddMethod('Do', 'saiv', 'i', 'ret = 42')
 
-        xml_method = self.dbus_introspect.Introspect()
+        xml_method = dbus_introspect.Introspect()
         self.assertFalse(xml_empty == xml_method, 'No change from empty XML')
         self.assertTrue('<interface name="org.freedesktop.Test.Main">' in xml_method, xml_method)
         self.assertTrue('''<method name="Do">
@@ -164,7 +140,7 @@ class TestUPower(dbus_mock.DBusTestCase):
     @classmethod
     def setUpClass(klass):
         klass.start_system_bus()
-        klass.dbus_con = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
+        klass.dbus_con = klass.get_dbus(True)
 
     def setUp(self):
         self.mock_log = tempfile.NamedTemporaryFile()
@@ -174,19 +150,15 @@ class TestUPower(dbus_mock.DBusTestCase):
                                         system_bus=True,
                                         stdout=self.mock_log)
 
-        self.dbus_upower = Gio.DBusProxy.new_sync(
-            self.dbus_con, Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
-            'org.freedesktop.UPower', '/org/freedesktop/UPower',
-            'org.freedesktop.UPower', None)
+        self.obj_upower = self.dbus_con.get_object(
+            'org.freedesktop.UPower', '/org/freedesktop/UPower')
+        self.dbus_mock = dbus.Interface(self.obj_upower, 'org.freedesktop.DBus.Mock')
+        self.dbus_upower = dbus.Interface(self.obj_upower, 'org.freedesktop.UPower')
 
-        self.dbus_mock = Gio.DBusProxy.new_sync(
-            self.dbus_con, Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
-            'org.freedesktop.UPower', '/org/freedesktop/UPower',
-            'org.freedesktop.DBus.Mock', None)
-
-        self.dbus_mock.AddMethod('(ssss)', 'Suspend', '', '', '')
-        self.dbus_mock.AddMethod('(ssss)', 'EnumerateDevices', '', 'ao',
-                                 'ret = objects.keys()')
+        self.dbus_mock.AddMethods([
+            ('Suspend', '', '', ''),
+            ('EnumerateDevices', '', 'ao', 'ret = objects.keys()'),
+            ])
 
     def tearDown(self):
         self.p_mock.terminate()
@@ -198,12 +170,11 @@ class TestUPower(dbus_mock.DBusTestCase):
         self.assertRegex(out, 'on-battery:\s+no')
 
     def test_one_ac(self):
-        self.dbus_mock.AddObject('(ssa{sv}a(ssss))',
-                                 '/org/freedesktop/UPower/devices/mock_AC',
+        self.dbus_mock.AddObject('/org/freedesktop/UPower/devices/mock_AC',
                                  'org.freedesktop.UPower.Device',
                                  {
-                                     'PowerSupply': GLib.Variant('b', True),
-                                     'Model': GLib.Variant('s', 'Mock AC'),
+                                     'PowerSupply': dbus.Boolean(True, variant_level=1),
+                                     'Model': dbus.String('Mock AC', variant_level=1),
                                  },
                                  [])
 
@@ -217,11 +188,12 @@ class TestUPower(dbus_mock.DBusTestCase):
         with open(self.mock_log.name) as f:
             self.assertRegex(f.read(), '^[0-9.]+ Suspend$')
 
+
 class TestConsoleKit(dbus_mock.DBusTestCase):
     @classmethod
     def setUpClass(klass):
         klass.start_system_bus()
-        klass.dbus_con = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
+        klass.dbus_con = klass.get_dbus(True)
 
     def setUp(self):
         self.p_mock = self.spawn_server('org.freedesktop.ConsoleKit',
@@ -230,41 +202,30 @@ class TestConsoleKit(dbus_mock.DBusTestCase):
                                         system_bus=True,
                                         stdout=subprocess.PIPE)
 
-        self.dbus_manager = Gio.DBusProxy.new_sync(
-            self.dbus_con, Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
-            'org.freedesktop.ConsoleKit', '/org/freedesktop/ConsoleKit/Manager',
-            'org.freedesktop.ConsoleKit.Manager', None)
-
-        self.dbus_mock = Gio.DBusProxy.new_sync(
-            self.dbus_con, Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
-            'org.freedesktop.ConsoleKit', '/org/freedesktop/ConsoleKit/Manager',
-            'org.freedesktop.DBus.Mock', None)
+        self.dbus_mock = dbus.Interface(self.dbus_con.get_object(
+            'org.freedesktop.ConsoleKit', '/org/freedesktop/ConsoleKit/Manager'),
+            'org.freedesktop.DBus.Mock')
 
     def tearDown(self):
         self.p_mock.terminate()
         self.p_mock.wait()
 
     def test_one_active_session(self):
-        self.dbus_mock.AddMethods('(a(ssss))', (
+        self.dbus_mock.AddMethods((
             ('GetSessions', '', 'ao', 'ret = ["/org/freedesktop/ConsoleKit/MockSession"]'),
             ('GetCurrentSession', '', 'o', 'ret = "/org/freedesktop/ConsoleKit/MockSession"'),
             ('GetSeats', '', 'ao', 'ret = ["/org/freedesktop/ConsoleKit/MockSeat"]'),
         ))
 
-        self.dbus_mock.AddObject('(ssa{sv}a(ssss))',
-                                 '/org/freedesktop/ConsoleKit/MockSeat',
+        self.dbus_mock.AddObject('/org/freedesktop/ConsoleKit/MockSeat',
                                  'org.freedesktop.ConsoleKit.Seat',
                                  {},
-                                 [])
-        self.dbus_seat_mock = Gio.DBusProxy.new_sync(
-            self.dbus_con, Gio.DBusProxyFlags.DO_NOT_AUTO_START, None,
-            'org.freedesktop.ConsoleKit', '/org/freedesktop/ConsoleKit/MockSeat',
-            'org.freedesktop.DBus.Mock', None)
-        self.dbus_seat_mock.AddMethod('(ssss)', 'GetSessions', '', 'ao',
-                                 'ret = ["/org/freedesktop/ConsoleKit/MockSession"]')
+                                 [
+                                     ('GetSessions', '', 'ao',
+                                      'ret = ["/org/freedesktop/ConsoleKit/MockSession"]'),
+                                 ])
 
-        self.dbus_mock.AddObject('(ssa{sv}a(ssss))',
-                                 '/org/freedesktop/ConsoleKit/MockSession',
+        self.dbus_mock.AddObject('/org/freedesktop/ConsoleKit/MockSession',
                                  'org.freedesktop.ConsoleKit.Session',
                                  {},
                                  [
