@@ -424,7 +424,7 @@ class DBusTestCase(unittest.TestCase):
 
         Returns the Popen object of the spawned daemon.
         '''
-        argv = [__file__]
+        argv = [sys.executable, __file__]
         if system_bus:
             argv.append('--system')
         argv.append(name)
