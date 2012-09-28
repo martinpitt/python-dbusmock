@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 
-import distutils.core
+import setuptools
 
-distutils.core.setup(
+setuptools.setup(
     name = 'python-dbusmock',
     version = '0.0.0',
     description = 'Mock D-Bus objects',
@@ -19,9 +19,6 @@ your tests.''',
     url = 'https://launchpad.net/python-dbusmock',
     license = 'LGPL 3+',
 
-    py_modules = ['dbus_mock']
+    py_modules = ['dbus_mock'],
+    test_suite = 'nose.collector',
 )
-
-
-    
-
