@@ -174,7 +174,6 @@ class TestUPower(dbus_mock.DBusTestCase):
         self.obj_upower = self.dbus_con.get_object(
             'org.freedesktop.UPower', '/org/freedesktop/UPower')
         self.dbus_mock = dbus.Interface(self.obj_upower, 'org.freedesktop.DBus.Mock')
-        self.dbus_upower = dbus.Interface(self.obj_upower, 'org.freedesktop.UPower')
 
         self.dbus_mock.AddMethods([
             ('Suspend', '', '', ''),
@@ -205,7 +204,7 @@ class TestUPower(dbus_mock.DBusTestCase):
         #print('--------- out --------\n%s\n------------' % out)
 
     def test_suspend(self):
-        self.dbus_upower.Suspend()
+        self.obj_upower.Suspend(dbus_interface='org.freedesktop.UPower')
         with open(self.mock_log.name) as f:
             self.assertRegex(f.read(), '^[0-9.]+ Suspend$')
 
