@@ -4,7 +4,7 @@ import setuptools
 
 setuptools.setup(
     name = 'python-dbusmock',
-    version = '0.0.0',
+    version = '0.0.1',
     description = 'Mock D-Bus objects',
 
     long_description = '''With this program/Python library you can easily
