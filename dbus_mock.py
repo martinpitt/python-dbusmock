@@ -28,23 +28,27 @@ from gi.repository import GObject
 # global path -> DBusMockObject mapping
 objects = {}
 
-def parse_args():
-    parser = argparse.ArgumentParser(description='mock D-BUS object')
-    parser.add_argument('-s', '--system', action='store_true',
-                        help='put object(s) on system bus (default: session bus)')
-    parser.add_argument('-l', '--logfile', metavar='PATH',
-                        help='path of log file')
-    parser.add_argument('name', metavar='NAME',
-                        help='D-BUS name to claim (e. g. "com.example.MyService")')
-    parser.add_argument('path', metavar='PATH',
-                        help='D-BUS object path for initial/main object')
-    parser.add_argument('interface', metavar='INTERFACE',
-                        help='main D-BUS interface name for initial object')
-    return parser.parse_args()
-
 
 class DBusMockObject(dbus.service.Object):
+    '''Mock D-Bus object
+
+    This can be configured to have arbitrary methods (including code execution)
+    and properties via methods on the org.freedesktop.DBus.Mock interface, so
+    that you can control the mock from any programming language.
+    '''
+
     def __init__(self, bus_name, path, interface, props, logfile=None):
+        '''Create a new DBusMockObject
+
+        bus_name: A dbus.service.BusName instance where the object will be put on
+        path: D-Bus object path
+        interface: Primary D-Bus interface name of this object (where
+                   properties and methods will be put on)
+        props: A property_name (string) → property (Variant) map with initial
+               properties on "interface"
+        logfile: When given, method calls will be logged into that file name;
+                 if None, logging will be written to stdout.
+        '''
         super().__init__(bus_name, path)
 
         self.bus_name = bus_name
@@ -66,6 +70,8 @@ class DBusMockObject(dbus.service.Object):
     @dbus.service.method(dbus.PROPERTIES_IFACE,
                          in_signature='ss', out_signature='v')
     def Get(self, interface_name, property_name):
+        '''Standard D-Bus API for getting a property value'''
+
         try:
             return self.GetAll(interface_name)[property_name]
         except KeyError:
@@ -76,6 +82,8 @@ class DBusMockObject(dbus.service.Object):
     @dbus.service.method(dbus.PROPERTIES_IFACE,
                          in_signature='s', out_signature='a{sv}')
     def GetAll(self, interface_name, *args, **kwargs):
+        '''Standard D-Bus API for getting all property values'''
+
         if interface_name == self.interface:
             return self.props
         else:
@@ -86,6 +94,8 @@ class DBusMockObject(dbus.service.Object):
     @dbus.service.method(dbus.PROPERTIES_IFACE,
                          in_signature='ssv', out_signature='')
     def Set(self, interface_name, property_name, value, *args, **kwargs):
+        '''Standard D-Bus API for setting a property value'''
+
         if interface_name == self.interface:
             if property_name in self.props:
                 self.props[property_name] = value
@@ -101,9 +111,29 @@ class DBusMockObject(dbus.service.Object):
     @dbus.service.method('org.freedesktop.DBus.Mock',
                          in_signature='ssa{sv}a(ssss)',
                          out_signature='')
-    def AddObject(self, path, main_interface, properties, methods):
-        '''Add a new object to the daemon.'''
+    def AddObject(self, path, interface, properties, methods):
+        '''Add a new D-Bus object to the mock
         
+        path: D-Bus object path
+        interface: Primary D-Bus interface name of this object (where
+                   properties and methods will be put on)
+        properties: A property_name (string) → property (Variant) map with initial
+                    properties on "interface"
+        methods: An array of 4-tuples describing methods to add to "interface";
+                 see AddMethod() for the format
+
+        Example:
+        dbus_proxy.AddObject('/com/example/Foo/Manager',
+                             'com.example.Foo.Control',
+                             {
+                                 'state': dbus.String('online', variant_level=1),
+                             },
+                             [
+                                 ('Start', '', '', ''),
+                                 ('EchoInt', 'i', 'i', 'ret = arg1'),
+                                 ('GetClients', '', 'ao', 'ret = ["/com/example/Foo/Client1"]'),
+                             ])
+        '''
         if path in objects:
             raise dbus.exceptions.DBusException(
                 'org.freedesktop.DBus.Mock.NameError',
@@ -111,7 +141,7 @@ class DBusMockObject(dbus.service.Object):
 
         obj = DBusMockObject(self.bus_name,
                              path,
-                             main_interface,
+                             interface,
                              properties)
         obj.AddMethods(methods)
 
@@ -121,7 +151,7 @@ class DBusMockObject(dbus.service.Object):
                          in_signature='s',
                          out_signature='')
     def RemoveObject(self, path):
-        '''Remove an object from the daemon.'''
+        '''Remove a D-Bus object from the mock'''
 
         try:
             del objects[path]
@@ -134,8 +164,21 @@ class DBusMockObject(dbus.service.Object):
                          in_signature='ssss',
                          out_signature='')
     def AddMethod(self, name, in_sig, out_sig, code):
-        '''Add a method to this object'''
-
+        '''Add a method to this object
+        
+        name: Name of the method
+        in_sig: Signature of input arguments; for example "ias" for a method
+                that takes an int32 and a string array as arguments; see
+                http://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-signatures
+        out_sig: Signature of output arguments; for example "s" for a method
+                 that returns a string; use '' for methods that do not return
+                 anything.
+        code: Python 3 code to run in the method call; you have access to the
+              arguments through the arg1, arg2, ... variables, and can set the
+              return value by assigning a value to the "ret" variable. When
+              specifying '', the method will not do anything (except logging)
+              and return None.
+        '''
         n_args = len(dbus.Signature(in_sig))
 
         # we need to have separate methods for dbus-python, so clone
@@ -161,28 +204,43 @@ class DBusMockObject(dbus.service.Object):
                          in_signature='a(ssss)',
                          out_signature='')
     def AddMethods(self, methods):
-        '''Add methods to this object'''
+        '''Add several methods to this object
 
+        methods: list of 4-tuples describing one method each. See AddMethod()
+                 for the format
+        '''
         for method in methods:
             self.AddMethod(*method)
 
     @dbus.service.method('org.freedesktop.DBus.Mock',
                          in_signature='ssv',
                          out_signature='')
-    def AddProperty(self, interface_name, property_name, value):
-        if interface_name == self.interface:
-            if property_name not in self.props:
-                self.props[property_name] = value
+    def AddProperty(self, interface, name, value):
+        '''Add property to this object
+
+        interface: D-Bus interface to add this to. Currently only supports the
+                   main interface specified at object creation time.
+        name: Property name.
+        value: Property value.
+        '''
+        if interface == self.interface:
+            if name not in self.props:
+                self.props[name] = value
             else:
                 raise dbus.exceptions.DBusException(
                     self.interface + '.PropertyExists',
-                    'property %s already exists' % property_name)
+                    'property %s already exists' % name)
         else:
             raise dbus.exceptions.DBusException(
                 self.interface + '.UnknownInterface',
-                'no such interface ' + interface_name)
+                'no such interface ' + interface)
 
     def mock_method(self, dbus_method, *args, **kwargs):
+        '''Master mock method.
+
+        This gets "instantiated" in AddMethod(). Execute the code snippet of
+        the method and return the "ret" variable if it was set.
+        '''
         #print('mock_method', dbus_method, self, args, kwargs, file=sys.stderr)
         self.log(dbus_method)
         code = self.methods[dbus_method][2]
@@ -212,11 +270,10 @@ class DBusMockObject(dbus.service.Object):
                          path_keyword='object_path',
                          connection_keyword='connection')
     def Introspect(self, object_path, connection):
-        '''Return a string of XML encoding this object's supported interfaces,
-        methods and signals.
+        '''Return XML description of this object's interfaces, methods and signals.
 
-        This wraps dbus-python's method to include the dynamic methods and
-        attributes.
+        This wraps dbus-python's Introspect() method to include the dynamic
+        methods and properties.
         '''
         # temporarily add our dynamic methods
         cls = self.__class__.__module__ + '.' + self.__class__.__name__
@@ -236,32 +293,38 @@ class DBusMockObject(dbus.service.Object):
 
 
 class DBusTestCase(unittest.TestCase):
-    '''Base class for D-BUS mock tests'''
+    '''Base class for D-BUS mock tests.
+    
+    This provides some convenience API to start/stop local D-Buses, so that you
+    can run a private local session and/or system bus to run mocks on.
 
+    This also provides a spawn_server() static method to run the D-Bus mock
+    server in a separate process.
+    '''
     session_bus_pid = None
     system_bus_pid = None
 
     @classmethod
     def start_session_bus(klass):
-        '''Set up a fake session bus.
+        '''Set up a private local session bus
         
-        This gets stopped in tearDownClass().
+        This gets stopped automatically in tearDownClass().
         '''
         (klass.session_bus_pid, addr) = klass.start_dbus()
         os.environ['DBUS_SESSION_BUS_ADDRESS'] = addr
 
     @classmethod
     def start_system_bus(klass):
-        '''Set up a fake system bus.
+        '''Set up a private local system bus
         
-        This gets stopped in tearDownClass().
+        This gets stopped automatically in tearDownClass().
         '''
         (klass.system_bus_pid, addr) = klass.start_dbus()
         os.environ['DBUS_SYSTEM_BUS_ADDRESS'] = addr
 
     @classmethod
     def tearDownClass(klass):
-        '''Stop fake session/system buses.'''
+        '''Stop private session/system buses'''
 
         if klass.session_bus_pid is not None:
             klass.stop_dbus(klass.session_bus_pid)
@@ -274,9 +337,12 @@ class DBusTestCase(unittest.TestCase):
 
     @classmethod
     def start_dbus(klass):
-        '''Start a D-BUS daemon.
+        '''Start a D-BUS daemon
 
         Return (pid, address) pair.
+
+        Normally you do not need to call this directly. Use start_system_bus()
+        and start_session_bus() instead.
         '''
         out = subprocess.check_output(['dbus-launch'], universal_newlines=True)
         variables = {}
@@ -288,8 +354,12 @@ class DBusTestCase(unittest.TestCase):
 
     @classmethod
     def stop_dbus(klass, pid):
-        '''Stop a D-BUS daemon'''
+        '''Stop a D-BUS daemon
 
+        Normally you do not need to call this directly. When you use
+        start_system_bus() and start_session_bus(), these buses are
+        automatically stopped in tearDownClass().
+        '''
         os.kill(pid, signal.SIGTERM)
         try:
             os.waitpid(pid, 0)
@@ -298,7 +368,7 @@ class DBusTestCase(unittest.TestCase):
 
     @classmethod
     def get_dbus(klass, system_bus=False):
-        '''Get dbus.bus.BusConnection() object.
+        '''Get dbus.bus.BusConnection() object
 
         This is preferrable to dbus.SystemBus() and dbus.SessionBus() as those
         do not get along with multiple changing local test buses.
@@ -343,7 +413,7 @@ class DBusTestCase(unittest.TestCase):
 
     @classmethod
     def spawn_server(klass, name, path, interface, system_bus=False, stdout=None):
-        '''Run a DBusMockObject instance in a separate process.
+        '''Run a DBusMockObject instance in a separate process
 
         The daemon will terminate automatically when the D-BUS that it connects
         to goes down.  If that does not happen (e. g. you test on the actual
@@ -369,11 +439,24 @@ class DBusTestCase(unittest.TestCase):
         return daemon
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(description='mock D-BUS object')
+    parser.add_argument('-s', '--system', action='store_true',
+                        help='put object(s) on system bus (default: session bus)')
+    parser.add_argument('-l', '--logfile', metavar='PATH',
+                        help='path of log file')
+    parser.add_argument('name', metavar='NAME',
+                        help='D-BUS name to claim (e. g. "com.example.MyService")')
+    parser.add_argument('path', metavar='PATH',
+                        help='D-BUS object path for initial/main object')
+    parser.add_argument('interface', metavar='INTERFACE',
+                        help='main D-BUS interface name for initial object')
+    return parser.parse_args()
+
+
 if __name__ == '__main__':
     args = parse_args()
-
     dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
-
     bus_name = dbus.service.BusName(args.name,
                                     DBusTestCase.get_dbus(args.system),
                                     allow_replacement=True,
