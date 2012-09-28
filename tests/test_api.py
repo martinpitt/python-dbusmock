@@ -13,9 +13,7 @@ __license__ = 'LGPL 3+'
 
 import unittest
 import sys
-import time
 import tempfile
-import subprocess
 
 import dbus
 
@@ -166,118 +164,7 @@ class TestAPI(dbus_mock.DBusTestCase):
       <arg direction="out" type="i" />
     </method>''' in xml_method, xml_method)
 
-class TestUPower(dbus_mock.DBusTestCase):
-    '''Test mocking upowerd'''
 
-    @classmethod
-    def setUpClass(klass):
-        klass.start_system_bus()
-        klass.dbus_con = klass.get_dbus(True)
-
-    def setUp(self):
-        self.mock_log = tempfile.NamedTemporaryFile()
-        self.p_mock = self.spawn_server('org.freedesktop.UPower',
-                                        '/org/freedesktop/UPower',
-                                        'org.freedesktop.UPower',
-                                        system_bus=True,
-                                        stdout=self.mock_log)
-
-        self.obj_upower = self.dbus_con.get_object(
-            'org.freedesktop.UPower', '/org/freedesktop/UPower')
-        self.dbus_mock = dbus.Interface(self.obj_upower, 'org.freedesktop.DBus.Mock')
-
-        self.dbus_mock.AddMethods([
-            ('Suspend', '', '', ''),
-            ('EnumerateDevices', '', 'ao', 'ret = objects.keys()'),
-            ])
-
-    def tearDown(self):
-        self.p_mock.terminate()
-        self.p_mock.wait()
-
-    def test_no_devices(self):
-        out = subprocess.check_output(['upower', '--dump'], universal_newlines=True)
-        self.assertFalse('Device' in out, out)
-        self.assertRegex(out, 'on-battery:\s+no')
-
-    def test_one_ac(self):
-        self.dbus_mock.AddObject('/org/freedesktop/UPower/devices/mock_AC',
-                                 'org.freedesktop.UPower.Device',
-                                 {
-                                     'PowerSupply': dbus.Boolean(True, variant_level=1),
-                                     'Model': dbus.String('Mock AC', variant_level=1),
-                                 },
-                                 [])
-
-        out = subprocess.check_output(['upower', '--dump'], universal_newlines=True)
-        self.assertRegex(out, 'Device: /org/freedesktop/UPower/devices/mock_AC')
-        self.assertRegex(out, 'on-battery:\s+no')
-        #print('--------- out --------\n%s\n------------' % out)
-
-    def test_suspend(self):
-        self.obj_upower.Suspend(dbus_interface='org.freedesktop.UPower')
-        with open(self.mock_log.name) as f:
-            self.assertRegex(f.read(), '^[0-9.]+ Suspend$')
-
-
-class TestConsoleKit(dbus_mock.DBusTestCase):
-    @classmethod
-    def setUpClass(klass):
-        klass.start_system_bus()
-        klass.dbus_con = klass.get_dbus(True)
-
-    def setUp(self):
-        self.p_mock = self.spawn_server('org.freedesktop.ConsoleKit',
-                                        '/org/freedesktop/ConsoleKit/Manager',
-                                        'org.freedesktop.ConsoleKit.Manager',
-                                        system_bus=True,
-                                        stdout=subprocess.PIPE)
-
-        self.dbus_mock = dbus.Interface(self.dbus_con.get_object(
-            'org.freedesktop.ConsoleKit', '/org/freedesktop/ConsoleKit/Manager'),
-            'org.freedesktop.DBus.Mock')
-
-    def tearDown(self):
-        self.p_mock.terminate()
-        self.p_mock.wait()
-
-    def test_one_active_session(self):
-        self.dbus_mock.AddMethods((
-            ('GetSessions', '', 'ao', 'ret = ["/org/freedesktop/ConsoleKit/MockSession"]'),
-            ('GetCurrentSession', '', 'o', 'ret = "/org/freedesktop/ConsoleKit/MockSession"'),
-            ('GetSeats', '', 'ao', 'ret = ["/org/freedesktop/ConsoleKit/MockSeat"]'),
-        ))
-
-        self.dbus_mock.AddObject('/org/freedesktop/ConsoleKit/MockSeat',
-                                 'org.freedesktop.ConsoleKit.Seat',
-                                 {},
-                                 [
-                                     ('GetSessions', '', 'ao',
-                                      'ret = ["/org/freedesktop/ConsoleKit/MockSession"]'),
-                                 ])
-
-        self.dbus_mock.AddObject('/org/freedesktop/ConsoleKit/MockSession',
-                                 'org.freedesktop.ConsoleKit.Session',
-                                 {},
-                                 [
-                                     ('GetSeatId', '', 'o', 'ret = "/org/freedesktop/ConsoleKit/MockSeat"'),
-                                     ('GetUnixUser', '', 'u', 'ret = os.geteuid()'),
-                                     ('GetCreationTime', '', 's', 'ret = "2012-01-01T01:23:45.600000Z"'),
-                                     ('GetIdleSinceHint', '', 's', 'ret = "2012-01-01T02:23:45.600000Z"'),
-                                     ('IsLocal', '', 'b', 'ret = True'),
-                                     ('IsActive', '', 'b', 'ret = True'),
-                                     ('GetDisplayDevice', '', 's', 'ret = ""'),
-                                     ('GetX11DisplayDevice', '', 's', 'ret = "/dev/tty7"'),
-                                     ('GetX11Display', '', 's', 'ret = os.environ.get("DISPLAY", "95:0")'),
-                                     ('GetRemoteHostName', '', 's', 'ret = ""'),
-                                     ('GetSessionType', '', 's', 'ret = ""'),
-                                     ('GetLoginSessionId', '', 's', 'ret = "12345"'),
-                                 ])
-
-        out = subprocess.check_output(['ck-list-sessions'], universal_newlines=True)
-        self.assertRegex(out, '^MockSession:')
-        self.assertRegex(out, 'is-local = TRUE')
-        self.assertRegex(out, "login-session-id = '12345'")
-
-# avoid writing to stderr
-unittest.main(testRunner=unittest.TextTestRunner(stream=sys.stdout, verbosity=2))
+if __name__ == '__main__':
+    # avoid writing to stderr
+    unittest.main(testRunner=unittest.TextTestRunner(stream=sys.stdout, verbosity=2))
