@@ -130,7 +130,7 @@ class DBusMockObject(dbus.service.Object):
                              },
                              [
                                  ('Start', '', '', ''),
-                                 ('EchoInt', 'i', 'i', 'ret = arg1'),
+                                 ('EchoInt', 'i', 'i', 'ret = args[0]'),
                                  ('GetClients', '', 'ao', 'ret = ["/com/example/Foo/Client1"]'),
                              ])
         '''
@@ -174,10 +174,9 @@ class DBusMockObject(dbus.service.Object):
                  that returns a string; use '' for methods that do not return
                  anything.
         code: Python 3 code to run in the method call; you have access to the
-              arguments through the arg1, arg2, ... variables, and can set the
-              return value by assigning a value to the "ret" variable. When
-              specifying '', the method will not do anything (except logging)
-              and return None.
+              arguments through the args list, and can set the return value by
+              assigning a value to the "ret" variable. When specifying '', the
+              method will not do anything (except logging) and return None.
         '''
         n_args = len(dbus.Signature(in_sig))
 
