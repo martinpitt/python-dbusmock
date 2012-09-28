@@ -13,7 +13,6 @@ __license__ = 'LGPL 3+'
 
 import unittest
 import sys
-import tempfile
 import subprocess
 
 import dbus
@@ -29,12 +28,11 @@ class TestUPower(dbus_mock.DBusTestCase):
         klass.dbus_con = klass.get_dbus(True)
 
     def setUp(self):
-        self.mock_log = tempfile.NamedTemporaryFile()
         self.p_mock = self.spawn_server('org.freedesktop.UPower',
                                         '/org/freedesktop/UPower',
                                         'org.freedesktop.UPower',
                                         system_bus=True,
-                                        stdout=self.mock_log)
+                                        stdout=subprocess.PIPE)
 
         self.obj_upower = self.dbus_con.get_object(
             'org.freedesktop.UPower', '/org/freedesktop/UPower')
@@ -70,8 +68,7 @@ class TestUPower(dbus_mock.DBusTestCase):
 
     def test_suspend(self):
         self.obj_upower.Suspend(dbus_interface='org.freedesktop.UPower')
-        with open(self.mock_log.name) as f:
-            self.assertRegex(f.read(), '^[0-9.]+ Suspend$')
+        self.assertRegex(self.p_mock.stdout.readline(), b'^[0-9.]+ Suspend$')
 
 
 if __name__ == '__main__':
