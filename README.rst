@@ -127,11 +127,13 @@ So let's start a mock at the D-Bus name ``com.example.Foo`` with an initial
 ``com.example.Foo.Manager``:
 
 ::
+
   python3 -m dbus_mock com.example.Foo / com.example.Foo.Manager
 
 On another terminal, let's first see what it does:
 
 ::
+
   gdbus introspect --session -d com.example.Foo -o /
 
 You'll see that it supports the standard D-Bus ``Introspectable`` and
@@ -140,11 +142,13 @@ interface for controlling the mock, but no "real" functionality yet. So let's
 add a method:
 
 ::
+
   gdbus call --session -d com.example.Foo -o / -m org.freedesktop.DBus.Mock.AddMethod Ping '' '' ''
 
 Now you can see the new method in ``introspect``, and call it:
 
 ::
+
   gdbus call --session -d com.example.Foo -o / -m com.example.Foo.Manager.Ping
 
 The mock process in the other terminal will log the method call with a time
@@ -153,6 +157,7 @@ stamp, and you'll see something like ``1348832614.970 Ping``.
 Now add another method with two int arguments and a return value and call it:
 
 ::
+
   gdbus call --session -d com.example.Foo -o / -m org.freedesktop.DBus.Mock.AddMethod \
       Add 'ii' 'i' 'ret = args[0] + args[1]'
   gdbus call --session -d com.example.Foo -o / -m com.example.Foo.Manager.Add 2 3
