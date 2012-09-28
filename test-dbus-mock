@@ -88,6 +88,27 @@ class TestAPI(dbus_mock.DBusTestCase):
         dbus_mock.AddMethod('Do', '', 's', 'ret = "hello"')
         self.assertEqual(dbus_sub.Do(), 'hello')
 
+    def test_add_object_with_methods(self):
+        '''add a new object with methods'''
+
+        self.dbus_mock.AddObject('/obj1',
+                                 'org.freedesktop.Test.Sub',
+                                 {
+                                     'state': dbus.String('online', variant_level=1),
+                                     'cute': dbus.Boolean(True, variant_level=1),
+                                 },
+                                 [
+                                     ('Do0', '', 'i', 'ret = 42'),
+                                     ('Do1', 'i', 'i', 'ret = 31337'),
+                                 ])
+
+        obj1 = self.dbus_con.get_object('org.freedesktop.Test', '/obj1')
+
+        self.assertEqual(obj1.Do0(), 42)
+        self.assertEqual(obj1.Do1(), 31337)
+        self.assertRaises(dbus.exceptions.DBusException,
+                          obj1.Do2, 31337)
+
     def test_properties(self):
         '''add and change properties'''
 
