@@ -1,4 +1,4 @@
-0.0.3 (UNRELEASED)
+0.0.3 (2012-10-01)
 ------------------
  - tests/test_api.py: Add tests for GetAll()
  - wait_for_bus_object(): Poll for Introspect() instead of GetAll(), as some
