@@ -396,8 +396,8 @@ class DBusTestCase(unittest.TestCase):
         while timeout > 0:
             try:
                 p = dbus.Interface(bus.get_object(dest, path),
-                                   dbus_interface=dbus.PROPERTIES_IFACE)
-                p.GetAll('org.freedesktop.DBus.BogusIface')
+                                   dbus_interface=dbus.INTROSPECTABLE_IFACE)
+                p.Introspect()
                 break
             except dbus.exceptions.DBusException as e:
                 last_exc = e

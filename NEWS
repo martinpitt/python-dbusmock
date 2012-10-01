@@ -1,6 +1,8 @@
 0.0.3 (UNRELEASED)
 ------------------
  - tests/test_api.py: Add tests for GetAll()
+ - wait_for_bus_object(): Poll for Introspect() instead of GetAll(), as some
+   services such as gnome-session don't implement GetAll() properly.
 
 0.0.2 (2012-10-01)
 ------------------
