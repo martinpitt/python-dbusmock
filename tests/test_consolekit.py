@@ -42,7 +42,7 @@ class TestConsoleKit(dbusmock.DBusTestCase):
         self.p_mock.wait()
 
     def test_one_active_session(self):
-        self.dbusmock.AddMethods((
+        self.dbusmock.AddMethods('', (
             ('GetSessions', '', 'ao', 'ret = ["/org/freedesktop/ConsoleKit/MockSession"]'),
             ('GetCurrentSession', '', 'o', 'ret = "/org/freedesktop/ConsoleKit/MockSession"'),
             ('GetSeats', '', 'ao', 'ret = ["/org/freedesktop/ConsoleKit/MockSeat"]'),

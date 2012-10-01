@@ -70,7 +70,7 @@ is how you would set up a mock upower in your test case:
               'org.freedesktop.UPower', '/org/freedesktop/UPower'),
               'org.freedesktop.DBus.Mock')
   
-          self.dbus_upower_mock.AddMethod('Suspend', '', '', '')
+          self.dbus_upower_mock.AddMethod('', 'Suspend', '', '', '')
   
       def tearDown(self):
           self.p_mock.terminate()
@@ -99,9 +99,9 @@ Let's walk through:
    methods were called. 
    
    We then call ``org.freedesktop.DBus.Mock.AddMethod()`` to add a
-   ``Suspend()`` method to our new object. This will not do anything (except
-   log its call to stdout). It takes no input arguments, returns nothing, and
-   does not run any custom code.
+   ``Suspend()`` method to our new object to the default D-Bus interface. This
+   will not do anything (except log its call to stdout). It takes no input
+   arguments, returns nothing, and does not run any custom code.
 
  - ``tearDown()`` stops our mock D-Bus server again. We do this so that each
    test case has a fresh and clean upower instance, but of course you can also
@@ -143,7 +143,7 @@ add a method:
 
 ::
 
-  gdbus call --session -d com.example.Foo -o / -m org.freedesktop.DBus.Mock.AddMethod Ping '' '' ''
+  gdbus call --session -d com.example.Foo -o / -m org.freedesktop.DBus.Mock.AddMethod '' Ping '' '' ''
 
 Now you can see the new method in ``introspect``, and call it:
 
@@ -159,7 +159,7 @@ Now add another method with two int arguments and a return value and call it:
 ::
 
   gdbus call --session -d com.example.Foo -o / -m org.freedesktop.DBus.Mock.AddMethod \
-      Add 'ii' 'i' 'ret = args[0] + args[1]'
+      '' Add 'ii' 'i' 'ret = args[0] + args[1]'
   gdbus call --session -d com.example.Foo -o / -m com.example.Foo.Manager.Add 2 3
 
 This will print ``(5,)`` as expected (remember that the return value is always

@@ -57,8 +57,8 @@ class DBusMockObject(dbus.service.Object):
         self.props = {}
         self.props[interface] = props
 
-        # name -> (in_signature, out_signature, code, dbus_wrapper_fn)
-        self.methods = {}
+        # interface -> name -> (in_signature, out_signature, code, dbus_wrapper_fn)
+        self.methods = {interface: {}}
 
         if logfile:
             self.logfile = open(logfile, 'w')
@@ -124,8 +124,9 @@ class DBusMockObject(dbus.service.Object):
                    properties and methods will be put on)
         properties: A property_name (string) → property (Variant) map with initial
                     properties on "interface"
-        methods: An array of 4-tuples describing methods to add to "interface";
-                 see AddMethod() for the format
+        methods: An array of 4-tuples (name, in_sig, out_sig, code) describing
+                 methods to add to "interface"; see AddMethod() for details of
+                 the tuple values
 
         Example:
         dbus_proxy.AddObject('/com/example/Foo/Manager',
@@ -148,7 +149,7 @@ class DBusMockObject(dbus.service.Object):
                              path,
                              interface,
                              properties)
-        obj.AddMethods(methods)
+        obj.AddMethods(interface, methods)
 
         objects[path] = obj
 
@@ -166,11 +167,14 @@ class DBusMockObject(dbus.service.Object):
                 'object %s does not exist' % path)
 
     @dbus.service.method('org.freedesktop.DBus.Mock',
-                         in_signature='ssss',
+                         in_signature='sssss',
                          out_signature='')
-    def AddMethod(self, name, in_sig, out_sig, code):
+    def AddMethod(self, interface, name, in_sig, out_sig, code):
         '''Add a method to this object
         
+        interface: D-Bus interface to add this to. For convenience you can
+                   specify '' here to add the method to the object's main
+                   interface (as specified on construction).
         name: Name of the method
         in_sig: Signature of input arguments; for example "ias" for a method
                 that takes an int32 and a string array as arguments; see
@@ -183,17 +187,20 @@ class DBusMockObject(dbus.service.Object):
               assigning a value to the "ret" variable. When specifying '', the
               method will not do anything (except logging) and return None.
         '''
+        if not interface:
+            interface = self.interface
         n_args = len(dbus.Signature(in_sig))
 
         # we need to have separate methods for dbus-python, so clone
         # mock_method(); using message_keyword with this dynamic approach fails
-        # because inspect cannot handle those, so pass it on as first
-        # positional argument
-        method = lambda self, *args, **kwargs: DBusMockObject.mock_method(self, name, *args, **kwargs)
+        # because inspect cannot handle those, so pass on interface and method
+        # name as first positional arguments
+        method = lambda self, *args, **kwargs: DBusMockObject.mock_method(
+            self, interface, name, *args, **kwargs)
 
         # we cannot specify in_signature here, as that trips over a consistency
         # check in dbus-python; we need to set it manually instead
-        dbus_method = dbus.service.method(self.interface,
+        dbus_method = dbus.service.method(interface,
                                           out_signature=out_sig)(method)
         dbus_method.__name__ = name
         dbus_method._dbus_in_signature = in_sig
@@ -201,20 +208,23 @@ class DBusMockObject(dbus.service.Object):
 
         setattr(self.__class__, name, dbus_method)
 
-        self.methods[str(name)] = (in_sig, out_sig, code, dbus_method)
+        self.methods.setdefault(interface, {})[str(name)] = (in_sig, out_sig, code, dbus_method)
 
 
     @dbus.service.method('org.freedesktop.DBus.Mock',
-                         in_signature='a(ssss)',
+                         in_signature='sa(ssss)',
                          out_signature='')
-    def AddMethods(self, methods):
+    def AddMethods(self, interface, methods):
         '''Add several methods to this object
 
-        methods: list of 4-tuples describing one method each. See AddMethod()
-                 for the format
+        interface: D-Bus interface to add this to. For convenience you can
+                   specify '' here to add the method to the object's main
+                   interface (as specified on construction).
+        methods: list of 4-tuples (name, in_sig, out_sig, code) describing one
+                 method each. See AddMethod() for details of the tuple values.
         '''
         for method in methods:
-            self.AddMethod(*method)
+            self.AddMethod(interface, *method)
 
     @dbus.service.method('org.freedesktop.DBus.Mock',
                          in_signature='ssv',
@@ -240,7 +250,7 @@ class DBusMockObject(dbus.service.Object):
             pass
         self.props.setdefault(interface, {})[name] = value
 
-    def mock_method(self, dbus_method, *args, **kwargs):
+    def mock_method(self, interface, dbus_method, *args, **kwargs):
         '''Master mock method.
 
         This gets "instantiated" in AddMethod(). Execute the code snippet of
@@ -248,7 +258,7 @@ class DBusMockObject(dbus.service.Object):
         '''
         #print('mock_method', dbus_method, self, args, kwargs, file=sys.stderr)
         self.log(dbus_method)
-        code = self.methods[dbus_method][2]
+        code = self.methods[interface][dbus_method][2]
         if code:
             loc = locals().copy()
             exec(code, globals(), loc)
@@ -285,8 +295,9 @@ class DBusMockObject(dbus.service.Object):
         orig_interfaces = self._dbus_class_table[cls]
 
         mock_interfaces = orig_interfaces.copy()
-        for method in self.methods:
-            mock_interfaces.setdefault(self.interface, {})[method] = self.methods[method][3]
+        for interface, methods in self.methods.items():
+            for method in methods:
+                mock_interfaces.setdefault(interface, {})[method] = self.methods[interface][method][3]
         self._dbus_class_table[cls] = mock_interfaces
 
         xml = super().Introspect(object_path, connection)

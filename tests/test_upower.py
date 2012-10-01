@@ -38,7 +38,7 @@ class TestUPower(dbusmock.DBusTestCase):
             'org.freedesktop.UPower', '/org/freedesktop/UPower')
         self.dbusmock = dbus.Interface(self.obj_upower, 'org.freedesktop.DBus.Mock')
 
-        self.dbusmock.AddMethods([
+        self.dbusmock.AddMethods('', [
             ('Suspend', '', '', ''),
             ('EnumerateDevices', '', 'ao', 'ret = objects.keys()'),
             ])
