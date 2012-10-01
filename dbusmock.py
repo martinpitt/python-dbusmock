@@ -53,7 +53,10 @@ class DBusMockObject(dbus.service.Object):
 
         self.bus_name = bus_name
         self.interface = interface
-        self.props = props
+        # interface -> name -> value
+        self.props = {}
+        self.props[interface] = props
+
         # name -> (in_signature, out_signature, code, dbus_wrapper_fn)
         self.methods = {}
 
@@ -84,9 +87,9 @@ class DBusMockObject(dbus.service.Object):
     def GetAll(self, interface_name, *args, **kwargs):
         '''Standard D-Bus API for getting all property values'''
 
-        if interface_name == self.interface:
-            return self.props
-        else:
+        try:
+            return self.props[interface_name]
+        except KeyError:
             raise dbus.exceptions.DBusException(
                 self.interface + '.UnknownInterface',
                 'no such interface ' + interface_name)
@@ -96,17 +99,19 @@ class DBusMockObject(dbus.service.Object):
     def Set(self, interface_name, property_name, value, *args, **kwargs):
         '''Standard D-Bus API for setting a property value'''
 
-        if interface_name == self.interface:
-            if property_name in self.props:
-                self.props[property_name] = value
-            else:
-                raise dbus.exceptions.DBusException(
-                    self.interface + '.UnknownProperty',
-                    'no such property ' + property_name)
-        else:
+        try:
+            iface_props = self.props[interface_name]
+        except KeyError:
             raise dbus.exceptions.DBusException(
                 self.interface + '.UnknownInterface',
                 'no such interface ' + interface_name)
+
+        if property_name not in iface_props:
+            raise dbus.exceptions.DBusException(
+                self.interface + '.UnknownProperty',
+                'no such property ' + property_name)
+
+        iface_props[property_name] = value
 
     @dbus.service.method('org.freedesktop.DBus.Mock',
                          in_signature='ssa{sv}a(ssss)',
@@ -217,22 +222,23 @@ class DBusMockObject(dbus.service.Object):
     def AddProperty(self, interface, name, value):
         '''Add property to this object
 
-        interface: D-Bus interface to add this to. Currently only supports the
-                   main interface specified at object creation time.
+        interface: D-Bus interface to add this to. For convenience you can
+                   specify '' here to add the property to the object's main
+                   interface (as specified on construction).
         name: Property name.
         value: Property value.
         '''
-        if interface == self.interface:
-            if name not in self.props:
-                self.props[name] = value
-            else:
-                raise dbus.exceptions.DBusException(
-                    self.interface + '.PropertyExists',
-                    'property %s already exists' % name)
-        else:
+        if not interface:
+            interface = self.interface
+        try:
+            self.props[interface][name]
             raise dbus.exceptions.DBusException(
-                self.interface + '.UnknownInterface',
-                'no such interface ' + interface)
+                self.interface + '.PropertyExists',
+                'property %s already exists' % name)
+        except KeyError:
+            # this is what we expect
+            pass
+        self.props.setdefault(interface, {})[name] = value
 
     def mock_method(self, dbus_method, *args, **kwargs):
         '''Master mock method.

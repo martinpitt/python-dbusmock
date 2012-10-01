@@ -5,6 +5,7 @@
    services such as gnome-session don't implement GetAll() properly.
  - Rename "dbus_mock" module to "dbusmock", to be more consistent with the
    project name and Python module name conventions.
+ - Support adding properties to different interfaces.
 
 0.0.2 (2012-10-01)
 ------------------

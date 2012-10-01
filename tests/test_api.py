@@ -136,18 +136,35 @@ class TestAPI(dbusmock.DBusTestCase):
                           dbus.Int32(2, variant_level=1))
 
         self.dbusmock.AddProperty('org.freedesktop.Test.Main',
-                                   'version',
-                                   dbus.Int32(2, variant_level=1))
+                                  'version',
+                                  dbus.Int32(2, variant_level=1))
+        # once again on default interface
+        self.dbusmock.AddProperty('',
+                                  'connected',
+                                  dbus.Boolean(True, variant_level=1))
 
         self.assertEqual(self.dbus_props.Get('org.freedesktop.Test.Main', 'version'), 2)
+        self.assertEqual(self.dbus_props.Get('org.freedesktop.Test.Main', 'connected'), True)
 
         self.assertEqual(self.dbus_props.GetAll('org.freedesktop.Test.Main'),
-                         {'version': 2})
+                         {'version': 2, 'connected': True})
 
         # change property
         self.dbus_props.Set('org.freedesktop.Test.Main', 'version',
                             dbus.Int32(4, variant_level=1))
         self.assertEqual(self.dbus_props.Get('org.freedesktop.Test.Main', 'version'), 4)
+
+        # add property to different interface
+        self.dbusmock.AddProperty('org.freedesktop.Test.Other',
+                                  'color',
+                                  dbus.String('yellow', variant_level=1))
+
+        self.assertEqual(self.dbus_props.GetAll('org.freedesktop.Test.Main'),
+                         {'version': 4, 'connected': True})
+        self.assertEqual(self.dbus_props.GetAll('org.freedesktop.Test.Other'),
+                         {'color': 'yellow'})
+        self.assertEqual(self.dbus_props.Get('org.freedesktop.Test.Other', 'color'),
+                         'yellow')
 
     def test_introspection_methods(self):
         '''dynamically added methods appear in introspection'''
