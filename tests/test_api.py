@@ -17,9 +17,9 @@ import tempfile
 
 import dbus
 
-import dbus_mock
+import dbusmock
 
-class TestAPI(dbus_mock.DBusTestCase):
+class TestAPI(dbusmock.DBusTestCase):
     '''Test dbus-mock API'''
 
     @classmethod
@@ -36,7 +36,7 @@ class TestAPI(dbus_mock.DBusTestCase):
 
         self.obj_test = self.dbus_con.get_object('org.freedesktop.Test', '/')
         self.dbus_test = dbus.Interface(self.obj_test, 'org.freedesktop.Test.Main')
-        self.dbus_mock = dbus.Interface(self.obj_test, 'org.freedesktop.DBus.Mock')
+        self.dbusmock = dbus.Interface(self.obj_test, 'org.freedesktop.DBus.Mock')
         self.dbus_props = dbus.Interface(self.obj_test, dbus.PROPERTIES_IFACE)
 
     def tearDown(self):
@@ -46,7 +46,7 @@ class TestAPI(dbus_mock.DBusTestCase):
     def test_noarg_noret(self):
         '''no arguments, no return value'''
 
-        self.dbus_mock.AddMethod('Do', '', '', '')
+        self.dbusmock.AddMethod('Do', '', '', '')
         self.assertEqual(self.dbus_test.Do(), None)
 
         # check that it's logged correctly
@@ -56,25 +56,25 @@ class TestAPI(dbus_mock.DBusTestCase):
     def test_onearg_noret(self):
         '''one argument, no return value'''
 
-        self.dbus_mock.AddMethod('Do', 's', '', '')
+        self.dbusmock.AddMethod('Do', 's', '', '')
         self.assertEqual(self.dbus_test.Do('Hello'), None)
 
     def test_onearg_ret(self):
         '''one argument, code for return value'''
 
-        self.dbus_mock.AddMethod('Do', 's', 's', 'ret = args[0]')
+        self.dbusmock.AddMethod('Do', 's', 's', 'ret = args[0]')
         self.assertEqual(self.dbus_test.Do('Hello'), 'Hello')
 
     def test_twoarg_ret(self):
         '''two arguments, code for return value'''
 
-        self.dbus_mock.AddMethod('Do', 'si', 's', 'ret = args[0] * args[1]')
+        self.dbusmock.AddMethod('Do', 'si', 's', 'ret = args[0] * args[1]')
         self.assertEqual(self.dbus_test.Do('foo', 3), 'foofoofoo')
 
     def test_add_object(self):
         '''add a new object'''
 
-        self.dbus_mock.AddObject('/obj1',
+        self.dbusmock.AddObject('/obj1',
                                  'org.freedesktop.Test.Sub',
                                  {
                                      'state': dbus.String('online', variant_level=1),
@@ -85,7 +85,7 @@ class TestAPI(dbus_mock.DBusTestCase):
         obj1 = self.dbus_con.get_object('org.freedesktop.Test', '/obj1')
         dbus_sub = dbus.Interface(obj1, 'org.freedesktop.Test.Sub')
         dbus_props = dbus.Interface(obj1, dbus.PROPERTIES_IFACE)
-        dbus_mock = dbus.Interface(obj1, 'org.freedesktop.DBus.Mock')
+        dbusmock = dbus.Interface(obj1, 'org.freedesktop.DBus.Mock')
 
         # check properties
         self.assertEqual(dbus_props.Get('org.freedesktop.Test.Sub', 'state'), 'online')
@@ -94,13 +94,13 @@ class TestAPI(dbus_mock.DBusTestCase):
                          {'state': 'online', 'cute': True})
 
         # add new method
-        dbus_mock.AddMethod('Do', '', 's', 'ret = "hello"')
+        dbusmock.AddMethod('Do', '', 's', 'ret = "hello"')
         self.assertEqual(dbus_sub.Do(), 'hello')
 
     def test_add_object_with_methods(self):
         '''add a new object with methods'''
 
-        self.dbus_mock.AddObject('/obj1',
+        self.dbusmock.AddObject('/obj1',
                                  'org.freedesktop.Test.Sub',
                                  {
                                      'state': dbus.String('online', variant_level=1),
@@ -135,7 +135,7 @@ class TestAPI(dbus_mock.DBusTestCase):
                           'version',
                           dbus.Int32(2, variant_level=1))
 
-        self.dbus_mock.AddProperty('org.freedesktop.Test.Main',
+        self.dbusmock.AddProperty('org.freedesktop.Test.Main',
                                    'version',
                                    dbus.Int32(2, variant_level=1))
 
@@ -158,7 +158,7 @@ class TestAPI(dbus_mock.DBusTestCase):
         self.assertTrue('<interface name="org.freedesktop.DBus.Mock">' in xml_empty, xml_empty)
         self.assertTrue('<method name="AddMethod">' in xml_empty, xml_empty)
 
-        self.dbus_mock.AddMethod('Do', 'saiv', 'i', 'ret = 42')
+        self.dbusmock.AddMethod('Do', 'saiv', 'i', 'ret = 42')
 
         xml_method = dbus_introspect.Introspect()
         self.assertFalse(xml_empty == xml_method, 'No change from empty XML')

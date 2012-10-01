@@ -17,9 +17,9 @@ import subprocess
 
 import dbus
 
-import dbus_mock
+import dbusmock
 
-class TestUPower(dbus_mock.DBusTestCase):
+class TestUPower(dbusmock.DBusTestCase):
     '''Test mocking upowerd'''
 
     @classmethod
@@ -36,9 +36,9 @@ class TestUPower(dbus_mock.DBusTestCase):
 
         self.obj_upower = self.dbus_con.get_object(
             'org.freedesktop.UPower', '/org/freedesktop/UPower')
-        self.dbus_mock = dbus.Interface(self.obj_upower, 'org.freedesktop.DBus.Mock')
+        self.dbusmock = dbus.Interface(self.obj_upower, 'org.freedesktop.DBus.Mock')
 
-        self.dbus_mock.AddMethods([
+        self.dbusmock.AddMethods([
             ('Suspend', '', '', ''),
             ('EnumerateDevices', '', 'ao', 'ret = objects.keys()'),
             ])
@@ -53,7 +53,7 @@ class TestUPower(dbus_mock.DBusTestCase):
         self.assertRegex(out, 'on-battery:\s+no')
 
     def test_one_ac(self):
-        self.dbus_mock.AddObject('/org/freedesktop/UPower/devices/mock_AC',
+        self.dbusmock.AddObject('/org/freedesktop/UPower/devices/mock_AC',
                                  'org.freedesktop.UPower.Device',
                                  {
                                      'PowerSupply': dbus.Boolean(True, variant_level=1),

@@ -17,10 +17,10 @@ import subprocess
 
 import dbus
 
-import dbus_mock
+import dbusmock
 
 
-class TestConsoleKit(dbus_mock.DBusTestCase):
+class TestConsoleKit(dbusmock.DBusTestCase):
     @classmethod
     def setUpClass(klass):
         klass.start_system_bus()
@@ -33,7 +33,7 @@ class TestConsoleKit(dbus_mock.DBusTestCase):
                                         system_bus=True,
                                         stdout=subprocess.PIPE)
 
-        self.dbus_mock = dbus.Interface(self.dbus_con.get_object(
+        self.dbusmock = dbus.Interface(self.dbus_con.get_object(
             'org.freedesktop.ConsoleKit', '/org/freedesktop/ConsoleKit/Manager'),
             'org.freedesktop.DBus.Mock')
 
@@ -42,13 +42,13 @@ class TestConsoleKit(dbus_mock.DBusTestCase):
         self.p_mock.wait()
 
     def test_one_active_session(self):
-        self.dbus_mock.AddMethods((
+        self.dbusmock.AddMethods((
             ('GetSessions', '', 'ao', 'ret = ["/org/freedesktop/ConsoleKit/MockSession"]'),
             ('GetCurrentSession', '', 'o', 'ret = "/org/freedesktop/ConsoleKit/MockSession"'),
             ('GetSeats', '', 'ao', 'ret = ["/org/freedesktop/ConsoleKit/MockSeat"]'),
         ))
 
-        self.dbus_mock.AddObject('/org/freedesktop/ConsoleKit/MockSeat',
+        self.dbusmock.AddObject('/org/freedesktop/ConsoleKit/MockSeat',
                                  'org.freedesktop.ConsoleKit.Seat',
                                  {},
                                  [
@@ -56,7 +56,7 @@ class TestConsoleKit(dbus_mock.DBusTestCase):
                                       'ret = ["/org/freedesktop/ConsoleKit/MockSession"]'),
                                  ])
 
-        self.dbus_mock.AddObject('/org/freedesktop/ConsoleKit/MockSession',
+        self.dbusmock.AddObject('/org/freedesktop/ConsoleKit/MockSession',
                                  'org.freedesktop.ConsoleKit.Session',
                                  {},
                                  [

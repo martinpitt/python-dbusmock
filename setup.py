@@ -12,7 +12,7 @@ setuptools.setup(
     url = 'https://launchpad.net/python-dbusmock',
     license = 'LGPL 3+',
 
-    py_modules = ['dbus_mock'],
+    py_modules = ['dbusmock'],
     test_suite = 'nose.collector',
 
     long_description = '''With this program/Python library you can easily

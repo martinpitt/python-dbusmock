@@ -50,9 +50,9 @@ is how you would set up a mock upower in your test case:
 ::
 
   import dbus
-  import dbus_mock
+  import dbusmock
 
-  class TestMyProgram(dbus_mock.DBusTestCase):
+  class TestMyProgram(dbusmock.DBusTestCase):
       @classmethod
       def setUpClass(klass):
           klass.start_system_bus()
@@ -84,7 +84,7 @@ is how you would set up a mock upower in your test case:
 
 Let's walk through:
 
- - We derive our tests from ``dbus_mock.DBusTestCase`` instead of
+ - We derive our tests from ``dbusmock.DBusTestCase`` instead of
    ``unittest.TestCase`` directly, to make use of the convenience API to start
    a local system bus.
 
@@ -128,7 +128,7 @@ So let's start a mock at the D-Bus name ``com.example.Foo`` with an initial
 
 ::
 
-  python3 -m dbus_mock com.example.Foo / com.example.Foo.Manager
+  python3 -m dbusmock com.example.Foo / com.example.Foo.Manager
 
 On another terminal, let's first see what it does:
 
@@ -188,17 +188,17 @@ Have a look at the test suite for two real-live use cases:
 
 Documentation
 -------------
-The ``dbus_mock`` module has extensive documentation built in, which you can
-read with e. g. ``pydoc3 dbus_mock``.
+The ``dbusmock`` module has extensive documentation built in, which you can
+read with e. g. ``pydoc3 dbusmock``.
 
-``py3doc dbus_mock.DBusMockObject`` shows the D-Bus API of the mock object,
+``py3doc dbusmock.DBusMockObject`` shows the D-Bus API of the mock object,
 i. e. methods like ``AddObject()``, ``AddMethod()`` etc. which are used to set
 up your mock object.
 
-``pydoc3 dbus_mock.DBusTestCase`` shows the convenience Python API for writing
+``pydoc3 dbusmock.DBusTestCase`` shows the convenience Python API for writing
 test cases with local private session/system buses and launching the server.
 
-``python3 -m dbus_mock --help`` shows the arguments and options for running the
+``python3 -m dbusmock --help`` shows the arguments and options for running the
 mock server as a program.
 
 
