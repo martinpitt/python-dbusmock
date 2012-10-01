@@ -1,3 +1,7 @@
+0.0.3 (UNRELEASED)
+------------------
+ - tests/test_api.py: Add tests for GetAll()
+
 0.0.2 (2012-10-01)
 ------------------
  - setup.py: Add categories.

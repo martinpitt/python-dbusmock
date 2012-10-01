@@ -121,6 +121,9 @@ class TestAPI(dbus_mock.DBusTestCase):
     def test_properties(self):
         '''add and change properties'''
 
+        # no properties by default
+        self.assertEqual(self.dbus_props.GetAll('org.freedesktop.Test.Main'), {})
+
         # no such property
         self.assertRaises(dbus.exceptions.DBusException,
                           self.dbus_props.Get,
@@ -137,6 +140,9 @@ class TestAPI(dbus_mock.DBusTestCase):
                                    dbus.Int32(2, variant_level=1))
 
         self.assertEqual(self.dbus_props.Get('org.freedesktop.Test.Main', 'version'), 2)
+
+        self.assertEqual(self.dbus_props.GetAll('org.freedesktop.Test.Main'),
+                         {'version': 2})
 
         # change property
         self.dbus_props.Set('org.freedesktop.Test.Main', 'version',
