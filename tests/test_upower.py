@@ -40,20 +40,34 @@ class TestUPower(dbusmock.DBusTestCase):
 
         self.dbusmock.AddMethods('', [
             ('Suspend', '', '', ''),
+            ('SuspendAllowed', '', 'b', 'ret = True'),
+            ('HibernateAllowed', '', 'b', 'ret = True'),
             ('EnumerateDevices', '', 'ao', 'ret = objects.keys()'),
             ])
+
+        self.dbusmock.AddProperties('org.freedesktop.UPower',
+                                    {
+                                        'DaemonVersion': '0.8.15',
+                                        'CanSuspend': True,
+                                        'CanHibernate': True,
+                                        'OnBattery': True,
+                                        'OnLowBattery': True,
+                                        'LidIsPresent': True,
+                                        'LidIsClosed': True,
+                                        'LidForceSleep': True,
+                                        'IsDocked': False,
+                                    })
 
     def tearDown(self):
         self.p_mock.terminate()
         self.p_mock.wait()
 
     def test_no_devices(self):
-        # we ignore the "no ... property" WARNINGs, too lazy to add them all
         out = subprocess.check_output(['upower', '--dump'],
-                                      universal_newlines=True,
-                                     stderr=subprocess.PIPE)
+                                      universal_newlines=True)
         self.assertFalse('Device' in out, out)
-        self.assertRegex(out, 'on-battery:\s+no')
+        self.assertRegex(out, 'on-battery:\s+yes')
+        self.assertRegex(out, 'lid-is-present:\s+yes')
 
     def test_one_ac(self):
         self.dbusmock.AddObject('/org/freedesktop/UPower/devices/mock_AC',
@@ -64,12 +78,11 @@ class TestUPower(dbusmock.DBusTestCase):
                                  },
                                  [])
 
-        # we ignore the "no ... property" WARNINGs, too lazy to add them all
         out = subprocess.check_output(['upower', '--dump'],
-                                      universal_newlines=True,
-                                      stderr=subprocess.PIPE)
+                                      universal_newlines=True)
         self.assertRegex(out, 'Device: /org/freedesktop/UPower/devices/mock_AC')
-        self.assertRegex(out, 'on-battery:\s+no')
+        self.assertRegex(out, 'on-battery:\s+yes')
+        self.assertRegex(out, 'lid-is-present:\s+yes')
         #print('--------- out --------\n%s\n------------' % out)
 
     def test_suspend(self):

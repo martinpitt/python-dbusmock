@@ -120,7 +120,7 @@ class DBusMockObject(dbus.service.Object):
         path: D-Bus object path
         interface: Primary D-Bus interface name of this object (where
                    properties and methods will be put on)
-        properties: A property_name (string) → property (Variant) map with initial
+        properties: A property_name (string) → value map with initial
                     properties on "interface"
         methods: An array of 4-tuples (name, in_sig, out_sig, code) describing
                  methods to add to "interface"; see AddMethod() for details of
@@ -251,6 +251,20 @@ class DBusMockObject(dbus.service.Object):
             # this is what we expect
             pass
         self.props.setdefault(interface, {})[name] = value
+
+    @dbus.service.method('org.freedesktop.DBus.Mock',
+                         in_signature='sa{sv}',
+                         out_signature='')
+    def AddProperties(self, interface, properties):
+        '''Add several properties to this object
+
+        interface: D-Bus interface to add this to. For convenience you can
+                   specify '' here to add the property to the object's main
+                   interface (as specified on construction).
+        properties: A property_name (string) → value map
+        '''
+        for k, v in properties.items():
+            self.AddProperty(interface, k, v)
 
     def mock_method(self, interface, dbus_method, *args, **kwargs):
         '''Master mock method.

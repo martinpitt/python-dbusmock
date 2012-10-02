@@ -8,6 +8,8 @@
  - dbusmock.py: Fix stopping of local D-Bus daemons for test subclasses.
  - dbusmock.py, stop_dbus(): Wait for local D-Bus to be killed, and avoid
    getting SIGTERMed ourselves.
+ - dbusmock.py: Add AddProperties() method to conveniently add several
+   properties to one interface at once. Update upower test case to use this.
 
 0.0.3 (2012-10-01)
 ------------------
