@@ -19,11 +19,10 @@ import unittest
 import subprocess
 import signal
 import os
+import errno
 
 import dbus
-import dbus.mainloop.glib
 import dbus.service
-from gi.repository import GObject
 
 # global path -> DBusMockObject mapping
 objects = {}
@@ -67,7 +66,6 @@ class DBusMockObject(dbus.service.Object):
 
     def __del__(self):
         if self.logfile:
-            print('DBusMockObject __del__ closing log')
             self.logfile.close()
 
     @dbus.service.method(dbus.PROPERTIES_IFACE,
@@ -380,11 +378,22 @@ class DBusTestCase(unittest.TestCase):
         start_system_bus() and start_session_bus(), these buses are
         automatically stopped in tearDownClass().
         '''
-        os.kill(pid, signal.SIGTERM)
-        try:
-            os.waitpid(pid, 0)
-        except OSError:
-            pass
+        signal.signal(signal.SIGTERM, signal.SIG_IGN)
+        timeout = 50
+        while timeout > 0:
+            try:
+                os.kill(pid, signal.SIGTERM)
+            except OSError as e:
+                if e.errno == errno.ESRCH:
+                    break
+                else:
+                    raise
+            time.sleep(0.1)
+        else:
+            print('ERROR: timed out waiting for bus process to terminate', file=sys.stderr)
+            os.kill(pid, signal.SIGKILL)
+            time.sleep(0.5)
+        signal.signal(signal.SIGTERM, signal.SIG_DFL)
 
     @classmethod
     def get_dbus(klass, system_bus=False):
@@ -475,6 +484,9 @@ def parse_args():
 
 
 if __name__ == '__main__':
+    import dbus.mainloop.glib
+    from gi.repository import GObject
+
     args = parse_args()
     dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
     bus_name = dbus.service.BusName(args.name,

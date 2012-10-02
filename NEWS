@@ -6,6 +6,8 @@
  - tests/test_upower.py: Silence "No ... property" warnings; the test does not
    create them all.
  - dbusmock.py: Fix stopping of local D-Bus daemons for test subclasses.
+ - dbusmock.py, stop_dbus(): Wait for local D-Bus to be killed, and avoid
+   getting SIGTERMed ourselves.
 
 0.0.3 (2012-10-01)
 ------------------
