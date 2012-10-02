@@ -36,7 +36,7 @@ class TestAPI(dbusmock.DBusTestCase):
 
         self.obj_test = self.dbus_con.get_object('org.freedesktop.Test', '/')
         self.dbus_test = dbus.Interface(self.obj_test, 'org.freedesktop.Test.Main')
-        self.dbusmock = dbus.Interface(self.obj_test, 'org.freedesktop.DBus.Mock')
+        self.dbus_mock = dbus.Interface(self.obj_test, 'org.freedesktop.DBus.Mock')
         self.dbus_props = dbus.Interface(self.obj_test, dbus.PROPERTIES_IFACE)
 
     def tearDown(self):
@@ -46,7 +46,7 @@ class TestAPI(dbusmock.DBusTestCase):
     def test_noarg_noret(self):
         '''no arguments, no return value'''
 
-        self.dbusmock.AddMethod('', 'Do', '', '', '')
+        self.dbus_mock.AddMethod('', 'Do', '', '', '')
         self.assertEqual(self.dbus_test.Do(), None)
 
         # check that it's logged correctly
@@ -56,26 +56,26 @@ class TestAPI(dbusmock.DBusTestCase):
     def test_onearg_noret(self):
         '''one argument, no return value'''
 
-        self.dbusmock.AddMethod('', 'Do', 's', '', '')
+        self.dbus_mock.AddMethod('', 'Do', 's', '', '')
         self.assertEqual(self.dbus_test.Do('Hello'), None)
 
     def test_onearg_ret(self):
         '''one argument, code for return value'''
 
-        self.dbusmock.AddMethod('', 'Do', 's', 's', 'ret = args[0]')
+        self.dbus_mock.AddMethod('', 'Do', 's', 's', 'ret = args[0]')
         self.assertEqual(self.dbus_test.Do('Hello'), 'Hello')
 
     def test_twoarg_ret(self):
         '''two arguments, code for return value'''
 
-        self.dbusmock.AddMethod('', 'Do', 'si', 's', 'ret = args[0] * args[1]')
+        self.dbus_mock.AddMethod('', 'Do', 'si', 's', 'ret = args[0] * args[1]')
         self.assertEqual(self.dbus_test.Do('foo', 3), 'foofoofoo')
 
     def test_methods_on_other_interfaces(self):
         '''methods on other interfaces'''
 
-        self.dbusmock.AddMethod('org.freedesktop.Test.Other', 'OtherDo', '', '', '')
-        self.dbusmock.AddMethods('org.freedesktop.Test.Other', 
+        self.dbus_mock.AddMethod('org.freedesktop.Test.Other', 'OtherDo', '', '', '')
+        self.dbus_mock.AddMethods('org.freedesktop.Test.Other', 
                                  [('OtherDo2', '', '', ''),
                                   ('OtherDo3', 'i', 'i', 'ret = args[0]'),
                                  ])
@@ -96,7 +96,7 @@ class TestAPI(dbusmock.DBusTestCase):
     def test_add_object(self):
         '''add a new object'''
 
-        self.dbusmock.AddObject('/obj1',
+        self.dbus_mock.AddObject('/obj1',
                                  'org.freedesktop.Test.Sub',
                                  {
                                      'state': dbus.String('online', variant_level=1),
@@ -122,10 +122,10 @@ class TestAPI(dbusmock.DBusTestCase):
     def test_add_object_existing(self):
         '''try to add an existing object'''
 
-        self.dbusmock.AddObject('/obj1', 'org.freedesktop.Test.Sub', {}, [])
+        self.dbus_mock.AddObject('/obj1', 'org.freedesktop.Test.Sub', {}, [])
 
         self.assertRaises(dbus.exceptions.DBusException,
-                          self.dbusmock.AddObject,
+                          self.dbus_mock.AddObject,
                           '/obj1',
                           'org.freedesktop.Test.Sub',
                           {},
@@ -133,7 +133,7 @@ class TestAPI(dbusmock.DBusTestCase):
 
         # try to add the main object again
         self.assertRaises(dbus.exceptions.DBusException,
-                          self.dbusmock.AddObject,
+                          self.dbus_mock.AddObject,
                           '/',
                           'org.freedesktop.Test.Other',
                           {},
@@ -142,7 +142,7 @@ class TestAPI(dbusmock.DBusTestCase):
     def test_add_object_with_methods(self):
         '''add a new object with methods'''
 
-        self.dbusmock.AddObject('/obj1',
+        self.dbus_mock.AddObject('/obj1',
                                  'org.freedesktop.Test.Sub',
                                  {
                                      'state': dbus.String('online', variant_level=1),
@@ -177,11 +177,11 @@ class TestAPI(dbusmock.DBusTestCase):
                           'version',
                           dbus.Int32(2, variant_level=1))
 
-        self.dbusmock.AddProperty('org.freedesktop.Test.Main',
+        self.dbus_mock.AddProperty('org.freedesktop.Test.Main',
                                   'version',
                                   dbus.Int32(2, variant_level=1))
         # once again on default interface
-        self.dbusmock.AddProperty('',
+        self.dbus_mock.AddProperty('',
                                   'connected',
                                   dbus.Boolean(True, variant_level=1))
 
@@ -197,7 +197,7 @@ class TestAPI(dbusmock.DBusTestCase):
         self.assertEqual(self.dbus_props.Get('org.freedesktop.Test.Main', 'version'), 4)
 
         # add property to different interface
-        self.dbusmock.AddProperty('org.freedesktop.Test.Other',
+        self.dbus_mock.AddProperty('org.freedesktop.Test.Other',
                                   'color',
                                   dbus.String('yellow', variant_level=1))
 
@@ -217,7 +217,7 @@ class TestAPI(dbusmock.DBusTestCase):
         self.assertTrue('<interface name="org.freedesktop.DBus.Mock">' in xml_empty, xml_empty)
         self.assertTrue('<method name="AddMethod">' in xml_empty, xml_empty)
 
-        self.dbusmock.AddMethod('', 'Do', 'saiv', 'i', 'ret = 42')
+        self.dbus_mock.AddMethod('', 'Do', 'saiv', 'i', 'ret = 42')
 
         xml_method = dbus_introspect.Introspect()
         self.assertFalse(xml_empty == xml_method, 'No change from empty XML')
@@ -232,10 +232,10 @@ class TestAPI(dbusmock.DBusTestCase):
     def test_objects_map(self):
         '''access global objects map'''
 
-        self.dbusmock.AddMethod('', 'EnumObjs', '', 'ao', 'ret = objects.keys()')
+        self.dbus_mock.AddMethod('', 'EnumObjs', '', 'ao', 'ret = objects.keys()')
         self.assertEqual(self.dbus_test.EnumObjs(), ['/'])
 
-        self.dbusmock.AddObject('/obj1', 'org.freedesktop.Test.Sub', {}, [])
+        self.dbus_mock.AddObject('/obj1', 'org.freedesktop.Test.Sub', {}, [])
         self.assertEqual(set(self.dbus_test.EnumObjs()), {'/', '/obj1'})
 
 if __name__ == '__main__':
