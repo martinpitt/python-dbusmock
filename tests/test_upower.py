@@ -46,7 +46,7 @@ class TestUPower(dbusmock.DBusTestCase):
             ])
 
         self.dbusmock.AddProperties('org.freedesktop.UPower',
-                                    {
+                                    dbus.Dictionary({
                                         'DaemonVersion': '0.8.15',
                                         'CanSuspend': True,
                                         'CanHibernate': True,
@@ -56,7 +56,7 @@ class TestUPower(dbusmock.DBusTestCase):
                                         'LidIsClosed': True,
                                         'LidForceSleep': True,
                                         'IsDocked': False,
-                                    })
+                                    }, signature='sv'))
 
     def tearDown(self):
         self.p_mock.terminate()
