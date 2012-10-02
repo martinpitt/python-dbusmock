@@ -5,6 +5,7 @@
  - dbusmock.py: Document global objects map in AddMethod().
  - tests/test_upower.py: Silence "No ... property" warnings; the test does not
    create them all.
+ - dbusmock.py: Fix stopping of local D-Bus daemons for test subclasses.
 
 0.0.3 (2012-10-01)
 ------------------

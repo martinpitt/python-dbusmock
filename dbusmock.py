@@ -330,7 +330,7 @@ class DBusTestCase(unittest.TestCase):
         
         This gets stopped automatically in tearDownClass().
         '''
-        (klass.session_bus_pid, addr) = klass.start_dbus()
+        (DBusTestCase.session_bus_pid, addr) = klass.start_dbus()
         os.environ['DBUS_SESSION_BUS_ADDRESS'] = addr
 
     @classmethod
@@ -339,21 +339,21 @@ class DBusTestCase(unittest.TestCase):
         
         This gets stopped automatically in tearDownClass().
         '''
-        (klass.system_bus_pid, addr) = klass.start_dbus()
+        (DBusTestCase.system_bus_pid, addr) = klass.start_dbus()
         os.environ['DBUS_SYSTEM_BUS_ADDRESS'] = addr
 
     @classmethod
     def tearDownClass(klass):
         '''Stop private session/system buses'''
 
-        if klass.session_bus_pid is not None:
-            klass.stop_dbus(klass.session_bus_pid)
+        if DBusTestCase.session_bus_pid is not None:
+            klass.stop_dbus(DBusTestCase.session_bus_pid)
             del os.environ['DBUS_SESSION_BUS_ADDRESS']
-            klass.session_bus_pid = None
-        if klass.system_bus_pid is not None:
-            klass.stop_dbus(klass.system_bus_pid)
+            DBusTestCase.session_bus_pid = None
+        if DBusTestCase.system_bus_pid is not None:
+            klass.stop_dbus(DBusTestCase.system_bus_pid)
             del os.environ['DBUS_SYSTEM_BUS_ADDRESS']
-            klass.system_bus_pid = None
+            DBusTestCase.system_bus_pid = None
 
     @classmethod
     def start_dbus(klass):
