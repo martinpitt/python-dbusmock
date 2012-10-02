@@ -480,4 +480,5 @@ if __name__ == '__main__':
                                     do_not_queue=True)
 
     main_object = DBusMockObject(bus_name, args.path, args.interface, {}, args.logfile)
+    objects[args.path] = main_object
     GObject.MainLoop().run()

@@ -229,6 +229,14 @@ class TestAPI(dbusmock.DBusTestCase):
       <arg direction="out" type="i" />
     </method>''' in xml_method, xml_method)
 
+    def test_objects_map(self):
+        '''access global objects map'''
+
+        self.dbusmock.AddMethod('', 'EnumObjs', '', 'ao', 'ret = objects.keys()')
+        self.assertEqual(self.dbus_test.EnumObjs(), ['/'])
+
+        self.dbusmock.AddObject('/obj1', 'org.freedesktop.Test.Sub', {}, [])
+        self.assertEqual(set(self.dbus_test.EnumObjs()), {'/', '/obj1'})
 
 if __name__ == '__main__':
     # avoid writing to stderr
