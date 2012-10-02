@@ -183,9 +183,13 @@ class DBusMockObject(dbus.service.Object):
                  that returns a string; use '' for methods that do not return
                  anything.
         code: Python 3 code to run in the method call; you have access to the
-              arguments through the args list, and can set the return value by
-              assigning a value to the "ret" variable. When specifying '', the
-              method will not do anything (except logging) and return None.
+              arguments through the "args" list, and can set the return value
+              by assigning a value to the "ret" variable. You can also read the
+              global "objects" variable, which is a dictionary mapping object
+              paths to DBusMockObject instances.
+              
+              When specifying '', the method will not do anything (except
+              logging) and return None.
         '''
         if not interface:
             interface = self.interface
