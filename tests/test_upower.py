@@ -48,7 +48,10 @@ class TestUPower(dbusmock.DBusTestCase):
         self.p_mock.wait()
 
     def test_no_devices(self):
-        out = subprocess.check_output(['upower', '--dump'], universal_newlines=True)
+        # we ignore the "no ... property" WARNINGs, too lazy to add them all
+        out = subprocess.check_output(['upower', '--dump'],
+                                      universal_newlines=True,
+                                     stderr=subprocess.PIPE)
         self.assertFalse('Device' in out, out)
         self.assertRegex(out, 'on-battery:\s+no')
 
@@ -61,7 +64,10 @@ class TestUPower(dbusmock.DBusTestCase):
                                  },
                                  [])
 
-        out = subprocess.check_output(['upower', '--dump'], universal_newlines=True)
+        # we ignore the "no ... property" WARNINGs, too lazy to add them all
+        out = subprocess.check_output(['upower', '--dump'],
+                                      universal_newlines=True,
+                                      stderr=subprocess.PIPE)
         self.assertRegex(out, 'Device: /org/freedesktop/UPower/devices/mock_AC')
         self.assertRegex(out, 'on-battery:\s+no')
         #print('--------- out --------\n%s\n------------' % out)
