@@ -119,6 +119,26 @@ class TestAPI(dbusmock.DBusTestCase):
         dbusmock.AddMethod('', 'Do', '', 's', 'ret = "hello"')
         self.assertEqual(dbus_sub.Do(), 'hello')
 
+    def test_add_object_existing(self):
+        '''try to add an existing object'''
+
+        self.dbusmock.AddObject('/obj1', 'org.freedesktop.Test.Sub', {}, [])
+
+        self.assertRaises(dbus.exceptions.DBusException,
+                          self.dbusmock.AddObject,
+                          '/obj1',
+                          'org.freedesktop.Test.Sub',
+                          {},
+                          [])
+
+        # try to add the main object again
+        self.assertRaises(dbus.exceptions.DBusException,
+                          self.dbusmock.AddObject,
+                          '/',
+                          'org.freedesktop.Test.Other',
+                          {},
+                          [])
+
     def test_add_object_with_methods(self):
         '''add a new object with methods'''
 
