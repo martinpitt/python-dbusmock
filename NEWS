@@ -1,5 +1,5 @@
-0.0.4 (UNRELEASED)
-------------------
+0.1 (UNRELEASED)
+----------------
  - tests/test_api.py: Add tests for adding existing objects.
  - dbusmock.py: Also put first (main) object into the global objects map.
  - dbusmock.py: Document global objects map in AddMethod().
@@ -10,6 +10,8 @@
    getting SIGTERMed ourselves.
  - dbusmock.py: Add AddProperties() method to conveniently add several
    properties to one interface at once. Update upower test case to use this.
+ - dbusmock.py: Add EmitSignal() method to emit an arbitrary signal on any
+   interface.
 
 0.0.3 (2012-10-01)
 ------------------

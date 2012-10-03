@@ -16,8 +16,14 @@ import sys
 import tempfile
 
 import dbus
+import dbus.mainloop.glib
 
 import dbusmock
+
+from gi.repository import GObject
+
+dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+
 
 class TestAPI(dbusmock.DBusTestCase):
     '''Test dbus-mock API'''
@@ -237,6 +243,49 @@ class TestAPI(dbusmock.DBusTestCase):
 
         self.dbus_mock.AddObject('/obj1', 'org.freedesktop.Test.Sub', {}, [])
         self.assertEqual(set(self.dbus_test.EnumObjs()), {'/', '/obj1'})
+
+    def test_signals(self):
+        '''emitting signals'''
+
+        def do_emit():
+            self.dbus_mock.EmitSignal('', 'SigNoArgs', '', [])
+            self.dbus_mock.EmitSignal('org.freedesktop.Test.Sub',
+                                      'SigTwoArgs',
+                                      'su', ['hello', 42])
+
+        caught = []
+        ml = GObject.MainLoop()
+
+        def catch(*args, **kwargs):
+            if kwargs['interface'].startswith('org.freedesktop.Test'):
+                caught.append((args, kwargs))
+            if len(caught) == 2:
+                # we caught everything there is to catch, don't wait for the
+                # timeout
+                ml.quit()
+
+        self.dbus_con.add_signal_receiver(catch,
+                                          interface_keyword='interface',
+                                          path_keyword='path',
+                                          member_keyword='member')
+
+        GObject.timeout_add(200, do_emit)
+        # ensure that the loop quits even when we catch fewer than 2 signals
+        GObject.timeout_add(3000, ml.quit)
+        ml.run()
+
+        # check SigNoArgs
+        self.assertEqual(caught[0][0], ())
+        self.assertEqual(caught[0][1]['member'], 'SigNoArgs')
+        self.assertEqual(caught[0][1]['path'], '/')
+        self.assertEqual(caught[0][1]['interface'], 'org.freedesktop.Test.Main')
+
+        # check SigTwoArgs
+        self.assertEqual(caught[1][0], ('hello', 42))
+        self.assertEqual(caught[1][1]['member'], 'SigTwoArgs')
+        self.assertEqual(caught[1][1]['path'], '/')
+        self.assertEqual(caught[1][1]['interface'], 'org.freedesktop.Test.Sub')
+
 
 if __name__ == '__main__':
     # avoid writing to stderr

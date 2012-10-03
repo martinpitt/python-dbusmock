@@ -266,6 +266,33 @@ class DBusMockObject(dbus.service.Object):
         for k, v in properties.items():
             self.AddProperty(interface, k, v)
 
+    @dbus.service.method('org.freedesktop.DBus.Mock',
+                         in_signature='sssav',
+                         out_signature='')
+    def EmitSignal(self, interface, name, signature, args):
+        '''Emit a signal from the object.
+
+        interface: D-Bus interface to send the signal from. For convenience you
+                   can specify '' here to add the method to the object's main
+                   interface (as specified on construction).
+        name: Name of the signal
+        signature: Signature of input arguments; for example "ias" for a signal
+                that takes an int32 and a string array as arguments; see
+                http://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-signatures
+        args: variant array with signal arguments; must match order and type in
+              "signature"
+        '''
+        if not interface:
+            interface = self.interface
+
+        fn = lambda self, *args: self.log('emit %s.%s: %s' % (interface, name, args))
+        fn.__name__ = name
+        dbus_fn = dbus.service.signal(interface)(fn)
+        dbus_fn._dbus_signature = signature
+        n_args = len(dbus.Signature(signature))
+        dbus_fn._dbus_args = ['arg%i' % i for i in range(1, n_args + 1)]
+        dbus_fn(self, *args)
+
     def mock_method(self, interface, dbus_method, *args, **kwargs):
         '''Master mock method.
 
