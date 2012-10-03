@@ -37,7 +37,7 @@ standard ``unittest.TestCase``).
 
 You can use this with any programming language, as you can run the mocker as a
 normal program. The actual setup of the mock (adding objects, methods,
-properties, etc.) all happen via D-Bus methods on the
+properties, and signals) all happen via D-Bus methods on the
 ``org.freedesktop.DBus.Mock`` interface. You just don't have the convenience
 D-Bus launch API that way.
 
@@ -182,8 +182,8 @@ Have a look at the test suite for two real-live use cases:
  
  - ``tests/test_api.py`` runs a mock on the session bus and exercises all
    available functionality, such as adding additional objects, properties,
-   multiple methods, input arguments, return values, code in methods, and
-   introspection.
+   multiple methods, input arguments, return values, code in methods, raising
+   signals, and introspection.
 
 
 Documentation
