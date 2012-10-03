@@ -12,6 +12,7 @@
    properties to one interface at once. Update upower test case to use this.
  - dbusmock.py: Add EmitSignal() method to emit an arbitrary signal on any
    interface.
+ - Make code compatible with Python 2.7 as well. (LP: #1060278)
 
 0.0.3 (2012-10-01)
 ------------------

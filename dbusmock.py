@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+# coding: UTF-8
 '''Mock D-BUS objects for test suites.'''
 
 # This program is free software; you can redistribute it and/or modify it under
@@ -48,7 +49,7 @@ class DBusMockObject(dbus.service.Object):
         logfile: When given, method calls will be logged into that file name;
                  if None, logging will be written to stdout.
         '''
-        super().__init__(bus_name, path)
+        super(self.__class__, self).__init__(bus_name, path)
 
         self.bus_name = bus_name
         self.interface = interface
@@ -204,7 +205,7 @@ class DBusMockObject(dbus.service.Object):
         # check in dbus-python; we need to set it manually instead
         dbus_method = dbus.service.method(interface,
                                           out_signature=out_sig)(method)
-        dbus_method.__name__ = name
+        dbus_method.__name__ = str(name)
         dbus_method._dbus_in_signature = in_sig
         dbus_method._dbus_args = ['arg%i' % i for i in range(1, n_args + 1)]
 
@@ -286,7 +287,7 @@ class DBusMockObject(dbus.service.Object):
             interface = self.interface
 
         fn = lambda self, *args: self.log('emit %s.%s: %s' % (interface, name, args))
-        fn.__name__ = name
+        fn.__name__ = str(name)
         dbus_fn = dbus.service.signal(interface)(fn)
         dbus_fn._dbus_signature = signature
         n_args = len(dbus.Signature(signature))
@@ -343,7 +344,7 @@ class DBusMockObject(dbus.service.Object):
                 mock_interfaces.setdefault(interface, {})[method] = self.methods[interface][method][3]
         self._dbus_class_table[cls] = mock_interfaces
 
-        xml = super().Introspect(object_path, connection)
+        xml = super(self.__class__, self).Introspect(object_path, connection)
 
         # restore original class table
         self._dbus_class_table[cls] = orig_interfaces
@@ -431,7 +432,7 @@ class DBusTestCase(unittest.TestCase):
                     raise
             time.sleep(0.1)
         else:
-            print('ERROR: timed out waiting for bus process to terminate', file=sys.stderr)
+            sys.stderr.write('ERROR: timed out waiting for bus process to terminate\n')
             os.kill(pid, signal.SIGKILL)
             time.sleep(0.5)
         signal.signal(signal.SIGTERM, signal.SIG_DFL)
@@ -507,6 +508,14 @@ class DBusTestCase(unittest.TestCase):
         klass.wait_for_bus_object(name, path, system_bus)
 
         return daemon
+
+# Python 2 backwards compatibility
+if sys.version_info[0] < 3:
+    import re
+    def assertRegex(self, value, pattern):
+        if not re.search(pattern, value):
+            raise self.failureException('%r not found in %s' % (pattern, value))
+    DBusTestCase.assertRegex = assertRegex
 
 
 def parse_args():

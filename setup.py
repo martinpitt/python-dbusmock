@@ -24,6 +24,7 @@ your tests.''',
 
     classifiers = [
         'Programming Language :: Python',
+        'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 3',
         'Development Status :: 3 - Alpha',
         'Environment :: Other Environment',
