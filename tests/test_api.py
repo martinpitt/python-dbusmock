@@ -235,6 +235,19 @@ class TestAPI(dbusmock.DBusTestCase):
       <arg direction="out" type="i" />
     </method>''' in xml_method, xml_method)
 
+    # properties in introspection are not supported by dbus-python right now
+    #def test_introspection_properties(self):
+    #    '''dynamically added properties appear in introspection'''
+
+    #    self.dbus_mock.AddProperty('', 'Color', 'yellow')
+    #    self.dbus_mock.AddProperty('org.freedesktop.Test.Sub', 'Count', 5)
+
+    #    xml = self.obj_test.Introspect(dbus_interface=dbus.INTROSPECTABLE_IFACE)
+    #    self.assertTrue('<interface name="org.freedesktop.Test.Main">' in xml, xml)
+    #    self.assertTrue('<interface name="org.freedesktop.Test.Sub">' in xml, xml)
+    #    self.assertTrue('<property name="Color" type="s" access="read" />' in xml, xml)
+    #    self.assertTrue('<property name="Count" type="i" access="read" />' in xml, xml)
+
     def test_objects_map(self):
         '''access global objects map'''
 
