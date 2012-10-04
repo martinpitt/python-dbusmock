@@ -4,7 +4,7 @@ import setuptools
 
 setuptools.setup(
     name = 'python-dbusmock',
-    version = '0.0.3',
+    version = '0.1',
     description = 'Mock D-Bus objects',
 
     author = 'Martin Pitt',

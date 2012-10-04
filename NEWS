@@ -1,4 +1,4 @@
-0.1 (UNRELEASED)
+0.1 (2012-10-04)
 ----------------
  - tests/test_api.py: Add tests for adding existing objects.
  - dbusmock.py: Also put first (main) object into the global objects map.
