@@ -3,6 +3,8 @@
  - setup.py: Use README.rst as long description.
  - setup.py: Add download URL.
  - tests/test_consolekit.py: Skip test if ck-list-sessions is not installed.
+ - setup.py: Import "multiprocessing" to work around "'NoneType' object
+   is not callable" error when running "setup.py test" with python 2.7.
 
 0.1 (2012-10-04)
 ----------------

@@ -2,6 +2,11 @@
 
 import setuptools
 
+# Work around "TypeError: 'NoneType' object is not callable" 
+# during `python setup.py test`
+# http://www.eby-sarna.com/pipermail/peak/2010-May/003357.html
+import multiprocessing
+
 with open('README.rst') as f:
     readme = f.read()
 
