@@ -13,6 +13,7 @@ setuptools.setup(
     author = 'Martin Pitt',
     author_email = 'martin.pitt@ubuntu.com',
     url = 'https://launchpad.net/python-dbusmock',
+    download_url = 'https://launchpad.net/python-dbusmock/+download',
     license = 'LGPL 3+',
     py_modules = ['dbusmock'],
     test_suite = 'nose.collector',
