@@ -12,7 +12,7 @@ with open('README.rst') as f:
 
 setuptools.setup(
     name = 'python-dbusmock',
-    version = '0.1',
+    version = '0.1.1',
     description = 'Mock D-Bus objects',
     long_description = readme,
     author = 'Martin Pitt',

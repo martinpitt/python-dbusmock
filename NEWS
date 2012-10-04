@@ -1,4 +1,4 @@
-0.1.1 (UNRELEASED)
+0.1.1 (2012-10-04)
 ------------------
  - setup.py: Use README.rst as long description.
  - setup.py: Add download URL.
