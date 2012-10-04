@@ -2,6 +2,7 @@
 ------------------
  - setup.py: Use README.rst as long description.
  - setup.py: Add download URL.
+ - tests/test_consolekit.py: Skip test if ck-list-sessions is not installed.
 
 0.1 (2012-10-04)
 ----------------

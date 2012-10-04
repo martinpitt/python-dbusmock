@@ -14,12 +14,15 @@ __license__ = 'LGPL 3+'
 import unittest
 import sys
 import subprocess
+import os.path
 
 import dbus
 
 import dbusmock
 
 
+@unittest.skipUnless(os.path.exists('/usr/bin/ck-list-sessions'),
+                     'ck-list-sessions not installed')
 class TestConsoleKit(dbusmock.DBusTestCase):
     @classmethod
     def setUpClass(klass):
