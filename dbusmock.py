@@ -199,7 +199,7 @@ class DBusMockObject(dbus.service.Object):
         # because inspect cannot handle those, so pass on interface and method
         # name as first positional arguments
         method = lambda self, *args, **kwargs: DBusMockObject.mock_method(
-            self, interface, name, *args, **kwargs)
+            self, interface, name, in_sig, *args, **kwargs)
 
         # we cannot specify in_signature here, as that trips over a consistency
         # check in dbus-python; we need to set it manually instead
@@ -287,7 +287,10 @@ class DBusMockObject(dbus.service.Object):
             interface = self.interface
 
         # convert types of arguments according to signature, using
-        # MethodCallMessage.append(); this will also provide type/length checks
+        # MethodCallMessage.append(); this will also provide type/length
+        # checks, except for the case of an empty signature
+        if signature == '' and len(args) > 0:
+            raise TypeError('Fewer items found in D-Bus signature than in Python arguments')
         m = dbus.connection.MethodCallMessage('a.b', '/a', 'a.b', 'a')
         m.append(signature=signature, *args)
         args = m.get_args_list()
@@ -300,13 +303,23 @@ class DBusMockObject(dbus.service.Object):
 
         dbus_fn(self, *args)
 
-    def mock_method(self, interface, dbus_method, *args, **kwargs):
+    def mock_method(self, interface, dbus_method, in_signature, *args, **kwargs):
         '''Master mock method.
 
         This gets "instantiated" in AddMethod(). Execute the code snippet of
         the method and return the "ret" variable if it was set.
         '''
-        #print('mock_method', dbus_method, self, args, kwargs, file=sys.stderr)
+        #print('mock_method', dbus_method, self, in_signature, args, kwargs, file=sys.stderr)
+
+        # convert types of arguments according to signature, using
+        # MethodCallMessage.append(); this will also provide type/length
+        # checks, except for the case of an empty signature
+        if in_signature == '' and len(args) > 0:
+            raise TypeError('Fewer items found in D-Bus signature than in Python arguments')
+        m = dbus.connection.MethodCallMessage('a.b', '/a', 'a.b', 'a')
+        m.append(signature=in_signature, *args)
+        args = m.get_args_list()
+
         self.log(dbus_method)
         code = self.methods[interface][dbus_method][2]
         if code:

@@ -77,6 +77,20 @@ class TestAPI(dbusmock.DBusTestCase):
         self.dbus_mock.AddMethod('', 'Do', 'si', 's', 'ret = args[0] * args[1]')
         self.assertEqual(self.dbus_test.Do('foo', 3), 'foofoofoo')
 
+    def test_array_arg(self):
+        '''array argument'''
+
+        self.dbus_mock.AddMethod('', 'Do', 'iaou', '',
+                                 '''assert len(args) == 3
+assert args[0] == -1;
+assert args[1] == ['/foo']
+assert type(args[1]) == dbus.Array
+assert type(args[1][0]) == dbus.ObjectPath
+assert args[2] == 5
+''')
+        self.assertEqual(self.dbus_test.Do(-1, ['/foo'], 5), None)
+
+
     def test_methods_on_other_interfaces(self):
         '''methods on other interfaces'''
 
@@ -98,6 +112,31 @@ class TestAPI(dbusmock.DBusTestCase):
         # check that it's logged correctly
         with open(self.mock_log.name) as f:
             self.assertRegex(f.read(), '^[0-9.]+ OtherDo\n[0-9.]+ OtherDo2\n[0-9.]+ OtherDo3$')
+
+    def test_methods_type_mismatch(self):
+        '''calling methods with wrong arguments'''
+
+        def check(signature, args, err):
+            self.dbus_mock.AddMethod('', 'Do', signature, '', '')
+            try:
+                self.dbus_test.Do(*args)
+                self.fail('method call did not raise an error for signature "%s" and arguments %s'
+                          % (signature, args))
+            except dbus.exceptions.DBusException as e:
+                self.assertTrue(err in str(e), e)
+
+        # not enough arguments
+        check('i', [], 'TypeError: More items found')
+        check('is', [1], 'TypeError: More items found')
+
+        # too many arguments
+        check('', [1], 'TypeError: Fewer items found')
+        check('i', [1, 'hello'], 'TypeError: Fewer items found')
+
+        # type mismatch
+        check('u', [-1], 'convert negative value to unsigned int')
+        check('i', ['hello'], 'TypeError: an integer is required')
+        check('s', [1], 'TypeError: Expected a string')
 
     def test_add_object(self):
         '''add a new object'''
@@ -162,7 +201,7 @@ class TestAPI(dbusmock.DBusTestCase):
         obj1 = self.dbus_con.get_object('org.freedesktop.Test', '/obj1')
 
         self.assertEqual(obj1.Do0(), 42)
-        self.assertEqual(obj1.Do1(), 31337)
+        self.assertEqual(obj1.Do1(1), 31337)
         self.assertRaises(dbus.exceptions.DBusException,
                           obj1.Do2, 31337)
 
@@ -324,6 +363,30 @@ class TestAPI(dbusmock.DBusTestCase):
         self.assertEqual(args[3].variant_level, 0)
         self.assertEqual(type(args[3][0]), dbus.ObjectPath)
         self.assertEqual(args[3][0].variant_level, 0)
+
+    def test_signals_type_mismatch(self):
+        '''emitting signals with wrong arguments'''
+
+        def check(signature, args, err):
+            try:
+                self.dbus_mock.EmitSignal('', 's', signature, args)
+                self.fail('EmitSignal did not raise an error for signature "%s" and arguments %s'
+                          % (signature, args))
+            except dbus.exceptions.DBusException as e:
+                self.assertTrue(err in str(e), e)
+
+        # not enough arguments
+        check('i', [], 'TypeError: More items found')
+        check('is', [1], 'TypeError: More items found')
+
+        # too many arguments
+        check('', [1], 'TypeError: Fewer items found')
+        check('i', [1, 'hello'], 'TypeError: Fewer items found')
+
+        # type mismatch
+        check('u', [-1], 'convert negative value to unsigned int')
+        check('i', ['hello'], 'TypeError: an integer is required')
+        check('s', [1], 'TypeError: Expected a string')
 
 if __name__ == '__main__':
     # avoid writing to stderr

@@ -2,6 +2,10 @@
 ------------------
  - dbusmock.py, EmitSignal(): Convert arguments to the right data types
    according to the signature.
+ - dbusmock.py, method calls: Convert arguments to the right data types
+   according to the signature.
+ - tests/test_api.py: Check proper handling of signature vs. argument list
+   length and/or type mismatch. (LP: #1064836)
 
 0.1.1 (2012-10-04)
 ------------------
