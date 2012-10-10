@@ -10,9 +10,12 @@ import multiprocessing
 with open('README.rst') as f:
     readme = f.read()
 
+with open('NEWS') as f:
+    version = f.readline().split()[0]
+
 setuptools.setup(
     name = 'python-dbusmock',
-    version = '0.1.1',
+    version = version,
     description = 'Mock D-Bus objects',
     long_description = readme,
     author = 'Martin Pitt',
