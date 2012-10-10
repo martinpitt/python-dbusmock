@@ -14,6 +14,7 @@ __license__ = 'LGPL 3+'
 import unittest
 import sys
 import subprocess
+import time
 
 import dbus
 
@@ -42,7 +43,7 @@ class TestUPower(dbusmock.DBusTestCase):
             ('Suspend', '', '', ''),
             ('SuspendAllowed', '', 'b', 'ret = True'),
             ('HibernateAllowed', '', 'b', 'ret = True'),
-            ('EnumerateDevices', '', 'ao', 'ret = objects.keys()'),
+            ('EnumerateDevices', '', 'ao', 'ret = [k for k in objects.keys() if "/devices" in k]'),
             ])
 
         self.dbusmock.AddProperties('org.freedesktop.UPower',
@@ -84,6 +85,20 @@ class TestUPower(dbusmock.DBusTestCase):
         self.assertRegex(out, 'on-battery:\s+yes')
         self.assertRegex(out, 'lid-is-present:\s+yes')
         #print('--------- out --------\n%s\n------------' % out)
+
+        mon = subprocess.Popen(['upower', '--monitor-detail'],
+                               stdout=subprocess.PIPE,
+                               universal_newlines=True)
+
+        time.sleep(0.3)
+        self.dbusmock.EmitSignal('', 'DeviceChanged', 's',
+                                 ['/org/freedesktop/UPower/devices/mock_AC'])
+        time.sleep(0.2)
+
+        mon.terminate()
+        out = mon.communicate()[0]
+        self.assertRegex(out, 'device changed:\s+/org/freedesktop/UPower/devices/mock_AC')
+        #print('--------- monitor out --------\n%s\n------------' % out)
 
     def test_suspend(self):
         self.obj_upower.Suspend(dbus_interface='org.freedesktop.UPower')

@@ -6,6 +6,7 @@
    according to the signature.
  - tests/test_api.py: Check proper handling of signature vs. argument list
    length and/or type mismatch. (LP: #1064836)
+ - tests/test_upower.py: Add test for handling "DeviceChanged" signal.
 
 0.1.1 (2012-10-04)
 ------------------
