@@ -265,6 +265,10 @@ class TestAPI(dbusmock.DBusTestCase):
             self.dbus_mock.EmitSignal('org.freedesktop.Test.Sub',
                                       'SigTwoArgs',
                                       'su', ['hello', 42])
+            self.dbus_mock.EmitSignal('org.freedesktop.Test.Sub',
+                                      'SigTypeTest',
+                                      'iuvao',
+                                      [-42, 42, dbus.String('hello', variant_level=1), ['/a', '/b']])
 
         caught = []
         ml = GObject.MainLoop()
@@ -272,7 +276,7 @@ class TestAPI(dbusmock.DBusTestCase):
         def catch(*args, **kwargs):
             if kwargs['interface'].startswith('org.freedesktop.Test'):
                 caught.append((args, kwargs))
-            if len(caught) == 2:
+            if len(caught) == 3:
                 # we caught everything there is to catch, don't wait for the
                 # timeout
                 ml.quit()
@@ -299,6 +303,27 @@ class TestAPI(dbusmock.DBusTestCase):
         self.assertEqual(caught[1][1]['path'], '/')
         self.assertEqual(caught[1][1]['interface'], 'org.freedesktop.Test.Sub')
 
+        # check data types in SigTypeTest
+        self.assertEqual(caught[2][1]['member'], 'SigTypeTest')
+        self.assertEqual(caught[2][1]['path'], '/')
+        args = caught[2][0]
+        self.assertEqual(args[0], -42)
+        self.assertEqual(type(args[0]), dbus.Int32)
+        self.assertEqual(args[0].variant_level, 0)
+
+        self.assertEqual(args[1], 42)
+        self.assertEqual(type(args[1]), dbus.UInt32)
+        self.assertEqual(args[1].variant_level, 0)
+
+        self.assertEqual(args[2], 'hello')
+        self.assertEqual(type(args[2]), dbus.String)
+        self.assertEqual(args[2].variant_level, 1)
+
+        self.assertEqual(args[3], ['/a', '/b'])
+        self.assertEqual(type(args[3]), dbus.Array)
+        self.assertEqual(args[3].variant_level, 0)
+        self.assertEqual(type(args[3][0]), dbus.ObjectPath)
+        self.assertEqual(args[3][0].variant_level, 0)
 
 if __name__ == '__main__':
     # avoid writing to stderr

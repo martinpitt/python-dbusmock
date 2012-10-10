@@ -286,12 +286,18 @@ class DBusMockObject(dbus.service.Object):
         if not interface:
             interface = self.interface
 
+        # convert types of arguments according to signature, using
+        # MethodCallMessage.append(); this will also provide type/length checks
+        m = dbus.connection.MethodCallMessage('a.b', '/a', 'a.b', 'a')
+        m.append(signature=signature, *args)
+        args = m.get_args_list()
+
         fn = lambda self, *args: self.log('emit %s.%s: %s' % (interface, name, args))
         fn.__name__ = str(name)
         dbus_fn = dbus.service.signal(interface)(fn)
         dbus_fn._dbus_signature = signature
-        n_args = len(dbus.Signature(signature))
-        dbus_fn._dbus_args = ['arg%i' % i for i in range(1, n_args + 1)]
+        dbus_fn._dbus_args = ['arg%i' % i for i in range(1, len(args) + 1)]
+
         dbus_fn(self, *args)
 
     def mock_method(self, interface, dbus_method, *args, **kwargs):
