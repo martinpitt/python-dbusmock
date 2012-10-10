@@ -1,4 +1,4 @@
-0.1.2 (UNRELEASED)
+0.1.2 (2012-10-10)
 ------------------
  - dbusmock.py, EmitSignal(): Convert arguments to the right data types
    according to the signature.
