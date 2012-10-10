@@ -134,7 +134,7 @@ assert args[2] == 5
         check('i', [1, 'hello'], 'TypeError: Fewer items found')
 
         # type mismatch
-        check('u', [-1], 'convert negative value to unsigned int')
+        check('u', [-1], 'convert negative value to unsigned')
         check('i', ['hello'], 'TypeError: an integer is required')
         check('s', [1], 'TypeError: Expected a string')
 
@@ -384,7 +384,7 @@ assert args[2] == 5
         check('i', [1, 'hello'], 'TypeError: Fewer items found')
 
         # type mismatch
-        check('u', [-1], 'convert negative value to unsigned int')
+        check('u', [-1], 'convert negative value to unsigned')
         check('i', ['hello'], 'TypeError: an integer is required')
         check('s', [1], 'TypeError: Expected a string')
 
