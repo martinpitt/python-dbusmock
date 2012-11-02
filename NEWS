@@ -1,3 +1,7 @@
+0.1.3 (UNRELEASED)
+------------------
+ - Ship NEWS in release tarballs.
+
 0.1.2 (2012-10-10)
 ------------------
  - dbusmock.py, EmitSignal(): Convert arguments to the right data types
