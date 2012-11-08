@@ -14,6 +14,7 @@ __license__ = 'LGPL 3+'
 
 import time
 import sys
+import importlib
 
 # we do not use this ourselves, but mock methods often want to use this
 import os
@@ -262,6 +263,34 @@ class DBusMockObject(dbus.service.Object):
         '''
         for k, v in properties.items():
             self.AddProperty(interface, k, v)
+
+    @dbus.service.method('org.freedesktop.DBus.Mock',
+                         in_signature='sa{sv}',
+                         out_signature='')
+    def AddTemplate(self, template, parameters):
+        '''Load a template into the mock.
+
+        python-dbusmock ships a set of standard mocks for common system
+        services such as UPower and NetworkManager. With these the actual tests
+        become a lot simpler, as they only have to set up the particular
+        properties for the tests, and not the skeleton of common properties,
+        interfaces, and methods.
+
+        template: Name of the template to load. See "pydoc dbusmock.templates"
+                  for a list of available templates, and
+                  "pydoc dbusmock.templates.NAME" for documentation about
+                  template NAME.
+        parameters: A parameter (string) → value (variant) map, for
+                    parameterizing templates. Each template can define their
+                    own, see documentation of that particular template for
+                    details.
+        '''
+        try:
+            module = importlib.import_module('dbusmock.templates.' + template)
+        except ImportError as e:
+            raise dbus.exceptions.DBusException('Cannot add template %s: %s' % (template, str(e)))
+
+        module.load(self, parameters)
 
     @dbus.service.method('org.freedesktop.DBus.Mock',
                          in_signature='sssav',

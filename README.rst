@@ -169,13 +169,41 @@ You can do the same operations in e. g. d-feet or any other D-Bus language
 binding.
 
 
+Templates
+---------
+Some D-BUS services are commonly used in test suites, such as UPower or
+NetworkManager. python-dbusmock provides "templates" which set up the common
+structure of these services (their main objects, properties, and methods) so
+that you do not need to carry around this common code, and only need to set up
+the particular properties and specific D-BUS objects that you need. These
+templates can be parameterized for common customizations.
+
+For example, you can load the upower template with
+
+::
+
+        self.p_mock = self.spawn_server('org.freedesktop.UPower',
+                                        '/org/freedesktop/UPower',
+                                        'org.freedesktop.UPower',
+                                        system_bus=True,
+                                        stdout=subprocess.PIPE)
+
+        self.obj_upower = self.dbus_con.get_object(
+            'org.freedesktop.UPower', '/org/freedesktop/UPower')
+        self.obj_upower.AddTemplate('upower', {'OnBattery': True, 'HibernateAllowed': False})
+
+This creates all expected properties such as ``DaemonVersion``, changes the
+default for one of them (``OnBattery``), and also changes the return value of
+the ``HibernateAllowed()`` method.
+
+
 More Examples
 -------------
 Have a look at the test suite for two real-live use cases:
 
- - ``tests/test_upower.py`` simulates upowerd (slightly more complete than in
-   above example), and verifies that ``upower --dump`` is convinced that it's
-   talking to upower.
+ - ``tests/test_upower.py`` simulates upowerd, in a more complete way than in
+   above example and using the ``upower`` template. It verifies that
+   ``upower --dump`` is convinced that it's talking to upower.
 
  - ``tests/test_consolekit.py`` simulates ConsoleKit and verifies that
    ``ck-list-sessions`` works with the mock.
@@ -191,12 +219,17 @@ Documentation
 The ``dbusmock`` module has extensive documentation built in, which you can
 read with e. g. ``pydoc3 dbusmock``.
 
-``py3doc dbusmock.DBusMockObject`` shows the D-Bus API of the mock object,
+``pydoc3 dbusmock.DBusMockObject`` shows the D-Bus API of the mock object,
 i. e. methods like ``AddObject()``, ``AddMethod()`` etc. which are used to set
 up your mock object.
 
 ``pydoc3 dbusmock.DBusTestCase`` shows the convenience Python API for writing
 test cases with local private session/system buses and launching the server.
+
+``pydoc3 dbusmock.templates`` shows all available templates.
+
+``pydoc3 dbusmock.templates.NAME`` shows the documentation and available
+parameters for the ``NAME`` template.
 
 ``python3 -m dbusmock --help`` shows the arguments and options for running the
 mock server as a program.

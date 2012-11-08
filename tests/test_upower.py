@@ -39,26 +39,7 @@ class TestUPower(dbusmock.DBusTestCase):
         self.obj_upower = self.dbus_con.get_object(
             'org.freedesktop.UPower', '/org/freedesktop/UPower')
         self.dbusmock = dbus.Interface(self.obj_upower, 'org.freedesktop.DBus.Mock')
-
-        self.dbusmock.AddMethods('', [
-            ('Suspend', '', '', ''),
-            ('SuspendAllowed', '', 'b', 'ret = True'),
-            ('HibernateAllowed', '', 'b', 'ret = True'),
-            ('EnumerateDevices', '', 'ao', 'ret = [k for k in objects.keys() if "/devices" in k]'),
-        ])
-
-        self.dbusmock.AddProperties('org.freedesktop.UPower',
-                                    dbus.Dictionary({
-                                        'DaemonVersion': '0.8.15',
-                                        'CanSuspend': True,
-                                        'CanHibernate': True,
-                                        'OnBattery': True,
-                                        'OnLowBattery': True,
-                                        'LidIsPresent': True,
-                                        'LidIsClosed': True,
-                                        'LidForceSleep': True,
-                                        'IsDocked': False,
-                                    }, signature='sv'))
+        self.dbusmock.AddTemplate('upower', {'OnBattery': True, 'HibernateAllowed': False})
 
     def tearDown(self):
         self.p_mock.terminate()
@@ -70,6 +51,8 @@ class TestUPower(dbusmock.DBusTestCase):
         self.assertFalse('Device' in out, out)
         self.assertRegex(out, 'on-battery:\s+yes')
         self.assertRegex(out, 'lid-is-present:\s+yes')
+        self.assertRegex(out, 'can-suspend:\s+yes')
+        self.assertRegex(out, 'can-hibernate.*\sno')
 
     def test_one_ac(self):
         self.dbusmock.AddObject('/org/freedesktop/UPower/devices/mock_AC',
