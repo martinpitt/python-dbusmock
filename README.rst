@@ -207,6 +207,10 @@ the template's convenience methods like
 
 or calling ``AddObject()`` yourself with the desired properties, of course.
 
+If you want to contribute a template, look at dbusmock/templates/upower.py for
+a real-life implementation. You can copy dbusmock/templates/SKELETON to your
+new template file name and replace "CHANGEME" with the actual code/values.
+
 
 More Examples
 -------------

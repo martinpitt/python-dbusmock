@@ -1,0 +1,59 @@
+'''CHANGEME mock template
+
+This creates the expected methods and properties of the main
+CHANGEME object, but no devices. You can specify any property
+such as CHANGEME in "parameters".
+'''
+
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU Lesser General Public License as published by the Free
+# Software Foundation; either version 3 of the License, or (at your option) any
+# later version.  See http://www.gnu.org/copyleft/lgpl.html for the full text
+# of the license.
+
+__author__ = 'CHANGEME'
+__email__ = 'CHANGEME'
+__copyright__ = 'CHANGEME'
+__license__ = 'LGPL 3+'
+
+import dbus
+
+from dbusmock import MOCK_IFACE
+
+BUS_NAME = 'org.freedesktop.CHANGEME'
+MAIN_OBJ = '/org/freedesktop/CHANGEME'
+MAIN_IFACE = 'org.freedesktop.CHANGEME'
+SYSTEM_BUS = True  # CHANGEME
+
+
+def load(mock, parameters):
+    mock.AddMethods(MAIN_IFACE, [
+        # CHANGEME: Add some methods if required, otherwise drop the AddMethods call
+        ('CHANGEME', '', 'b', 'ret = %s' % parameters.get('CHANGEME', True)),
+    ])
+
+    mock.AddProperties(MAIN_IFACE,
+                       dbus.Dictionary({
+                           # CHANGEME: Add properties if required, otherwise
+                           # drop this call
+                           'MyProperty': parameters.get('MyProperty', 'CHANGEME'),
+                       }, signature='sv'))
+
+
+# CHANGEME: You can add convenience methods to the org.freedesktop.DBus.Mock
+# interface to provide abstract functionality such as adding specific devices
+
+@dbus.service.method(MOCK_IFACE,
+                     in_signature='ss', out_signature='s')
+def AddCHANGEME(self, device_name, CHANGEME)
+    '''Convenience method to add a CHANGEME object
+
+    You have to specify a ...
+
+    Please note that this does not set any global properties.
+
+    Returns the new object path.
+    '''
+    path = '/org/freedesktop/CHANGEME/' + device_name
+    self.AddObject(path, ...)
+    return path
