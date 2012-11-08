@@ -14,7 +14,10 @@ __license__ = 'LGPL 3+'
 
 import time
 import sys
+
+# we do not use this ourselves, but mock methods often want to use this
 import os
+os  # pyflakes
 
 import dbus
 import dbus.service
