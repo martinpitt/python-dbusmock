@@ -19,6 +19,8 @@ __license__ = 'LGPL 3+'
 
 import dbus
 
+from dbusmock import MOCK_IFACE
+
 BUS_NAME = 'org.freedesktop.UPower'
 MAIN_OBJ = '/org/freedesktop/UPower'
 MAIN_IFACE = 'org.freedesktop.UPower'
@@ -45,3 +47,91 @@ def load(mock, parameters):
                            'LidForceSleep': parameters.get('LidForceSleep', True),
                            'IsDocked': parameters.get('IsDocked', False),
                        }, signature='sv'))
+
+
+@dbus.service.method(MOCK_IFACE,
+                     in_signature='ss', out_signature='s')
+def AddAC(self, device_name, model_name):
+    '''Convenience method to add an AC object
+
+    You have to specify a device name which must be a valid part of an object
+    path, e. g. "mock_ac", and an arbitrary model name.
+
+    Please note that this does not set any global properties such as
+    "on-battery".
+
+    Returns the new object path.
+    '''
+    path = '/org/freedesktop/UPower/devices/' + device_name
+    self.AddObject(path,
+                   'org.freedesktop.UPower.Device',
+                   {
+                       'PowerSupply': dbus.Boolean(True, variant_level=1),
+                       'Model': dbus.String(model_name, variant_level=1),
+                   },
+                   [])
+    return path
+
+
+@dbus.service.method(MOCK_IFACE,
+                     in_signature='ssdx', out_signature='s')
+def AddDischargingBattery(self, device_name, model_name, percentage, seconds_to_empty):
+    '''Convenience method to add a discharging battery object
+
+    You have to specify a device name which must be a valid part of an object
+    path, e. g. "mock_ac", an arbitrary model name, the charge percentage, and
+    the seconds until the battery is empty.
+
+    Please note that this does not set any global properties such as
+    "on-battery".
+
+    Returns the new object path.
+    '''
+    path = '/org/freedesktop/UPower/devices/' + device_name
+    self.AddObject(path,
+                   'org.freedesktop.UPower.Device',
+                   {
+                       'PowerSupply': dbus.Boolean(True, variant_level=1),
+                       'IsPresent': dbus.Boolean(True, variant_level=1),
+                       'Model': dbus.String(model_name, variant_level=1),
+                       'Percentage': dbus.Double(percentage, variant_level=1),
+                       'TimeToEmpty': dbus.Int64(seconds_to_empty, variant_level=1),
+                       # UP_DEVICE_STATE_DISCHARGING
+                       'State': dbus.UInt32(2, variant_level=1),
+                       # UP_DEVICE_KIND_BATTERY
+                       'Type': dbus.UInt32(2, variant_level=1),
+                   },
+                   [])
+    return path
+
+
+@dbus.service.method(MOCK_IFACE,
+                     in_signature='ssdx', out_signature='s')
+def AddChargingBattery(self, device_name, model_name, percentage, seconds_to_full):
+    '''Convenience method to add a charging battery object
+
+    You have to specify a device name which must be a valid part of an object
+    path, e. g. "mock_ac", an arbitrary model name, the charge percentage, and
+    the seconds until the battery is full.
+
+    Please note that this does not set any global properties such as
+    "on-battery".
+
+    Returns the new object path.
+    '''
+    path = '/org/freedesktop/UPower/devices/' + device_name
+    self.AddObject(path,
+                   'org.freedesktop.UPower.Device',
+                   {
+                       'PowerSupply': dbus.Boolean(True, variant_level=1),
+                       'IsPresent': dbus.Boolean(True, variant_level=1),
+                       'Model': dbus.String(model_name, variant_level=1),
+                       'Percentage': dbus.Double(percentage, variant_level=1),
+                       'TimeToFull': dbus.Int64(seconds_to_full, variant_level=1),
+                       # UP_DEVICE_STATE_CHARGING
+                       'State': dbus.UInt32(1, variant_level=1),
+                       # UP_DEVICE_KIND_BATTERY
+                       'Type': dbus.UInt32(2, variant_level=1),
+                   },
+                   [])
+    return path

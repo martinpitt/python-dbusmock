@@ -48,17 +48,14 @@ class TestUPower(dbusmock.DBusTestCase):
         self.assertRegex(out, 'can-hibernate.*\sno')
 
     def test_one_ac(self):
-        self.dbusmock.AddObject('/org/freedesktop/UPower/devices/mock_AC',
-                                'org.freedesktop.UPower.Device',
-                                {
-                                    'PowerSupply': dbus.Boolean(True, variant_level=1),
-                                    'Model': dbus.String('Mock AC', variant_level=1),
-                                },
-                                [])
+        path = self.dbusmock.AddAC('mock_AC', 'Mock AC')
+        self.assertEqual(path, '/org/freedesktop/UPower/devices/mock_AC')
 
         out = subprocess.check_output(['upower', '--dump'],
                                       universal_newlines=True)
-        self.assertRegex(out, 'Device: /org/freedesktop/UPower/devices/mock_AC')
+        self.assertRegex(out, 'Device: ' + path)
+        # note, Add* is not magic: this just adds an object, not change
+        # properties
         self.assertRegex(out, 'on-battery:\s+yes')
         self.assertRegex(out, 'lid-is-present:\s+yes')
         #print('--------- out --------\n%s\n------------' % out)
@@ -68,14 +65,45 @@ class TestUPower(dbusmock.DBusTestCase):
                                universal_newlines=True)
 
         time.sleep(0.3)
-        self.dbusmock.EmitSignal('', 'DeviceChanged', 's',
-                                 ['/org/freedesktop/UPower/devices/mock_AC'])
+        self.dbusmock.EmitSignal('', 'DeviceChanged', 's', [path])
         time.sleep(0.2)
 
         mon.terminate()
         out = mon.communicate()[0]
-        self.assertRegex(out, 'device changed:\s+/org/freedesktop/UPower/devices/mock_AC')
+        self.assertRegex(out, 'device changed:\s+' + path)
         #print('--------- monitor out --------\n%s\n------------' % out)
+
+    def test_discharging_battery(self):
+        path = self.dbusmock.AddDischargingBattery('mock_BAT', 'Mock Battery', 30.0, 1200)
+        self.assertEqual(path, '/org/freedesktop/UPower/devices/mock_BAT')
+
+        out = subprocess.check_output(['upower', '--dump'],
+                                      universal_newlines=True)
+        self.assertRegex(out, 'Device: ' + path)
+        # note, Add* is not magic: this just adds an object, not change
+        # properties
+        self.assertRegex(out, 'on-battery:\s+yes')
+        self.assertRegex(out, 'lid-is-present:\s+yes')
+        self.assertRegex(out, ' present:\s+yes')
+        self.assertRegex(out, ' percentage:\s+30%')
+        self.assertRegex(out, ' time to empty:\s+20.0 min')
+        self.assertRegex(out, ' state:\s+discharging')
+
+    def test_charging_battery(self):
+        path = self.dbusmock.AddChargingBattery('mock_BAT', 'Mock Battery', 30.0, 1200)
+        self.assertEqual(path, '/org/freedesktop/UPower/devices/mock_BAT')
+
+        out = subprocess.check_output(['upower', '--dump'],
+                                      universal_newlines=True)
+        self.assertRegex(out, 'Device: ' + path)
+        # note, Add* is not magic: this just adds an object, not change
+        # properties
+        self.assertRegex(out, 'on-battery:\s+yes')
+        self.assertRegex(out, 'lid-is-present:\s+yes')
+        self.assertRegex(out, ' present:\s+yes')
+        self.assertRegex(out, ' percentage:\s+30%')
+        self.assertRegex(out, ' time to full:\s+20.0 min')
+        self.assertRegex(out, ' state:\s+charging')
 
     def test_suspend(self):
         self.obj_upower.Suspend(dbus_interface='org.freedesktop.UPower')

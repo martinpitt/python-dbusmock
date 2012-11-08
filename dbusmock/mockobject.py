@@ -292,6 +292,12 @@ class DBusMockObject(dbus.service.Object):
         except ImportError as e:
             raise dbus.exceptions.DBusException('Cannot add template %s: %s' % (template, str(e)))
 
+        # pick out all D-BUS service methods and add them to our interface
+        for symbol in dir(module):
+            fn = getattr(module, symbol)
+            if '_dbus_interface' in dir(fn):
+                setattr(self.__class__, symbol, fn)
+
         module.load(self, parameters)
 
     @dbus.service.method(MOCK_IFACE,

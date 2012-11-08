@@ -176,7 +176,9 @@ NetworkManager. python-dbusmock provides "templates" which set up the common
 structure of these services (their main objects, properties, and methods) so
 that you do not need to carry around this common code, and only need to set up
 the particular properties and specific D-BUS objects that you need. These
-templates can be parameterized for common customizations.
+templates can be parameterized for common customizations, and they can provide
+additional convenience methods on the ``org.freedesktop.DBus.Mock`` interface
+to provide more abstract functionality like "add a battery".
 
 For example, for starting a server with the "upower" template in Python you can
 run
@@ -195,6 +197,15 @@ method; this is particularly useful if you are not using Python:
 
 This creates all expected properties such as ``DaemonVersion``, and changes the
 default for one of them (``OnBattery``) through the (optional) parameters dict.
+
+The template does not create any devices by default. You can add some with
+the template's convenience methods like
+
+::
+        ac_path = self.dbusmock.AddAC('mock_AC', 'Mock AC')
+        bt_path = self.dbusmock.AddChargingBattery('mock_BAT', 'Mock Battery', 30.0, 1200)
+
+or calling ``AddObject()`` yourself with the desired properties, of course.
 
 
 More Examples
