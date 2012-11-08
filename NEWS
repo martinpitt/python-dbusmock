@@ -5,12 +5,13 @@
    more maintainable.
  - Run pyflakes and pep8 during test suite, if available.
  - Add support for templates: You can now call AddTemplate() on the
-   org.freedesktop.DBus.Mock interface to load a template into the mock. These
-   set up the common structure of these services (their main objects,
-   properties, and methods) so that you do not need to carry around this common
-   code, and only need to set up the particular properties and specific D-BUS
-   objects that you need. These templates can be parameterized for common
-   customizations.
+   org.freedesktop.DBus.Mock interface to load a template into the mock, or in
+   Python, start a server process with loading a template with
+   DBusTestCase.spawn_server_template(). Templates set up the common structure
+   of these services (their main objects, properties, and methods) so that you
+   do not need to carry around this common code, and only need to set up the
+   particular properties and specific D-BUS objects that you need. These
+   templates can be parameterized for common customizations.
  - Add a first simple "upower" template, and change tests/test_upower.py to use
    it.
 

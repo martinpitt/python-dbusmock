@@ -178,23 +178,23 @@ that you do not need to carry around this common code, and only need to set up
 the particular properties and specific D-BUS objects that you need. These
 templates can be parameterized for common customizations.
 
-For example, you can load the upower template with
+For example, for starting a server with the "upower" template in Python you can
+run
 
 ::
+   (self.p_mock, self.obj_upower) = self.spawn_server_template(
+       'upower', {'OnBattery': True}, stdout=subprocess.PIPE)
 
-        self.p_mock = self.spawn_server('org.freedesktop.UPower',
-                                        '/org/freedesktop/UPower',
-                                        'org.freedesktop.UPower',
-                                        system_bus=True,
-                                        stdout=subprocess.PIPE)
+or load a template into an already running server with the ``AddTemplate()``
+method; this is particularly useful if you are not using Python:
 
-        self.obj_upower = self.dbus_con.get_object(
-            'org.freedesktop.UPower', '/org/freedesktop/UPower')
-        self.obj_upower.AddTemplate('upower', {'OnBattery': True, 'HibernateAllowed': False})
+::
+  python3 -m dbusmock --system org.freedesktop.UPower /org/freedesktop/UPower org.freedesktop.UPower
 
-This creates all expected properties such as ``DaemonVersion``, changes the
-default for one of them (``OnBattery``), and also changes the return value of
-the ``HibernateAllowed()`` method.
+  gdbus call --system -d org.freedesktop.UPower -o /org/freedesktop/UPower -m org.freedesktop.DBus.Mock.AddTemplate 'upower' '{"OnBattery": <true>}'
+
+This creates all expected properties such as ``DaemonVersion``, and changes the
+default for one of them (``OnBattery``) through the (optional) parameters dict.
 
 
 More Examples

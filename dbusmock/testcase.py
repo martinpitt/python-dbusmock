@@ -19,6 +19,7 @@ import subprocess
 import signal
 import os
 import errno
+import importlib
 
 import dbus
 
@@ -179,6 +180,37 @@ class DBusTestCase(unittest.TestCase):
         klass.wait_for_bus_object(name, path, system_bus)
 
         return daemon
+
+    @classmethod
+    def spawn_server_template(klass, template, parameters=None, stdout=None):
+        '''Run a D-BUS mock template instance in a separate process
+
+        This starts a D-BUS mock process and loads the given template with
+        (optional) parameters into it. For details about templates see
+        dbusmock.DBusMockObject.AddTemplate().
+
+        The daemon will terminate automatically when the D-BUS that it connects
+        to goes down.  If that does not happen (e. g. you test on the actual
+        system/session bus), you need to kill it manually.
+
+        This function blocks until the spawned DBusMockObject is ready and
+        listening on the bus.
+
+        Returns a pair (daemon Popen object, main dbus object).
+        '''
+        # we need the bus address from the template module
+        module = importlib.import_module('dbusmock.templates.' + template)
+        daemon = klass.spawn_server(module.BUS_NAME, module.MAIN_OBJ,
+                                    module.MAIN_IFACE, module.SYSTEM_BUS, stdout)
+
+        bus = klass.get_dbus(module.SYSTEM_BUS)
+        obj = bus.get_object(module.BUS_NAME, module.MAIN_OBJ)
+        if not parameters:
+            parameters = dbus.Dictionary({}, signature='sv')
+        obj.AddTemplate(template, parameters,
+                        dbus_interface='org.freedesktop.DBus.Mock')
+
+        return (daemon, obj)
 
 # Python 2 backwards compatibility
 if sys.version_info[0] < 3:

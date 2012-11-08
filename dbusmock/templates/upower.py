@@ -19,16 +19,21 @@ __license__ = 'LGPL 3+'
 
 import dbus
 
+BUS_NAME = 'org.freedesktop.UPower'
+MAIN_OBJ = '/org/freedesktop/UPower'
+MAIN_IFACE = 'org.freedesktop.UPower'
+SYSTEM_BUS = True
+
 
 def load(mock, parameters):
-    mock.AddMethods('', [
+    mock.AddMethods(MAIN_IFACE, [
         ('Suspend', '', '', ''),
         ('SuspendAllowed', '', 'b', 'ret = %s' % parameters.get('SuspendAllowed', True)),
         ('HibernateAllowed', '', 'b', 'ret = %s' % parameters.get('HibernateAllowed', True)),
         ('EnumerateDevices', '', 'ao', 'ret = [k for k in objects.keys() if "/devices" in k]'),
     ])
 
-    mock.AddProperties('org.freedesktop.UPower',
+    mock.AddProperties(MAIN_IFACE,
                        dbus.Dictionary({
                            'DaemonVersion': parameters.get('DaemonVersion', '0.8.15'),
                            'CanSuspend': parameters.get('CanSuspend', True),
