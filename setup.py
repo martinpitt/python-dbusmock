@@ -2,7 +2,7 @@
 
 import setuptools
 
-# Work around "TypeError: 'NoneType' object is not callable" 
+# Work around "TypeError: 'NoneType' object is not callable"
 # during `python setup.py test`
 # http://www.eby-sarna.com/pipermail/peak/2010-May/003357.html
 import multiprocessing
@@ -15,19 +15,19 @@ with open('NEWS') as f:
     version = f.readline().split()[0]
 
 setuptools.setup(
-    name = 'python-dbusmock',
-    version = version,
-    description = 'Mock D-Bus objects',
-    long_description = readme,
-    author = 'Martin Pitt',
-    author_email = 'martin.pitt@ubuntu.com',
-    url = 'https://launchpad.net/python-dbusmock',
-    download_url = 'https://launchpad.net/python-dbusmock/+download',
-    license = 'LGPL 3+',
-    packages = ['dbusmock'],
-    test_suite = 'nose.collector',
+    name='python-dbusmock',
+    version=version,
+    description='Mock D-Bus objects',
+    long_description=readme,
+    author='Martin Pitt',
+    author_email='martin.pitt@ubuntu.com',
+    url='https://launchpad.net/python-dbusmock',
+    download_url='https://launchpad.net/python-dbusmock/+download',
+    license='LGPL 3+',
+    packages=['dbusmock'],
+    test_suite='nose.collector',
 
-    classifiers = [
+    classifiers=[
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 3',
@@ -41,5 +41,5 @@ setuptools.setup(
         'Topic :: Software Development :: Quality Assurance',
         'Topic :: Software Development :: Testing',
         'Topic :: Software Development :: Libraries :: Python Modules',
-        ],
+    ],
 )

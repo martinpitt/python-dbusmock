@@ -7,7 +7,7 @@
 # of the license.
 
 __author__ = 'Martin Pitt'
-__email__  = 'martin.pitt@ubuntu.com'
+__email__ = 'martin.pitt@ubuntu.com'
 __copyright__ = '(c) 2012 Canonical Ltd.'
 __license__ = 'LGPL 3+'
 
@@ -52,30 +52,30 @@ class TestConsoleKit(dbusmock.DBusTestCase):
         ))
 
         self.dbusmock.AddObject('/org/freedesktop/ConsoleKit/MockSeat',
-                                 'org.freedesktop.ConsoleKit.Seat',
-                                 {},
-                                 [
-                                     ('GetSessions', '', 'ao',
-                                      'ret = ["/org/freedesktop/ConsoleKit/MockSession"]'),
-                                 ])
+                                'org.freedesktop.ConsoleKit.Seat',
+                                {},
+                                [
+                                    ('GetSessions', '', 'ao',
+                                     'ret = ["/org/freedesktop/ConsoleKit/MockSession"]'),
+                                ])
 
         self.dbusmock.AddObject('/org/freedesktop/ConsoleKit/MockSession',
-                                 'org.freedesktop.ConsoleKit.Session',
-                                 {},
-                                 [
-                                     ('GetSeatId', '', 'o', 'ret = "/org/freedesktop/ConsoleKit/MockSeat"'),
-                                     ('GetUnixUser', '', 'u', 'ret = os.geteuid()'),
-                                     ('GetCreationTime', '', 's', 'ret = "2012-01-01T01:23:45.600000Z"'),
-                                     ('GetIdleSinceHint', '', 's', 'ret = "2012-01-01T02:23:45.600000Z"'),
-                                     ('IsLocal', '', 'b', 'ret = True'),
-                                     ('IsActive', '', 'b', 'ret = True'),
-                                     ('GetDisplayDevice', '', 's', 'ret = ""'),
-                                     ('GetX11DisplayDevice', '', 's', 'ret = "/dev/tty7"'),
-                                     ('GetX11Display', '', 's', 'ret = os.environ.get("DISPLAY", "95:0")'),
-                                     ('GetRemoteHostName', '', 's', 'ret = ""'),
-                                     ('GetSessionType', '', 's', 'ret = ""'),
-                                     ('GetLoginSessionId', '', 's', 'ret = "12345"'),
-                                 ])
+                                'org.freedesktop.ConsoleKit.Session',
+                                {},
+                                [
+                                    ('GetSeatId', '', 'o', 'ret = "/org/freedesktop/ConsoleKit/MockSeat"'),
+                                    ('GetUnixUser', '', 'u', 'ret = os.geteuid()'),
+                                    ('GetCreationTime', '', 's', 'ret = "2012-01-01T01:23:45.600000Z"'),
+                                    ('GetIdleSinceHint', '', 's', 'ret = "2012-01-01T02:23:45.600000Z"'),
+                                    ('IsLocal', '', 'b', 'ret = True'),
+                                    ('IsActive', '', 'b', 'ret = True'),
+                                    ('GetDisplayDevice', '', 's', 'ret = ""'),
+                                    ('GetX11DisplayDevice', '', 's', 'ret = "/dev/tty7"'),
+                                    ('GetX11Display', '', 's', 'ret = os.environ.get("DISPLAY", "95:0")'),
+                                    ('GetRemoteHostName', '', 's', 'ret = ""'),
+                                    ('GetSessionType', '', 's', 'ret = ""'),
+                                    ('GetLoginSessionId', '', 's', 'ret = "12345"'),
+                                ])
 
         out = subprocess.check_output(['ck-list-sessions'], universal_newlines=True)
         self.assertRegex(out, '^MockSession:')

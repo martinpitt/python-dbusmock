@@ -8,7 +8,7 @@
 # of the license.
 
 __author__ = 'Martin Pitt'
-__email__  = 'martin.pitt@ubuntu.com'
+__email__ = 'martin.pitt@ubuntu.com'
 __copyright__ = '(c) 2012 Canonical Ltd.'
 __license__ = 'LGPL 3+'
 
@@ -16,5 +16,3 @@ from dbusmock.mockobject import DBusMockObject
 from dbusmock.testcase import DBusTestCase
 
 __all__ = ['DBusMockObject', 'DBusTestCase']
-
-

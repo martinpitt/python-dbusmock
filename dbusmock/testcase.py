@@ -8,7 +8,7 @@
 # of the license.
 
 __author__ = 'Martin Pitt'
-__email__  = 'martin.pitt@ubuntu.com'
+__email__ = 'martin.pitt@ubuntu.com'
 __copyright__ = '(c) 2012 Canonical Ltd.'
 __license__ = 'LGPL 3+'
 
@@ -22,9 +22,10 @@ import errno
 
 import dbus
 
+
 class DBusTestCase(unittest.TestCase):
     '''Base class for D-BUS mock tests.
-    
+
     This provides some convenience API to start/stop local D-Buses, so that you
     can run a private local session and/or system bus to run mocks on.
 
@@ -37,7 +38,7 @@ class DBusTestCase(unittest.TestCase):
     @classmethod
     def start_session_bus(klass):
         '''Set up a private local session bus
-        
+
         This gets stopped automatically in tearDownClass().
         '''
         (DBusTestCase.session_bus_pid, addr) = klass.start_dbus()
@@ -46,7 +47,7 @@ class DBusTestCase(unittest.TestCase):
     @classmethod
     def start_system_bus(klass):
         '''Set up a private local system bus
-        
+
         This gets stopped automatically in tearDownClass().
         '''
         (DBusTestCase.system_bus_pid, addr) = klass.start_dbus()
@@ -128,7 +129,7 @@ class DBusTestCase(unittest.TestCase):
     @classmethod
     def wait_for_bus_object(klass, dest, path, system_bus=False):
         '''Wait for an object to appear on D-BUS
-        
+
         Raise an exception if object does not appear within 5 seconds.
         '''
         bus = klass.get_dbus(system_bus)
@@ -182,6 +183,7 @@ class DBusTestCase(unittest.TestCase):
 # Python 2 backwards compatibility
 if sys.version_info[0] < 3:
     import re
+
     def assertRegex(self, value, pattern):
         if not re.search(pattern, value):
             raise self.failureException('%r not found in %s' % (pattern, value))

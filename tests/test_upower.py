@@ -7,7 +7,7 @@
 # of the license.
 
 __author__ = 'Martin Pitt'
-__email__  = 'martin.pitt@ubuntu.com'
+__email__ = 'martin.pitt@ubuntu.com'
 __copyright__ = '(c) 2012 Canonical Ltd.'
 __license__ = 'LGPL 3+'
 
@@ -19,6 +19,7 @@ import time
 import dbus
 
 import dbusmock
+
 
 class TestUPower(dbusmock.DBusTestCase):
     '''Test mocking upowerd'''
@@ -44,7 +45,7 @@ class TestUPower(dbusmock.DBusTestCase):
             ('SuspendAllowed', '', 'b', 'ret = True'),
             ('HibernateAllowed', '', 'b', 'ret = True'),
             ('EnumerateDevices', '', 'ao', 'ret = [k for k in objects.keys() if "/devices" in k]'),
-            ])
+        ])
 
         self.dbusmock.AddProperties('org.freedesktop.UPower',
                                     dbus.Dictionary({
@@ -72,12 +73,12 @@ class TestUPower(dbusmock.DBusTestCase):
 
     def test_one_ac(self):
         self.dbusmock.AddObject('/org/freedesktop/UPower/devices/mock_AC',
-                                 'org.freedesktop.UPower.Device',
-                                 {
-                                     'PowerSupply': dbus.Boolean(True, variant_level=1),
-                                     'Model': dbus.String('Mock AC', variant_level=1),
-                                 },
-                                 [])
+                                'org.freedesktop.UPower.Device',
+                                {
+                                    'PowerSupply': dbus.Boolean(True, variant_level=1),
+                                    'Model': dbus.String('Mock AC', variant_level=1),
+                                },
+                                [])
 
         out = subprocess.check_output(['upower', '--dump'],
                                       universal_newlines=True)

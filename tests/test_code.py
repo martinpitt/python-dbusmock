@@ -7,7 +7,7 @@
 # of the license.
 
 __author__ = 'Martin Pitt'
-__email__  = 'martin.pitt@ubuntu.com'
+__email__ = 'martin.pitt@ubuntu.com'
 __copyright__ = '(c) 2012 Canonical Ltd.'
 __license__ = 'LGPL 3+'
 
@@ -22,9 +22,18 @@ class StaticCodeTests(unittest.TestCase):
                      'pyflakes not installed')
     def test_pyflakes(self):
         pyflakes = subprocess.Popen(['pyflakes', '.'], stdout=subprocess.PIPE,
-                                   universal_newlines=True)
+                                    universal_newlines=True)
         (out, err) = pyflakes.communicate()
         self.assertEqual(pyflakes.returncode, 0, out)
+
+    @unittest.skipIf(subprocess.call(['which', 'pep8'],
+                                     stdout=subprocess.PIPE) != 0,
+                     'pep8 not installed')
+    def test_pep8(self):
+        pep8 = subprocess.Popen(['pep8', '--ignore=E501', '.'], stdout=subprocess.PIPE,
+                                universal_newlines=True)
+        (out, err) = pep8.communicate()
+        self.assertEqual(pep8.returncode, 0, out)
 
 
 if __name__ == '__main__':

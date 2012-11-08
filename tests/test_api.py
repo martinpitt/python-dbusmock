@@ -7,7 +7,7 @@
 # of the license.
 
 __author__ = 'Martin Pitt'
-__email__  = 'martin.pitt@ubuntu.com'
+__email__ = 'martin.pitt@ubuntu.com'
 __copyright__ = '(c) 2012 Canonical Ltd.'
 __license__ = 'LGPL 3+'
 
@@ -90,15 +90,14 @@ assert args[2] == 5
 ''')
         self.assertEqual(self.dbus_test.Do(-1, ['/foo'], 5), None)
 
-
     def test_methods_on_other_interfaces(self):
         '''methods on other interfaces'''
 
         self.dbus_mock.AddMethod('org.freedesktop.Test.Other', 'OtherDo', '', '', '')
-        self.dbus_mock.AddMethods('org.freedesktop.Test.Other', 
-                                 [('OtherDo2', '', '', ''),
-                                  ('OtherDo3', 'i', 'i', 'ret = args[0]'),
-                                 ])
+        self.dbus_mock.AddMethods('org.freedesktop.Test.Other',
+                                  [('OtherDo2', '', '', ''),
+                                   ('OtherDo3', 'i', 'i', 'ret = args[0]'),
+                                  ])
 
         # should not be on the main interface
         self.assertRaises(dbus.exceptions.DBusException,
@@ -223,12 +222,12 @@ assert args[2] == 5
                           dbus.Int32(2, variant_level=1))
 
         self.dbus_mock.AddProperty('org.freedesktop.Test.Main',
-                                  'version',
-                                  dbus.Int32(2, variant_level=1))
+                                   'version',
+                                   dbus.Int32(2, variant_level=1))
         # once again on default interface
         self.dbus_mock.AddProperty('',
-                                  'connected',
-                                  dbus.Boolean(True, variant_level=1))
+                                   'connected',
+                                   dbus.Boolean(True, variant_level=1))
 
         self.assertEqual(self.dbus_props.Get('org.freedesktop.Test.Main', 'version'), 2)
         self.assertEqual(self.dbus_props.Get('org.freedesktop.Test.Main', 'connected'), True)
@@ -243,8 +242,8 @@ assert args[2] == 5
 
         # add property to different interface
         self.dbus_mock.AddProperty('org.freedesktop.Test.Other',
-                                  'color',
-                                  dbus.String('yellow', variant_level=1))
+                                   'color',
+                                   dbus.String('yellow', variant_level=1))
 
         self.assertEqual(self.dbus_props.GetAll('org.freedesktop.Test.Main'),
                          {'version': 4, 'connected': True})

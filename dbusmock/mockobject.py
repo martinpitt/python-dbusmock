@@ -8,7 +8,7 @@
 # of the license.
 
 __author__ = 'Martin Pitt'
-__email__  = 'martin.pitt@ubuntu.com'
+__email__ = 'martin.pitt@ubuntu.com'
 __copyright__ = '(c) 2012 Canonical Ltd.'
 __license__ = 'LGPL 3+'
 
@@ -114,7 +114,7 @@ class DBusMockObject(dbus.service.Object):
                          out_signature='')
     def AddObject(self, path, interface, properties, methods):
         '''Add a new D-Bus object to the mock
-        
+
         path: D-Bus object path
         interface: Primary D-Bus interface name of this object (where
                    properties and methods will be put on)
@@ -167,7 +167,7 @@ class DBusMockObject(dbus.service.Object):
                          out_signature='')
     def AddMethod(self, interface, name, in_sig, out_sig, code):
         '''Add a method to this object
-        
+
         interface: D-Bus interface to add this to. For convenience you can
                    specify '' here to add the method to the object's main
                    interface (as specified on construction).
@@ -183,7 +183,7 @@ class DBusMockObject(dbus.service.Object):
               by assigning a value to the "ret" variable. You can also read the
               global "objects" variable, which is a dictionary mapping object
               paths to DBusMockObject instances.
-              
+
               When specifying '', the method will not do anything (except
               logging) and return None.
         '''
@@ -209,7 +209,6 @@ class DBusMockObject(dbus.service.Object):
         setattr(self.__class__, name, dbus_method)
 
         self.methods.setdefault(interface, {})[str(name)] = (in_sig, out_sig, code, dbus_method)
-
 
     @dbus.service.method('org.freedesktop.DBus.Mock',
                          in_signature='sa(ssss)',
