@@ -23,6 +23,8 @@ import importlib
 
 import dbus
 
+from dbusmock.mockobject import MOCK_IFACE
+
 
 class DBusTestCase(unittest.TestCase):
     '''Base class for D-BUS mock tests.
@@ -208,7 +210,7 @@ class DBusTestCase(unittest.TestCase):
         if not parameters:
             parameters = dbus.Dictionary({}, signature='sv')
         obj.AddTemplate(template, parameters,
-                        dbus_interface='org.freedesktop.DBus.Mock')
+                        dbus_interface=MOCK_IFACE)
 
         return (daemon, obj)
 

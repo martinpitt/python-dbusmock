@@ -42,7 +42,7 @@ class TestAPI(dbusmock.DBusTestCase):
 
         self.obj_test = self.dbus_con.get_object('org.freedesktop.Test', '/')
         self.dbus_test = dbus.Interface(self.obj_test, 'org.freedesktop.Test.Main')
-        self.dbus_mock = dbus.Interface(self.obj_test, 'org.freedesktop.DBus.Mock')
+        self.dbus_mock = dbus.Interface(self.obj_test, dbusmock.MOCK_IFACE)
         self.dbus_props = dbus.Interface(self.obj_test, dbus.PROPERTIES_IFACE)
 
     def tearDown(self):
@@ -151,7 +151,6 @@ assert args[2] == 5
         obj1 = self.dbus_con.get_object('org.freedesktop.Test', '/obj1')
         dbus_sub = dbus.Interface(obj1, 'org.freedesktop.Test.Sub')
         dbus_props = dbus.Interface(obj1, dbus.PROPERTIES_IFACE)
-        dbusmock = dbus.Interface(obj1, 'org.freedesktop.DBus.Mock')
 
         # check properties
         self.assertEqual(dbus_props.Get('org.freedesktop.Test.Sub', 'state'), 'online')
@@ -160,7 +159,8 @@ assert args[2] == 5
                          {'state': 'online', 'cute': True})
 
         # add new method
-        dbusmock.AddMethod('', 'Do', '', 's', 'ret = "hello"')
+        obj1.AddMethod('', 'Do', '', 's', 'ret = "hello"',
+                       dbus_interface=dbusmock.MOCK_IFACE)
         self.assertEqual(dbus_sub.Do(), 'hello')
 
     def test_add_object_existing(self):

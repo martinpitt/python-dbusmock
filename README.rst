@@ -68,7 +68,7 @@ is how you would set up a mock upower in your test case:
           # Get a proxy for the UPower object's Mock interface
           self.dbus_upower_mock = dbus.Interface(self.dbus_con.get_object(
               'org.freedesktop.UPower', '/org/freedesktop/UPower'),
-              'org.freedesktop.DBus.Mock')
+              dbusmock.MOCK_IFACE)
   
           self.dbus_upower_mock.AddMethod('', 'Suspend', '', '', '')
   

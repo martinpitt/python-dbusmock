@@ -32,7 +32,7 @@ class TestUPower(dbusmock.DBusTestCase):
     def setUp(self):
         (self.p_mock, self.obj_upower) = self.spawn_server_template(
             'upower', {'OnBattery': True, 'HibernateAllowed': False}, stdout=subprocess.PIPE)
-        self.dbusmock = dbus.Interface(self.obj_upower, 'org.freedesktop.DBus.Mock')
+        self.dbusmock = dbus.Interface(self.obj_upower, dbusmock.MOCK_IFACE)
 
     def tearDown(self):
         self.p_mock.terminate()

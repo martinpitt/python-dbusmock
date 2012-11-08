@@ -38,7 +38,7 @@ class TestConsoleKit(dbusmock.DBusTestCase):
 
         self.dbusmock = dbus.Interface(self.dbus_con.get_object(
             'org.freedesktop.ConsoleKit', '/org/freedesktop/ConsoleKit/Manager'),
-            'org.freedesktop.DBus.Mock')
+            dbusmock.MOCK_IFACE)
 
     def tearDown(self):
         self.p_mock.terminate()

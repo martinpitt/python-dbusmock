@@ -26,6 +26,8 @@ import dbus.service
 # global path -> DBusMockObject mapping
 objects = {}
 
+MOCK_IFACE = 'org.freedesktop.DBus.Mock'
+
 
 class DBusMockObject(dbus.service.Object):
     '''Mock D-Bus object
@@ -110,7 +112,7 @@ class DBusMockObject(dbus.service.Object):
 
         iface_props[property_name] = value
 
-    @dbus.service.method('org.freedesktop.DBus.Mock',
+    @dbus.service.method(MOCK_IFACE,
                          in_signature='ssa{sv}a(ssss)',
                          out_signature='')
     def AddObject(self, path, interface, properties, methods):
@@ -150,7 +152,7 @@ class DBusMockObject(dbus.service.Object):
 
         objects[path] = obj
 
-    @dbus.service.method('org.freedesktop.DBus.Mock',
+    @dbus.service.method(MOCK_IFACE,
                          in_signature='s',
                          out_signature='')
     def RemoveObject(self, path):
@@ -163,7 +165,7 @@ class DBusMockObject(dbus.service.Object):
                 'org.freedesktop.DBus.Mock.NameError',
                 'object %s does not exist' % path)
 
-    @dbus.service.method('org.freedesktop.DBus.Mock',
+    @dbus.service.method(MOCK_IFACE,
                          in_signature='sssss',
                          out_signature='')
     def AddMethod(self, interface, name, in_sig, out_sig, code):
@@ -211,7 +213,7 @@ class DBusMockObject(dbus.service.Object):
 
         self.methods.setdefault(interface, {})[str(name)] = (in_sig, out_sig, code, dbus_method)
 
-    @dbus.service.method('org.freedesktop.DBus.Mock',
+    @dbus.service.method(MOCK_IFACE,
                          in_signature='sa(ssss)',
                          out_signature='')
     def AddMethods(self, interface, methods):
@@ -226,7 +228,7 @@ class DBusMockObject(dbus.service.Object):
         for method in methods:
             self.AddMethod(interface, *method)
 
-    @dbus.service.method('org.freedesktop.DBus.Mock',
+    @dbus.service.method(MOCK_IFACE,
                          in_signature='ssv',
                          out_signature='')
     def AddProperty(self, interface, name, value):
@@ -250,7 +252,7 @@ class DBusMockObject(dbus.service.Object):
             pass
         self.props.setdefault(interface, {})[name] = value
 
-    @dbus.service.method('org.freedesktop.DBus.Mock',
+    @dbus.service.method(MOCK_IFACE,
                          in_signature='sa{sv}',
                          out_signature='')
     def AddProperties(self, interface, properties):
@@ -264,7 +266,7 @@ class DBusMockObject(dbus.service.Object):
         for k, v in properties.items():
             self.AddProperty(interface, k, v)
 
-    @dbus.service.method('org.freedesktop.DBus.Mock',
+    @dbus.service.method(MOCK_IFACE,
                          in_signature='sa{sv}',
                          out_signature='')
     def AddTemplate(self, template, parameters):
@@ -292,7 +294,7 @@ class DBusMockObject(dbus.service.Object):
 
         module.load(self, parameters)
 
-    @dbus.service.method('org.freedesktop.DBus.Mock',
+    @dbus.service.method(MOCK_IFACE,
                          in_signature='sssav',
                          out_signature='')
     def EmitSignal(self, interface, name, signature, args):
