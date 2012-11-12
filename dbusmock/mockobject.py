@@ -402,3 +402,17 @@ class DBusMockObject(dbus.service.Object):
         self._dbus_class_table[cls] = orig_interfaces
 
         return xml
+
+#
+# Helper API for templates
+#
+
+def get_objects():
+    '''Return all existing object paths'''
+
+    return objects.keys()
+
+def get_object(path):
+    '''Return object for a given object path'''
+
+    return objects[path]

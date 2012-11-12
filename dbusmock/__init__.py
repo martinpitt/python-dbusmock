@@ -12,7 +12,8 @@ __email__ = 'martin.pitt@ubuntu.com'
 __copyright__ = '(c) 2012 Canonical Ltd.'
 __license__ = 'LGPL 3+'
 
-from dbusmock.mockobject import DBusMockObject, MOCK_IFACE
+from dbusmock.mockobject import DBusMockObject, MOCK_IFACE, get_object, get_objects
 from dbusmock.testcase import DBusTestCase
 
-__all__ = ['DBusMockObject', 'MOCK_IFACE', 'DBusTestCase']
+__all__ = ['DBusMockObject', 'MOCK_IFACE', 'DBusTestCase', 'get_object',
+           'get_objects']
