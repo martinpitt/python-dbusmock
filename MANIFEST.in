@@ -1,3 +1,4 @@
 include tests/*.py
 include COPYING*
 include NEWS
+include templates/*.py

@@ -24,7 +24,7 @@ setuptools.setup(
     url='https://launchpad.net/python-dbusmock',
     download_url='https://launchpad.net/python-dbusmock/+download',
     license='LGPL 3+',
-    packages=['dbusmock'],
+    packages=['dbusmock', 'dbusmock.templates'],
     test_suite='nose.collector',
 
     classifiers=[
