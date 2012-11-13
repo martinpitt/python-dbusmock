@@ -28,17 +28,6 @@ MAIN_IFACE = 'org.freedesktop.NetworkManager'
 SYSTEM_BUS = True
 
 
-class WiFiDevice:
-
-    def __init__(self):
-        """AccessPoint maping, to support multiple WiFi devices
-        each having its own list of accesspoints
-        """
-        self.accesspoints = {}
-
-wifi_devices = {}
-
-
 def load(mock, parameters):
     mock.AddMethods(MAIN_IFACE, [
         ('GetDevices', '', 'ao',
@@ -129,10 +118,12 @@ def AddWiFiDevice(self, device_name, iface_name, state):
                           'WirelessCapabilities': dbus.UInt32(255,
                                                       variant_level=1)},
                          [
-                          ('GetAccessPoints', '', 'ao', 'ret = []'),
+                          ('GetAccessPoints', '', 'ao',
+                           'ret = self.accesspoints.values()'),
                          ])
 
     dev_obj = dbusmock.get_object(path)
+    dev_obj.accesspoints = {} #Access Points map bssid=>accesspoint path
     dev_obj.AddProperties('org.freedesktop.NetworkManager.Device',
                          {
                         'DeviceType': dbus.UInt32(2,
@@ -143,8 +134,6 @@ def AddWiFiDevice(self, device_name, iface_name, state):
                                                    variant_level=1),
                         'IpInterface': dbus.String(iface_name,
                                                    variant_level=1)})
-    dev_wifi = WiFiDevice()
-    wifi_devices[path] = dev_wifi
     return path
 
 
@@ -164,7 +153,8 @@ def AddAccessPoint(self, dev_path, ap_name, ssid, bssid,
 
     Returns the new object path.
     '''
-    if bssid in wifi_devices[dev_path].accesspoints:
+    dev_obj = dbusmock.get_object(dev_path)
+    if bssid in dev_obj.accesspoints:
             raise dbus.exceptions.DBusException("Access point with bssid {0} \
             on device {1} already exists.".format(bssid, dev_path))
     ap_path = '/org/freedesktop/NetworkManager/AccessPoint/' + ap_name
@@ -184,11 +174,5 @@ def AddAccessPoint(self, dev_path, ap_name, ssid, bssid,
                  [
                  ])
 
-    wifi_devices[dev_path].accesspoints[bssid] = '\'' + ap_path + '\''
-    accesspoints = wifi_devices[dev_path].accesspoints.values()
-    ap_list = ','.join(accesspoints)
-    ap_ret = 'ret=[' + ap_list + ']'
-    dev_obj = dbusmock.get_object(dev_path)
-    dev_obj.AddMethod('org.freedesktop.NetworkManager.Device.Wireless',
-                     'GetAccessPoints', '', 'ao', ap_ret)
+    dev_obj.accesspoints[bssid] = ap_path
     return ap_path
