@@ -32,19 +32,19 @@ class TestNeworkManager(dbusmock.DBusTestCase):
         self.p_mock.terminate()
         self.p_mock.wait()
           
-    def test_add_one_eithernet_device_disconnected(self):
+    def test_add_one_ethernet_device_disconnected(self):
         self.dbusmock.AddEthernetDevice('mock_Ethernet1', 'eth0', 30)
         out = subprocess.check_output(['nmcli', 'dev'], universal_newlines=True)
         #self.assertFalse('DEVICE' in out, out)            
         self.assertRegex(out, 'eth0.*\sdisconnected')
         #print(out)
           
-    def test_add_one_eithernet_device_connected(self):    
+    def test_add_one_ethernet_device_connected(self):    
         self.dbusmock.AddEthernetDevice('mock_Ethernet1', 'eth0', 100)
         out = subprocess.check_output(['nmcli', 'dev'], universal_newlines=True)
         self.assertRegex(out, 'eth0.*\sconnected')
         
-    def test_add_two_eithernet_devices(self):
+    def test_add_two_ethernet_devices(self):
         self.dbusmock.AddEthernetDevice('mock_Ethernet1', 'eth0', 30)  
         self.dbusmock.AddEthernetDevice('mock_Ethernet2', 'eth1', 100)
         out = subprocess.check_output(['nmcli', 'dev'], universal_newlines=True)

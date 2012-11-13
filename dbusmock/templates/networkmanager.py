@@ -1,8 +1,8 @@
-'''CHANGEME mock template
+'''NetworkManager mock template
 
 This creates the expected methods and properties of the main
-CHANGEME object, but no devices. You can specify any property
-such as CHANGEME in "parameters".
+org.freedesktop.NetworkManager object, but no devices. You can specify any property
+such as NetworkingEnabled, WirelessEnabled etc. in "parameters".
 '''
 
 # This program is free software; you can redistribute it and/or modify it under
@@ -24,7 +24,7 @@ import dbusmock
 BUS_NAME = 'org.freedesktop.NetworkManager'
 MAIN_OBJ = '/org/freedesktop/NetworkManager'
 MAIN_IFACE = 'org.freedesktop.NetworkManager'
-SYSTEM_BUS = True  # CHANGEME
+SYSTEM_BUS = True
 
 #AccessPoint maping, to support multiple WiFi devices each having its own list of accesspoints.
 class WiFiDevice:
@@ -40,8 +40,7 @@ def load(mock, parameters):
     ])
 
     mock.AddProperties('', 
-                           {
-                        #'ActiveConnections': dbus.ObjectPath('/org/freedesktop/NetworkManager/ActiveConnection/0', variant_level=1),
+                           {                        
                          'NetworkingEnabled': parameters.get('NetworkingEnabled',True),
                          'State': parameters.get('State', dbus.UInt32(70)),
                          'Version': parameters.get('Version', '0.9.6.0'),
@@ -54,15 +53,12 @@ def load(mock, parameters):
                          }
                       )
 
-# CHANGEME: You can add convenience methods to the org.freedesktop.DBus.Mock
-# interface to provide abstract functionality such as adding specific devices
-
 @dbus.service.method(MOCK_IFACE,
                      in_signature='ssi', out_signature='s')
 def AddEthernetDevice(self, device_name, iface_name, state):
     '''Convenience method to add a Ethernet Device
 
-    You have to specify device_name, device interface name and state.
+    You have to specify device_name, device interface name e.g. eth0 and state.
     For valid state values, please visit http://projects.gnome.org/NetworkManager/developers/api/09/spec.html#type-NM_DEVICE_STATE
 
     Please note that this does not set any global properties.
@@ -70,13 +66,13 @@ def AddEthernetDevice(self, device_name, iface_name, state):
     Returns the new object path.
     '''
     path = '/org/freedesktop/NetworkManager/Devices/' + device_name
-    #self.AddObject(path, ...)
     wired_props = { 'Carrier':dbus.Boolean(0,variant_level=1),                                  
                          'HwAddress': dbus.String("78:DD:08:D2:3D:43", variant_level=1),
                          'PermHwAddress': dbus.String("78:DD:08:D2:3D:43", variant_level=1),
                          'Speed': dbus.UInt32(0, variant_level=1)                                
                         }
     wired_methods = []
+    self.count = 1
     self.AddObject(path,
                         'org.freedesktop.NetworkManager.Device.Wired',
                         wired_props,
@@ -88,10 +84,7 @@ def AddEthernetDevice(self, device_name, iface_name, state):
                        }
     
     obj = dbusmock.get_object(path)
-    #obj = dbusmock.objects[path]
-    #dev_obj = dbus_con.get_object('org.freedesktop.NetworkManager', path)
-    obj.AddProperties('org.freedesktop.NetworkManager.Device', props)
-    
+    obj.AddProperties('org.freedesktop.NetworkManager.Device', props)    
     return path
 
 @dbus.service.method(MOCK_IFACE,
@@ -99,7 +92,7 @@ def AddEthernetDevice(self, device_name, iface_name, state):
 def AddWiFiDevice(self, device_name, iface_name, state):
     '''Convenience method to add a WiFi Device
 
-    You have to specify device_name, device interface name and state.
+    You have to specify device_name, device interface name e.g. wlan0 and state.
     For valid state values, please visit http://projects.gnome.org/NetworkManager/developers/api/09/spec.html#type-NM_DEVICE_STATE
 
     Please note that this does not set any global properties.
@@ -124,7 +117,6 @@ def AddWiFiDevice(self, device_name, iface_name, state):
                                  ])
     
     dev_obj = dbusmock.get_object(path)
-    #self.dev_obj = self.dbus_con.get_object('org.freedesktop.NetworkManager', dev_name)
     dev_obj.AddProperties('org.freedesktop.NetworkManager.Device', 
                                      {                                                                            
                                     'DeviceType': dbus.UInt32(2, variant_level=1),
@@ -149,7 +141,7 @@ def AddAccessPoint(self, dev_path, ap_name, ssid, bssid, mode, frequency, rate, 
     Returns the new object path.
     '''
     if bssid in wifi_devices[dev_path].accesspoints:
-            raise Exception("Access point with bssid {0} on device {1} already exists.".format( bssid, dev_path))
+            raise dbus.exceptions.DBusException("Access point with bssid {0} on device {1} already exists.".format( bssid, dev_path))
     ap_path = '/org/freedesktop/NetworkManager/AccessPoint/' + ap_name
     self.AddObject(ap_path,
                                  'org.freedesktop.NetworkManager.AccessPoint',
