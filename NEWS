@@ -16,6 +16,8 @@
    interface to provide more abstract functionality like "add a battery".
  - Add a first simple "upower" template with convenience methods to add AC and
    battery objects, and change tests/test_upower.py to use it.
+ - Add a first "networkmanager" template with convenience methods to add
+   Ethernet/WiFi devices and access points. Thanks Iftikhar Ahmad!
  - Add symbol dbusmock.MOCK_IFACE for 'org.freedesktop.DBus.Mock'.
  - Add test cases for command line invocation (python3 -m dbusmock ...).
 
