@@ -50,8 +50,8 @@ class TestCLI(dbusmock.DBusTestCase):
     def test_template_system(self):
         self.p_mock = subprocess.Popen([sys.executable, '-m', 'dbusmock',
                                         '--system', '-t', 'upower'],
-                                      stdout=subprocess.PIPE,
-                                      universal_newlines=True)
+                                       stdout=subprocess.PIPE,
+                                       universal_newlines=True)
         self.wait_for_bus_object('org.freedesktop.UPower', '/org/freedesktop/UPower', True)
 
         # check that it actually ran the template
