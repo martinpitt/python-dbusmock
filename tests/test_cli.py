@@ -47,13 +47,29 @@ class TestCLI(dbusmock.DBusTestCase):
                                         '--system', 'com.example.Test', '/', 'TestIface'])
         self.wait_for_bus_object('com.example.Test', '/', True)
 
+    def test_template_system(self):
+        self.p_mock = subprocess.Popen([sys.executable, '-m', 'dbusmock',
+                                        '--system', '-t', 'upower'],
+                                      stdout=subprocess.PIPE,
+                                      universal_newlines=True)
+        self.wait_for_bus_object('org.freedesktop.UPower', '/org/freedesktop/UPower', True)
+
+        # check that it actually ran the template
+        out = subprocess.check_output(['upower', '--dump'],
+                                      universal_newlines=True)
+        self.assertRegex(out, 'on-battery:\s+no')
+        self.assertRegex(out, 'can-suspend:\s+yes')
+
+        mock_out = self.p_mock.stdout.readline()
+        self.assertTrue('EnumerateDevices' in mock_out, mock_out)
+
     def test_no_args(self):
         p = subprocess.Popen([sys.executable, '-m', 'dbusmock'],
                              stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                              universal_newlines=True)
         (out, err) = p.communicate()
         self.assertEqual(out, '')
-        self.assertTrue('arguments are required' in err, err)
+        self.assertTrue('must specify NAME' in err, err)
         self.assertNotEqual(p.returncode, 0)
 
     def test_help(self):

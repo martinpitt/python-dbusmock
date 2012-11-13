@@ -198,6 +198,11 @@ method; this is particularly useful if you are not using Python:
 This creates all expected properties such as ``DaemonVersion``, and changes the
 default for one of them (``OnBattery``) through the (optional) parameters dict.
 
+If you do not need to specify parameters, you can do this in a simpler way with
+
+::
+  python3 -m dbusmock --template upower
+
 The template does not create any devices by default. You can add some with
 the template's convenience methods like
 

@@ -298,6 +298,9 @@ class DBusMockObject(dbus.service.Object):
             if '_dbus_interface' in dir(fn):
                 setattr(self.__class__, symbol, fn)
 
+        if parameters is None:
+            parameters = {}
+
         module.load(self, parameters)
 
     @dbus.service.method(MOCK_IFACE,
