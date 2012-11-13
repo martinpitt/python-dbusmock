@@ -407,10 +407,12 @@ class DBusMockObject(dbus.service.Object):
 # Helper API for templates
 #
 
+
 def get_objects():
     '''Return all existing object paths'''
 
     return objects.keys()
+
 
 def get_object(path):
     '''Return object for a given object path'''
