@@ -96,8 +96,7 @@ assert args[2] == 5
         self.dbus_mock.AddMethod('org.freedesktop.Test.Other', 'OtherDo', '', '', '')
         self.dbus_mock.AddMethods('org.freedesktop.Test.Other',
                                   [('OtherDo2', '', '', ''),
-                                   ('OtherDo3', 'i', 'i', 'ret = args[0]'),
-                                  ])
+                                   ('OtherDo3', 'i', 'i', 'ret = args[0]')])
 
         # should not be on the main interface
         self.assertRaises(dbus.exceptions.DBusException,

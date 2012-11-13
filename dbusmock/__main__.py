@@ -26,21 +26,42 @@ def parse_args():
                         help='put object(s) on system bus (default: session bus)')
     parser.add_argument('-l', '--logfile', metavar='PATH',
                         help='path of log file')
-    parser.add_argument('name', metavar='NAME',
-                        help='D-BUS name to claim (e. g. "com.example.MyService")')
-    parser.add_argument('path', metavar='PATH',
-                        help='D-BUS object path for initial/main object')
-    parser.add_argument('interface', metavar='INTERFACE',
-                        help='main D-BUS interface name for initial object')
-    return parser.parse_args()
+    parser.add_argument('-t', '--template', metavar='NAME',
+                        help='template to load (instead of specifying name, path, interface)')
+    parser.add_argument('name', metavar='NAME', nargs='?',
+                        help='D-BUS name to claim (e. g. "com.example.MyService") (if not using -t)')
+    parser.add_argument('path', metavar='PATH', nargs='?',
+                        help='D-BUS object path for initial/main object (if not using -t)')
+    parser.add_argument('interface', metavar='INTERFACE', nargs='?',
+                        help='main D-BUS interface name for initial object (if not using -t)')
+
+    args = parser.parse_args()
+
+    if args.template:
+        if args.name or args.path or args.interface:
+            parser.error('--template and specifying NAME/PATH/INTERFACE are mutually exclusive')
+    else:
+        if not args.name or not args.path or not args.interface:
+            parser.error('Not using a template, you must specify NAME, PATH, and INTERFACE')
+
+    return args
 
 
 if __name__ == '__main__':
+    import importlib
     import dbus.mainloop.glib
     from gi.repository import GObject
 
     args = parse_args()
     dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+
+    if args.template:
+        module = importlib.import_module('dbusmock.templates.' + args.template)
+        args.name = module.BUS_NAME
+        args.path = module.MAIN_OBJ
+        args.interface = module.MAIN_IFACE
+        args.system = module.SYSTEM_BUS
+
     bus_name = dbus.service.BusName(args.name,
                                     dbusmock.testcase.DBusTestCase.get_dbus(args.system),
                                     allow_replacement=True,
@@ -48,5 +69,9 @@ if __name__ == '__main__':
                                     do_not_queue=True)
 
     main_object = dbusmock.mockobject.DBusMockObject(bus_name, args.path, args.interface, {}, args.logfile)
+
+    if args.template:
+        main_object.AddTemplate(args.template, None)
+
     dbusmock.mockobject.objects[args.path] = main_object
     GObject.MainLoop().run()

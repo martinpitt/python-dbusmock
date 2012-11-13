@@ -298,6 +298,9 @@ class DBusMockObject(dbus.service.Object):
             if '_dbus_interface' in dir(fn):
                 setattr(self.__class__, symbol, fn)
 
+        if parameters is None:
+            parameters = {}
+
         module.load(self, parameters)
 
     @dbus.service.method(MOCK_IFACE,
@@ -407,10 +410,12 @@ class DBusMockObject(dbus.service.Object):
 # Helper API for templates
 #
 
+
 def get_objects():
     '''Return all existing object paths'''
 
     return objects.keys()
+
 
 def get_object(path):
     '''Return object for a given object path'''
