@@ -155,8 +155,8 @@ def AddAccessPoint(self, dev_path, ap_name, ssid, bssid,
     '''
     dev_obj = dbusmock.get_object(dev_path)
     if bssid in dev_obj.accesspoints:
-            raise dbus.exceptions.DBusException("Access point with bssid {0} \
-            on device {1} already exists.".format(bssid, dev_path))
+            raise dbus.exceptions.DBusException("""Access point with bssid {0}
+             on device {1} already exists.""".format(bssid, dev_path))
     ap_path = '/org/freedesktop/NetworkManager/AccessPoint/' + ap_name
     self.AddObject(ap_path,
                  'org.freedesktop.NetworkManager.AccessPoint',
