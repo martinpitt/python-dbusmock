@@ -63,6 +63,8 @@ class TestCLI(dbusmock.DBusTestCase):
         mock_out = self.p_mock.stdout.readline()
         self.assertTrue('EnumerateDevices' in mock_out, mock_out)
 
+        self.p_mock.stdout.close()
+
     def test_no_args(self):
         p = subprocess.Popen([sys.executable, '-m', 'dbusmock'],
                              stdout=subprocess.PIPE, stderr=subprocess.PIPE,
