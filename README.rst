@@ -184,13 +184,15 @@ For example, for starting a server with the "upower" template in Python you can
 run
 
 ::
-   (self.p_mock, self.obj_upower) = self.spawn_server_template(
-       'upower', {'OnBattery': True}, stdout=subprocess.PIPE)
+
+  (self.p_mock, self.obj_upower) = self.spawn_server_template(
+      'upower', {'OnBattery': True}, stdout=subprocess.PIPE)
 
 or load a template into an already running server with the ``AddTemplate()``
 method; this is particularly useful if you are not using Python:
 
 ::
+
   python3 -m dbusmock --system org.freedesktop.UPower /org/freedesktop/UPower org.freedesktop.UPower
 
   gdbus call --system -d org.freedesktop.UPower -o /org/freedesktop/UPower -m org.freedesktop.DBus.Mock.AddTemplate 'upower' '{"OnBattery": <true>}'
@@ -201,14 +203,16 @@ default for one of them (``OnBattery``) through the (optional) parameters dict.
 If you do not need to specify parameters, you can do this in a simpler way with
 
 ::
+
   python3 -m dbusmock --template upower
 
 The template does not create any devices by default. You can add some with
 the template's convenience methods like
 
 ::
-        ac_path = self.dbusmock.AddAC('mock_AC', 'Mock AC')
-        bt_path = self.dbusmock.AddChargingBattery('mock_BAT', 'Mock Battery', 30.0, 1200)
+
+  ac_path = self.dbusmock.AddAC('mock_AC', 'Mock AC')
+  bt_path = self.dbusmock.AddChargingBattery('mock_BAT', 'Mock Battery', 30.0, 1200)
 
 or calling ``AddObject()`` yourself with the desired properties, of course.
 
