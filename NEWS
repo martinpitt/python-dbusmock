@@ -1,4 +1,4 @@
-0.2.0 (UNRELEASED)
+0.2.0 (2012-11-15)
 ------------------
  - Turn dbusmock from a module into a package. This is transparent for API
    users, but necessary for adding future subpackages and also makes the code
