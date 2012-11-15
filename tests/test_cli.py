@@ -18,6 +18,11 @@ import subprocess
 import dbusmock
 
 
+p = subprocess.Popen(['which', 'upower'], stdout=subprocess.PIPE)
+p.communicate()
+have_upower = (p.returncode == 0)
+
+
 class TestCLI(dbusmock.DBusTestCase):
     '''Test running dbusmock from the command line'''
 
@@ -54,14 +59,15 @@ class TestCLI(dbusmock.DBusTestCase):
                                        universal_newlines=True)
         self.wait_for_bus_object('org.freedesktop.UPower', '/org/freedesktop/UPower', True)
 
-        # check that it actually ran the template
-        out = subprocess.check_output(['upower', '--dump'],
-                                      universal_newlines=True)
-        self.assertRegex(out, 'on-battery:\s+no')
-        self.assertRegex(out, 'can-suspend:\s+yes')
+        # check that it actually ran the template, if we have upower
+        if have_upower:
+            out = subprocess.check_output(['upower', '--dump'],
+                                          universal_newlines=True)
+            self.assertRegex(out, 'on-battery:\s+no')
+            self.assertRegex(out, 'can-suspend:\s+yes')
 
-        mock_out = self.p_mock.stdout.readline()
-        self.assertTrue('EnumerateDevices' in mock_out, mock_out)
+            mock_out = self.p_mock.stdout.readline()
+            self.assertTrue('EnumerateDevices' in mock_out, mock_out)
 
         self.p_mock.stdout.close()
 

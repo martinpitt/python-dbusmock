@@ -21,6 +21,12 @@ import dbus
 import dbusmock
 
 
+p = subprocess.Popen(['which', 'upower'], stdout=subprocess.PIPE)
+p.communicate()
+have_upower = (p.returncode == 0)
+
+
+@unittest.skipUnless(have_upower, 'upower not installed')
 class TestUPower(dbusmock.DBusTestCase):
     '''Test mocking upowerd'''
 

@@ -18,7 +18,12 @@ import dbus
 import dbusmock
 import os
 
+p = subprocess.Popen(['which', 'nmcli'], stdout=subprocess.PIPE)
+p.communicate()
+have_nmcli = (p.returncode == 0)
 
+
+@unittest.skipUnless(have_nmcli, 'nmcli not installed')
 class TestNeworkManager(dbusmock.DBusTestCase):
     '''Test mocking NetworkManager'''
 
