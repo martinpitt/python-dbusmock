@@ -31,3 +31,5 @@ bzr tag "$version"
 # upload to PyPI and Launchpad
 ./setup.py sdist upload
 lp-project-upload python-dbusmock "$version" "dist/python-dbusmock-$version.tar.gz"
+
+bzr push
