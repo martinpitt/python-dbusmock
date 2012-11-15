@@ -1,4 +1,4 @@
-0.2.1 (UNRELEASED)
+0.2.1 (2012-11-15)
 ------------------
  - Fix tests to skip instead of fail if NetworkManager or upower are not
    installed.
