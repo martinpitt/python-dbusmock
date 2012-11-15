@@ -1,0 +1,33 @@
+#!/bin/sh
+set -e
+
+# This script does all the steps necessary for doing a new upstream release. It
+# should solely be used by upstream developers, distributors do not need to
+# worry about it.
+
+[ -z "`bzr status | grep -v shelve`" ] || {
+    echo "Uncommitted changes, aborting" >&2
+    exit 1
+}
+
+# tests must succeed for Python 2 and 3
+./setup.py test
+python setup.py test
+
+bzr clean-tree --ignored --detritus --force
+
+# update version in NEWS
+version=$(grep '(UNRELEASED)' NEWS | cut -f1 -d' ')
+[ -n "$version" ] || {
+    echo "no UNRELEASED in NEWS" >&2
+    exit 1
+}
+sed -i "s/(UNRELEASED)/$(date '+(%Y-%m-%d)')/" NEWS
+
+# commit release
+bzr commit -m "release $version"
+bzr tag "$version"
+
+# upload to PyPI and Launchpad
+./setup.py sdist upload
+lp-project-upload python-dbusmock "$version" "dist/python-dbusmock-$version.tar.gz"
