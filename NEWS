@@ -1,3 +1,7 @@
+0.2.2 (UNRELEASED)
+------------------
+ - tests: Suppress "nmcli and NetworkManager versions don't match" warning.
+
 0.2.1 (2012-11-15)
 ------------------
  - Fix tests to skip instead of fail if NetworkManager or upower are not
