@@ -50,7 +50,7 @@ def parse_args():
 if __name__ == '__main__':
     import importlib
     import dbus.mainloop.glib
-    from gi.repository import GObject
+    from gi.repository import GLib
 
     args = parse_args()
     dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
@@ -74,4 +74,4 @@ if __name__ == '__main__':
         main_object.AddTemplate(args.template, None)
 
     dbusmock.mockobject.objects[args.path] = main_object
-    GObject.MainLoop().run()
+    GLib.MainLoop().run()

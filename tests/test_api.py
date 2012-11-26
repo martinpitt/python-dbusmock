@@ -20,7 +20,7 @@ import dbus.mainloop.glib
 
 import dbusmock
 
-from gi.repository import GObject
+from gi.repository import GLib
 
 dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 
@@ -308,7 +308,7 @@ assert args[2] == 5
                                       [-42, 42, dbus.String('hello', variant_level=1), ['/a', '/b']])
 
         caught = []
-        ml = GObject.MainLoop()
+        ml = GLib.MainLoop()
 
         def catch(*args, **kwargs):
             if kwargs['interface'].startswith('org.freedesktop.Test'):
@@ -323,9 +323,9 @@ assert args[2] == 5
                                           path_keyword='path',
                                           member_keyword='member')
 
-        GObject.timeout_add(200, do_emit)
+        GLib.timeout_add(200, do_emit)
         # ensure that the loop quits even when we catch fewer than 2 signals
-        GObject.timeout_add(3000, ml.quit)
+        GLib.timeout_add(3000, ml.quit)
         ml.run()
 
         # check SigNoArgs

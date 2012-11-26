@@ -3,6 +3,7 @@
  - tests: Suppress "nmcli and NetworkManager versions don't match" warning.
  - networkmanager template: Add DeviceState enum for easier specification of
    states. Thanks Alberto Ruiz.
+ - Fix deprecation warnings with PyGObject 3.7.x.
 
 0.2.1 (2012-11-15)
 ------------------
