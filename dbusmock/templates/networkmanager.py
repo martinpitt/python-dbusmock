@@ -27,6 +27,23 @@ MAIN_OBJ = '/org/freedesktop/NetworkManager'
 MAIN_IFACE = 'org.freedesktop.NetworkManager'
 SYSTEM_BUS = True
 
+class Enum (object):
+  pass
+
+DeviceState = Enum()
+DeviceState.UNKNOWN      = 0
+DeviceState.UNMANAGED    = 10
+DeviceState.UNAVAILABLE  = 20
+DeviceState.DISCONNECTED = 30
+DeviceState.PREPARE      = 40
+DeviceState.CONFIG       = 50
+DeviceState.NEED_AUTH    = 60
+DeviceState.IP_CONFIG    = 70
+DeviceState.IP_CHECK     = 80
+DeviceState.SECONDARIES  = 90
+DeviceState.ACTIVATED    = 100
+DeviceState.DEACTIVATING = 110
+DeviceState.FAILED       = 12
 
 def load(mock, parameters):
     mock.AddMethods(MAIN_IFACE, [
