@@ -1,6 +1,8 @@
 0.2.2 (UNRELEASED)
 ------------------
  - tests: Suppress "nmcli and NetworkManager versions don't match" warning.
+ - networkmanager template: Add DeviceState enum for easier specification of
+   states. Thanks Alberto Ruiz.
 
 0.2.1 (2012-11-15)
 ------------------

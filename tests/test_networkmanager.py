@@ -18,6 +18,9 @@ import dbus
 import dbusmock
 import os
 
+from dbusmock.templates.networkmanager import DeviceState
+
+
 p = subprocess.Popen(['which', 'nmcli'], stdout=subprocess.PIPE)
 p.communicate()
 have_nmcli = (p.returncode == 0)
@@ -57,22 +60,26 @@ class TestNeworkManager(dbusmock.DBusTestCase):
         self.p_mock.wait()
 
     def test_one_eth_disconnected(self):
-        self.dbusmock.AddEthernetDevice('mock_Ethernet1', 'eth0', 30)
+        self.dbusmock.AddEthernetDevice('mock_Ethernet1', 'eth0',
+                                        DeviceState.DISCONNECTED)
         out = subprocess.check_output(['nmcli', '--nocheck', 'dev'],
                                       env=self.lang_env,
                                       universal_newlines=True)
         self.assertRegex(out, 'eth0.*\sdisconnected')
 
     def test_one_eth_connected(self):
-        self.dbusmock.AddEthernetDevice('mock_Ethernet1', 'eth0', 100)
+        self.dbusmock.AddEthernetDevice('mock_Ethernet1', 'eth0',
+                                        DeviceState.ACTIVATED)
         out = subprocess.check_output(['nmcli', '--nocheck', 'dev'],
                                       env=self.lang_env,
                                       universal_newlines=True)
         self.assertRegex(out, 'eth0.*\sconnected')
 
     def test_two_eth(self):
+        # test with numeric state value
         self.dbusmock.AddEthernetDevice('mock_Ethernet1', 'eth0', 30)
-        self.dbusmock.AddEthernetDevice('mock_Ethernet2', 'eth1', 100)
+        self.dbusmock.AddEthernetDevice('mock_Ethernet2', 'eth1',
+                                        DeviceState.ACTIVATED)
         out = subprocess.check_output(['nmcli', '--nocheck', 'dev'],
                                       env=self.lang_env,
                                       universal_newlines=True)
@@ -80,15 +87,18 @@ class TestNeworkManager(dbusmock.DBusTestCase):
         self.assertRegex(out, 'eth1.*\sconnected')
 
     def test_wifi_without_access_points(self):
-        self.dbusmock.AddWiFiDevice('mock_WiFi1', 'wlan0', 100)
+        self.dbusmock.AddWiFiDevice('mock_WiFi1', 'wlan0',
+                                    DeviceState.ACTIVATED)
         out = subprocess.check_output(['nmcli', '--nocheck', 'dev'],
                                       env=self.lang_env,
                                       universal_newlines=True)
         self.assertRegex(out, 'wlan0.*\sconnected')
 
     def test_eth_and_wifi(self):
-        self.dbusmock.AddEthernetDevice('mock_Ethernet1', 'eth0', 30)
-        self.dbusmock.AddWiFiDevice('mock_WiFi1', 'wlan0', 100)
+        self.dbusmock.AddEthernetDevice('mock_Ethernet1', 'eth0',
+                                        DeviceState.DISCONNECTED)
+        self.dbusmock.AddWiFiDevice('mock_WiFi1', 'wlan0',
+                                    DeviceState.ACTIVATED)
         out = subprocess.check_output(['nmcli', '--nocheck', 'dev'],
                                       env=self.lang_env,
                                       universal_newlines=True)
@@ -96,8 +106,10 @@ class TestNeworkManager(dbusmock.DBusTestCase):
         self.assertRegex(out, 'wlan0.*\sconnected')
 
     def test_two_wifi_with_accesspoints(self):
-        wifi1 = self.dbusmock.AddWiFiDevice('mock_WiFi1', 'wlan0', 100)
-        wifi2 = self.dbusmock.AddWiFiDevice('mock_WiFi2', 'wlan1', 20)
+        wifi1 = self.dbusmock.AddWiFiDevice('mock_WiFi1', 'wlan0',
+                                            DeviceState.ACTIVATED)
+        wifi2 = self.dbusmock.AddWiFiDevice('mock_WiFi2', 'wlan1',
+                                            DeviceState.UNAVAILABLE)
         self.dbusmock.AddAccessPoint(wifi1, 'Mock_AP0',
                                      'AP_0', '00:23:F8:7E:12:BA',
                                      0, 2425, 5400, 82, 0x400)

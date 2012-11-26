@@ -28,6 +28,26 @@ MAIN_IFACE = 'org.freedesktop.NetworkManager'
 SYSTEM_BUS = True
 
 
+class DeviceState:
+    '''Device states
+
+    As per http://projects.gnome.org/NetworkManager/developers/api/09/spec.html#type-NM_DEVICE_STATE
+    '''
+    UNKNOWN = 0
+    UNMANAGED = 10
+    UNAVAILABLE = 20
+    DISCONNECTED = 30
+    PREPARE = 40
+    CONFIG = 50
+    NEED_AUTH = 60
+    IP_CONFIG = 70
+    IP_CHECK = 80
+    SECONDARIES = 90
+    ACTIVATED = 100
+    DEACTIVATING = 110
+    FAILED = 12
+
+
 def load(mock, parameters):
     mock.AddMethods(MAIN_IFACE, [
         ('GetDevices', '', 'ao',
@@ -54,7 +74,9 @@ def AddEthernetDevice(self, device_name, iface_name, state):
     '''Add an ethernet device.
 
     You have to specify device_name, device interface name (e. g. eth0), and
-    state. For valid state values please visit
+    state. You can use the predefined DeviceState values (e. g.
+    DeviceState.ACTIVATED) or supply a numeric value. For valid state values
+    please visit
     http://projects.gnome.org/NetworkManager/developers/api/09/spec.html#type-NM_DEVICE_STATE
 
     Please note that this does not set any global properties.
@@ -86,8 +108,10 @@ def AddEthernetDevice(self, device_name, iface_name, state):
 def AddWiFiDevice(self, device_name, iface_name, state):
     '''Add a WiFi Device.
 
-    You have to specify device_name, device interface name (e. g.
-    wlan0) and state. For valid state values, please visit
+    You have to specify device_name, device interface name (e. g.  wlan0) and
+    state. You can use the predefined DeviceState values (e. g.
+    DeviceState.ACTIVATED) or supply a numeric value. For valid state values,
+    please visit
     http://projects.gnome.org/NetworkManager/developers/api/09/spec.html#type-NM_DEVICE_STATE
 
     Please note that this does not set any global properties.
