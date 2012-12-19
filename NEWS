@@ -3,6 +3,7 @@
  - In the logging of mock method calls, log the arguments as well.
  - Fix race condition in waiting for mock to get online on the bus, by avoiding
    triggering D-BUS service activation with system-installed services.
+ - Add "notification_daemon" mock template.
 
 0.2.2 (2012-11-27)
 ------------------
