@@ -28,6 +28,11 @@ objects = {}
 
 MOCK_IFACE = 'org.freedesktop.DBus.Mock'
 
+# stubs to keep code compatible with Python 2 and 3
+if sys.version_info[0] >= 3:
+    long = int
+    unicode = str
+
 
 class DBusMockObject(dbus.service.Object):
     '''Mock D-Bus object
@@ -371,9 +376,9 @@ class DBusMockObject(dbus.service.Object):
         def format_arg(a):
             if isinstance(a, dbus.Byte):
                 return str(int(a))
-            if isinstance(a, int):
+            if isinstance(a, int) or isinstance(a, long):
                 return str(a)
-            if isinstance(a, str):
+            if isinstance(a, str) or isinstance(a, unicode):
                 return '"' + str(a) + '"'
             if isinstance(a, list):
                 return '[' + ', '.join([format_arg(x) for x in a]) + ']'
