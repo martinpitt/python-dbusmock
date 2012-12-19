@@ -65,6 +65,10 @@ class TestAPI(dbusmock.DBusTestCase):
         self.dbus_mock.AddMethod('', 'Do', 's', '', '')
         self.assertEqual(self.dbus_test.Do('Hello'), None)
 
+        # check that it's logged correctly
+        with open(self.mock_log.name) as f:
+            self.assertRegex(f.read(), '^[0-9.]+ Do "Hello"$')
+
     def test_onearg_ret(self):
         '''one argument, code for return value'''
 
@@ -76,6 +80,10 @@ class TestAPI(dbusmock.DBusTestCase):
 
         self.dbus_mock.AddMethod('', 'Do', 'si', 's', 'ret = args[0] * args[1]')
         self.assertEqual(self.dbus_test.Do('foo', 3), 'foofoofoo')
+
+        # check that it's logged correctly
+        with open(self.mock_log.name) as f:
+            self.assertRegex(f.read(), '^[0-9.]+ Do "foo" 3$')
 
     def test_array_arg(self):
         '''array argument'''
@@ -89,6 +97,26 @@ assert type(args[1][0]) == dbus.ObjectPath
 assert args[2] == 5
 ''')
         self.assertEqual(self.dbus_test.Do(-1, ['/foo'], 5), None)
+
+        # check that it's logged correctly
+        with open(self.mock_log.name) as f:
+            self.assertRegex(f.read(), '^[0-9.]+ Do -1 \["/foo"\] 5$')
+
+    def test_dict_arg(self):
+        '''dictionary argument'''
+
+        self.dbus_mock.AddMethod('', 'Do', 'ia{si}u', '',
+                                 '''assert len(args) == 3
+assert args[0] == -1;
+assert args[1] == {'foo': 42}
+assert type(args[1]) == dbus.Dictionary
+assert args[2] == 5
+''')
+        self.assertEqual(self.dbus_test.Do(-1, {'foo': 42}, 5), None)
+
+        # check that it's logged correctly
+        with open(self.mock_log.name) as f:
+            self.assertRegex(f.read(), '^[0-9.]+ Do -1 {"foo": 42} 5$')
 
     def test_methods_on_other_interfaces(self):
         '''methods on other interfaces'''
@@ -109,7 +137,7 @@ assert args[2] == 5
 
         # check that it's logged correctly
         with open(self.mock_log.name) as f:
-            self.assertRegex(f.read(), '^[0-9.]+ OtherDo\n[0-9.]+ OtherDo2\n[0-9.]+ OtherDo3$')
+            self.assertRegex(f.read(), '^[0-9.]+ OtherDo\n[0-9.]+ OtherDo2\n[0-9.]+ OtherDo3 42$')
 
     def test_methods_type_mismatch(self):
         '''calling methods with wrong arguments'''

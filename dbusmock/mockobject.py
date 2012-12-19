@@ -356,13 +356,49 @@ class DBusMockObject(dbus.service.Object):
         m.append(signature=in_signature, *args)
         args = m.get_args_list()
 
-        self.log(dbus_method)
+        self.log(dbus_method + self.format_args(args))
+
         code = self.methods[interface][dbus_method][2]
         if code:
             loc = locals().copy()
             exec(code, globals(), loc)
             if 'ret' in loc:
                 return loc['ret']
+
+    def format_args(self, args):
+        '''Format a D-BUS argument tuple into an appropriate logging string.'''
+
+        def format_arg(a):
+            if isinstance(a, dbus.Byte):
+                return str(int(a))
+            if isinstance(a, int):
+                return str(a)
+            if isinstance(a, str):
+                return '"' + str(a) + '"'
+            if isinstance(a, list):
+                return '[' + ', '.join([format_arg(x) for x in a]) + ']'
+            if isinstance(a, dict):
+                fmta = '{'
+                first = True
+                for k, v in a.items():
+                    if first:
+                        first = False
+                    else:
+                        fmta += ', '
+                    fmta += format_arg(k) + ': ' + format_arg(v)
+                return fmta + '}'
+
+            # fallback
+            return repr(a)
+
+        s = ''
+        for a in args:
+            if s:
+                s += ' '
+            s += format_arg(a)
+        if s:
+            s = ' ' + s
+        return s
 
     def log(self, msg):
         '''Log a message, prefixed with a timestamp.

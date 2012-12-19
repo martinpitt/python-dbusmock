@@ -1,3 +1,7 @@
+0.3 (UNRELEASED)
+----------------
+ - In the logging of mock method calls, log the arguments as well.
+
 0.2.2 (2012-11-27)
 ------------------
  - tests: Suppress "nmcli and NetworkManager versions don't match" warning.
