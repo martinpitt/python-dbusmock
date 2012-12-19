@@ -1,4 +1,4 @@
-0.3 (UNRELEASED)
+0.3 (2012-12-19)
 ----------------
  - In the logging of mock method calls, log the arguments as well.
  - Fix race condition in waiting for mock to get online on the bus, by avoiding
