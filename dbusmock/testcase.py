@@ -139,17 +139,21 @@ class DBusTestCase(unittest.TestCase):
 
         timeout = 50
         last_exc = None
+        # we check whether the name is owned first, to avoid race conditions
+        # with service activation; once it's owned, wait until we can actually
+        # call methods
         while timeout > 0:
-            try:
-                p = dbus.Interface(bus.get_object(dest, path),
-                                   dbus_interface=dbus.INTROSPECTABLE_IFACE)
-                p.Introspect()
-                break
-            except dbus.exceptions.DBusException as e:
-                last_exc = e
-                if '.UnknownInterface' in str(e):
+            if bus.name_has_owner(dest):
+                try:
+                    p = dbus.Interface(bus.get_object(dest, path),
+                                       dbus_interface=dbus.INTROSPECTABLE_IFACE)
+                    p.Introspect()
                     break
-                pass
+                except dbus.exceptions.DBusException as e:
+                    last_exc = e
+                    if '.UnknownInterface' in str(e):
+                        break
+                    pass
 
             timeout -= 1
             time.sleep(0.1)
