@@ -96,6 +96,8 @@ def AddDischargingBattery(self, device_name, model_name, percentage, seconds_to_
                        'Model': dbus.String(model_name, variant_level=1),
                        'Percentage': dbus.Double(percentage, variant_level=1),
                        'TimeToEmpty': dbus.Int64(seconds_to_empty, variant_level=1),
+                       'EnergyFull': dbus.Double(100.0, variant_level=1),
+                       'Energy': dbus.Double(percentage, variant_level=1),
                        # UP_DEVICE_STATE_DISCHARGING
                        'State': dbus.UInt32(2, variant_level=1),
                        # UP_DEVICE_KIND_BATTERY
@@ -128,6 +130,8 @@ def AddChargingBattery(self, device_name, model_name, percentage, seconds_to_ful
                        'Model': dbus.String(model_name, variant_level=1),
                        'Percentage': dbus.Double(percentage, variant_level=1),
                        'TimeToFull': dbus.Int64(seconds_to_full, variant_level=1),
+                       'EnergyFull': dbus.Double(100.0, variant_level=1),
+                       'Energy': dbus.Double(percentage, variant_level=1),
                        # UP_DEVICE_STATE_CHARGING
                        'State': dbus.UInt32(1, variant_level=1),
                        # UP_DEVICE_KIND_BATTERY
