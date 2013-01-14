@@ -414,6 +414,23 @@ assert args[2] == 5
         check('i', ['hello'], 'TypeError: an integer is required')
         check('s', [1], 'TypeError: Expected a string')
 
+    def test_new_logging(self):
+        '''Ensure that the logs can be queried over DBus.'''
+
+        self.dbus_mock.AddMethod('', 'Do', '', '', '')
+        self.assertEqual(self.dbus_test.Do(), None)
+        self.assertTrue(self.dbus_mock.QueryCalls().endswith(' Do\n'))
+        self.assertEqual(self.dbus_mock.ClearLog(), None)
+        self.assertEqual(self.dbus_mock.QueryCalls(), '')
+
+        self.dbus_mock.AddMethod('', 'Wop', 's', 's', 'ret="hello"')
+        self.assertEqual(self.dbus_test.Wop('foo'), 'hello')
+        self.assertEqual(self.dbus_test.Wop('bar'), 'hello')
+        self.assertTrue(self.dbus_mock.QueryCalls().find(' Wop "foo"'))
+        self.assertTrue(self.dbus_mock.QueryCalls().find(' Wop "bar"\n'))
+        self.assertEqual(self.dbus_mock.ClearLog(), None)
+        self.assertEqual(self.dbus_mock.QueryCalls(), '')
+
 if __name__ == '__main__':
     # avoid writing to stderr
     unittest.main(testRunner=unittest.TextTestRunner(stream=sys.stdout, verbosity=2))

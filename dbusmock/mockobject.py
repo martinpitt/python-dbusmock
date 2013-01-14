@@ -69,6 +69,7 @@ class DBusMockObject(dbus.service.Object):
             self.logfile = open(logfile, 'w')
         else:
             self.logfile = None
+        self.call_log = []
 
     def __del__(self):
         if self.logfile:
@@ -344,6 +345,20 @@ class DBusMockObject(dbus.service.Object):
 
         dbus_fn(self, *args)
 
+    @dbus.service.method(MOCK_IFACE,
+                         in_signature='',
+                         out_signature='s')
+    def QueryCalls(self):
+        '''List all the logged calls since the last call to ClearLog.'''
+        return ''.join(self.call_log)
+
+    @dbus.service.method(MOCK_IFACE,
+                         in_signature='',
+                         out_signature='')
+    def ClearLog(self):
+        '''Empty the log of mock call signatures'''
+        self.call_log = []
+
     def mock_method(self, interface, dbus_method, in_signature, *args, **kwargs):
         '''Master mock method.
 
@@ -416,7 +431,9 @@ class DBusMockObject(dbus.service.Object):
         else:
             fd = sys.stdout
 
-        fd.write('%.3f %s\n' % (time.time(), msg))
+        message = '%.3f %s\n' % (time.time(), msg)
+        self.call_log.append(message)
+        fd.write(message)
         fd.flush()
 
     @dbus.service.method(dbus.INTROSPECTABLE_IFACE,
