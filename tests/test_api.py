@@ -426,8 +426,8 @@ assert args[2] == 5
         self.dbus_mock.AddMethod('', 'Wop', 's', 's', 'ret="hello"')
         self.assertEqual(self.dbus_test.Wop('foo'), 'hello')
         self.assertEqual(self.dbus_test.Wop('bar'), 'hello')
-        self.assertTrue(self.dbus_mock.QueryCalls().find(' Wop "foo"'))
-        self.assertTrue(self.dbus_mock.QueryCalls().find(' Wop "bar"\n'))
+        self.assertTrue(self.dbus_mock.QueryCalls().index(' Wop "foo"'))
+        self.assertTrue(self.dbus_mock.QueryCalls().index(' Wop "bar"\n'))
         self.assertEqual(self.dbus_mock.ClearLog(), None)
         self.assertEqual(self.dbus_mock.QueryCalls(), '')
 
