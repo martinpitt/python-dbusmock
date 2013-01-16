@@ -347,15 +347,22 @@ class DBusMockObject(dbus.service.Object):
 
     @dbus.service.method(MOCK_IFACE,
                          in_signature='',
-                         out_signature='s')
-    def QueryCalls(self):
-        '''List all the logged calls since the last call to ClearLog.'''
-        return ''.join(self.call_log)
+                         out_signature='a(tsav)')
+    def GetCalls(self):
+        '''List all the logged calls since the last call to ClearCalls.'''
+        return self.call_log
+
+    @dbus.service.method(MOCK_IFACE,
+                         in_signature='s',
+                         out_signature='a(tav)')
+    def GetMethodCalls(self, method):
+        '''List all the logged calls of a particular method.'''
+        return [(row[0], row[2]) for row in self.call_log if row[1] == method]
 
     @dbus.service.method(MOCK_IFACE,
                          in_signature='',
                          out_signature='')
-    def ClearLog(self):
+    def ClearCalls(self):
         '''Empty the log of mock call signatures'''
         self.call_log = []
 
@@ -377,6 +384,7 @@ class DBusMockObject(dbus.service.Object):
         args = m.get_args_list()
 
         self.log(dbus_method + self.format_args(args))
+        self.call_log.append((int(time.time()), str(dbus_method), args))
 
         code = self.methods[interface][dbus_method][2]
         if code:
@@ -431,9 +439,7 @@ class DBusMockObject(dbus.service.Object):
         else:
             fd = sys.stdout
 
-        message = '%.3f %s\n' % (time.time(), msg)
-        self.call_log.append(message)
-        fd.write(message)
+        fd.write('%.3f %s\n' % (time.time(), msg))
         fd.flush()
 
     @dbus.service.method(dbus.INTROSPECTABLE_IFACE,
