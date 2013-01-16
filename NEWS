@@ -1,3 +1,9 @@
+0.4.0 (UNRELEASED)
+------------------
+ - Add GetCalls(), GetMethodCalls() and ClearCalls() methods on the mock D-BUS
+   interface to query the call log, for cases where parsing stdout is
+   inconvenient. Thanks to Robert Bruce Park for the patch! (LP: #1099483)
+
 0.3.1 (2013-01-07)
 ------------------
  - upower template: Set Energy and EnergyFull properties.

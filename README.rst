@@ -168,6 +168,21 @@ a tuple), and again the mock process will log the Add method call.
 You can do the same operations in e. g. d-feet or any other D-Bus language
 binding.
 
+Logging
+-------
+Usually you want to verify which methods have been called on the mock with
+which arguments. There are three ways to do that:
+
+ - By default, the mock process writes the call log to stdout.
+ 
+ - You can call the mock process with the ``-l``/``--logfile`` argument, or
+   specify a log file object in the ``spawn_server()`` method  if you are using
+   Python.
+
+ - You can use the ``GetCalls()``, ``GetMethodCalls()`` and ``ClearCalls()``
+   methods on the ``org.freedesktop.DBus.Mock`` D-BUS interface to get an array
+   of tuples describing the calls.
+ 
 
 Templates
 ---------

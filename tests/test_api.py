@@ -414,6 +414,60 @@ assert args[2] == 5
         check('i', ['hello'], 'TypeError: an integer is required')
         check('s', [1], 'TypeError: Expected a string')
 
+    def test_dbus_get_log(self):
+        '''query call logs over D-BUS'''
+
+        self.assertEqual(self.dbus_mock.ClearCalls(), None)
+        self.assertEqual(self.dbus_mock.GetCalls(), dbus.Array([]))
+
+        self.dbus_mock.AddMethod('', 'Do', '', '', '')
+        self.assertEqual(self.dbus_test.Do(), None)
+        mock_log = self.dbus_mock.GetCalls()
+        self.assertEqual(len(mock_log), 1)
+        self.assertGreater(mock_log[0][0], 10000)  # timestamp
+        self.assertEqual(mock_log[0][1], 'Do')
+        self.assertEqual(mock_log[0][2], [])
+
+        self.assertEqual(self.dbus_mock.ClearCalls(), None)
+        self.assertEqual(self.dbus_mock.GetCalls(), dbus.Array([]))
+
+        self.dbus_mock.AddMethod('', 'Wop', 's', 's', 'ret="hello"')
+        self.assertEqual(self.dbus_test.Wop('foo'), 'hello')
+        self.assertEqual(self.dbus_test.Wop('bar'), 'hello')
+        mock_log = self.dbus_mock.GetCalls()
+        self.assertEqual(len(mock_log), 2)
+        self.assertGreater(mock_log[0][0], 10000)  # timestamp
+        self.assertEqual(mock_log[0][1], 'Wop')
+        self.assertEqual(mock_log[0][2], ['foo'])
+        self.assertEqual(mock_log[1][1], 'Wop')
+        self.assertEqual(mock_log[1][2], ['bar'])
+
+        self.assertEqual(self.dbus_mock.ClearCalls(), None)
+        self.assertEqual(self.dbus_mock.GetCalls(), dbus.Array([]))
+
+    def test_dbus_get_method_calls(self):
+        '''query method call logs over D-BUS'''
+
+        self.dbus_mock.AddMethod('', 'Do', '', '', '')
+        self.assertEqual(self.dbus_test.Do(), None)
+        self.assertEqual(self.dbus_test.Do(), None)
+
+        self.dbus_mock.AddMethod('', 'Wop', 's', 's', 'ret="hello"')
+        self.assertEqual(self.dbus_test.Wop('foo'), 'hello')
+        self.assertEqual(self.dbus_test.Wop('bar'), 'hello')
+
+        mock_calls = self.dbus_mock.GetMethodCalls('Do')
+        self.assertEqual(len(mock_calls), 2)
+        self.assertEqual(mock_calls[0][1], [])
+        self.assertEqual(mock_calls[1][1], [])
+
+        mock_calls = self.dbus_mock.GetMethodCalls('Wop')
+        self.assertEqual(len(mock_calls), 2)
+        self.assertGreater(mock_calls[0][0], 10000)  # timestamp
+        self.assertEqual(mock_calls[0][1], ['foo'])
+        self.assertGreater(mock_calls[1][0], 10000)  # timestamp
+        self.assertEqual(mock_calls[1][1], ['bar'])
+
 if __name__ == '__main__':
     # avoid writing to stderr
     unittest.main(testRunner=unittest.TextTestRunner(stream=sys.stdout, verbosity=2))

@@ -52,7 +52,9 @@ class DBusMockObject(dbus.service.Object):
         props: A property_name (string) → property (Variant) map with initial
                properties on "interface"
         logfile: When given, method calls will be logged into that file name;
-                 if None, logging will be written to stdout.
+                 if None, logging will be written to stdout. Note that you can
+                 also query the called methods over D-BUS with GetCalls() and
+                 GetMethodCalls().
         '''
         super(self.__class__, self).__init__(bus_name, path)
 
@@ -69,6 +71,7 @@ class DBusMockObject(dbus.service.Object):
             self.logfile = open(logfile, 'w')
         else:
             self.logfile = None
+        self.call_log = []
 
     def __del__(self):
         if self.logfile:
@@ -344,6 +347,34 @@ class DBusMockObject(dbus.service.Object):
 
         dbus_fn(self, *args)
 
+    @dbus.service.method(MOCK_IFACE,
+                         in_signature='',
+                         out_signature='a(tsav)')
+    def GetCalls(self):
+        '''List all the logged calls since the last call to ClearCalls().
+        
+        Return a list of (timestamp, method_name, args_list) tuples.
+        '''
+        return self.call_log
+
+    @dbus.service.method(MOCK_IFACE,
+                         in_signature='s',
+                         out_signature='a(tav)')
+    def GetMethodCalls(self, method):
+        '''List all the logged calls of a particular method.
+
+        Return a list of (timestamp, args_list) tuples.
+        '''
+        return [(row[0], row[2]) for row in self.call_log if row[1] == method]
+
+    @dbus.service.method(MOCK_IFACE,
+                         in_signature='',
+                         out_signature='')
+    def ClearCalls(self):
+        '''Empty the log of mock call signatures.'''
+
+        self.call_log = []
+
     def mock_method(self, interface, dbus_method, in_signature, *args, **kwargs):
         '''Master mock method.
 
@@ -362,6 +393,7 @@ class DBusMockObject(dbus.service.Object):
         args = m.get_args_list()
 
         self.log(dbus_method + self.format_args(args))
+        self.call_log.append((int(time.time()), str(dbus_method), args))
 
         code = self.methods[interface][dbus_method][2]
         if code:
