@@ -358,7 +358,7 @@ class DBusMockObject(dbus.service.Object):
                          out_signature='a(tsav)')
     def GetCalls(self):
         '''List all the logged calls since the last call to ClearCalls().
-        
+
         Return a list of (timestamp, method_name, args_list) tuples.
         '''
         return self.call_log
