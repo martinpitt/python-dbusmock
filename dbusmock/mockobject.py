@@ -195,6 +195,12 @@ class DBusMockObject(dbus.service.Object):
               global "objects" variable, which is a dictionary mapping object
               paths to DBusMockObject instances.
 
+              For keeping state across method calls, you are free to use normal
+              Python members of the "self" object, which will be persistant for
+              the whole mock's life time. E. g. you can have a method with
+              "self.my_state = True", and another method that returns it with
+              "ret = self.my_state".
+
               When specifying '', the method will not do anything (except
               logging) and return None.
         '''
