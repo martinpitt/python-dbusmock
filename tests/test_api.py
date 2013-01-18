@@ -390,6 +390,14 @@ assert args[2] == 5
         self.assertEqual(type(args[3][0]), dbus.ObjectPath)
         self.assertEqual(args[3][0].variant_level, 0)
 
+        # check correct logging
+        with open(self.mock_log.name) as f:
+            log = f.read()
+        self.assertRegex(log, '[0-9.]+ emit org.freedesktop.Test.Main.SigNoArgs\n')
+        self.assertRegex(log, '[0-9.]+ emit org.freedesktop.Test.Sub.SigTwoArgs "hello" 42\n')
+        self.assertRegex(log, '[0-9.]+ emit org.freedesktop.Test.Sub.SigTypeTest -42 42')
+        self.assertRegex(log, '[0-9.]+ emit org.freedesktop.Test.Sub.SigTypeTest -42 42 "hello" \["/a", "/b"\]\n')
+
     def test_signals_type_mismatch(self):
         '''emitting signals with wrong arguments'''
 

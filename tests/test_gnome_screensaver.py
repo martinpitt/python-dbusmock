@@ -52,7 +52,7 @@ class TestGnomeScreensaver(dbusmock.DBusTestCase):
         self.assertGreater(self.obj_ss.GetActiveTime(), 0)
 
         self.assertRegex(self.p_mock.stdout.read(),
-                         b'emit org.gnome.ScreenSaver.ActiveChanged:.*True')
+                         b'emit org.gnome.ScreenSaver.ActiveChanged 1\n')
 
     def test_set_active(self):
         '''SetActive()'''
@@ -60,12 +60,12 @@ class TestGnomeScreensaver(dbusmock.DBusTestCase):
         self.obj_ss.SetActive(True)
         self.assertEqual(self.obj_ss.GetActive(), True)
         self.assertRegex(self.p_mock.stdout.read(),
-                         b'emit org.gnome.ScreenSaver.ActiveChanged:.*True')
+                         b'emit org.gnome.ScreenSaver.ActiveChanged True\n')
 
         self.obj_ss.SetActive(False)
         self.assertEqual(self.obj_ss.GetActive(), False)
         self.assertRegex(self.p_mock.stdout.read(),
-                         b'emit org.gnome.ScreenSaver.ActiveChanged:.*False')
+                         b'emit org.gnome.ScreenSaver.ActiveChanged False\n')
 
 if __name__ == '__main__':
     # avoid writing to stderr

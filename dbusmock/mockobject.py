@@ -345,7 +345,7 @@ class DBusMockObject(dbus.service.Object):
         m.append(signature=signature, *args)
         args = m.get_args_list()
 
-        fn = lambda self, *args: self.log('emit %s.%s: %s' % (interface, name, args))
+        fn = lambda self, *args: self.log('emit %s.%s%s' % (interface, name, self.format_args(args)))
         fn.__name__ = str(name)
         dbus_fn = dbus.service.signal(interface)(fn)
         dbus_fn._dbus_signature = signature
@@ -412,6 +412,8 @@ class DBusMockObject(dbus.service.Object):
         '''Format a D-BUS argument tuple into an appropriate logging string.'''
 
         def format_arg(a):
+            if isinstance(a, dbus.Boolean):
+                return str(bool(a))
             if isinstance(a, dbus.Byte):
                 return str(int(a))
             if isinstance(a, int) or isinstance(a, long):
