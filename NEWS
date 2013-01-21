@@ -1,4 +1,4 @@
-0.4.0 (UNRELEASED)
+0.4.0 (2013-01-21)
 ------------------
  - Add GetCalls(), GetMethodCalls() and ClearCalls() methods on the mock D-BUS
    interface to query the call log, for cases where parsing stdout is
