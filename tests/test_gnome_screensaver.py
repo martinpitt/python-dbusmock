@@ -52,7 +52,7 @@ class TestGnomeScreensaver(dbusmock.DBusTestCase):
         self.assertGreater(self.obj_ss.GetActiveTime(), 0)
 
         self.assertRegex(self.p_mock.stdout.read(),
-                         b'emit org.gnome.ScreenSaver.ActiveChanged 1\n')
+                         b'emit org.gnome.ScreenSaver.ActiveChanged True\n')
 
     def test_set_active(self):
         '''SetActive()'''
