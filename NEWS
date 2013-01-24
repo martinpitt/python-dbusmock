@@ -1,3 +1,7 @@
+0.4.1 (UNRELEASED)
+------------------
+ - upower template: Change LidIsClosed property default value to False.
+
 0.4.0 (2013-01-21)
 ------------------
  - Add GetCalls(), GetMethodCalls() and ClearCalls() methods on the mock D-BUS

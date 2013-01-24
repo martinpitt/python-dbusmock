@@ -43,7 +43,7 @@ def load(mock, parameters):
                            'OnBattery': parameters.get('OnBattery', False),
                            'OnLowBattery': parameters.get('OnLowBattery', True),
                            'LidIsPresent': parameters.get('LidIsPresent', True),
-                           'LidIsClosed': parameters.get('LidIsClosed', True),
+                           'LidIsClosed': parameters.get('LidIsClosed', False),
                            'LidForceSleep': parameters.get('LidForceSleep', True),
                            'IsDocked': parameters.get('IsDocked', False),
                        }, signature='sv'))
