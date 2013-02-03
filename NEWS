@@ -1,6 +1,7 @@
-0.4.1 (UNRELEASED)
-------------------
+0.5 (UNRELEASED)
+----------------
  - upower template: Change LidIsClosed property default value to False.
+ - Add polkitd template. (LP: #1112551)
 
 0.4.0 (2013-01-21)
 ------------------
