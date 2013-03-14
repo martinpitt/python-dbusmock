@@ -476,6 +476,29 @@ assert args[2] == 5
         self.assertGreater(mock_calls[1][0], 10000)  # timestamp
         self.assertEqual(mock_calls[1][1], ['bar'])
 
+    def test_dbus_method_called(self):
+        '''subscribe to MethodCalled signal'''
+
+        loop = GLib.MainLoop()
+        caught_signals = []
+
+        def method_called(method, args, **kwargs):
+            caught_signals.append((method, args))
+            loop.quit()
+
+        self.dbus_mock.AddMethod('', 'Do', 's', '', '')
+        self.dbus_mock.connect_to_signal('MethodCalled', method_called)
+        self.assertEqual(self.dbus_test.Do('foo'), None)
+
+        GLib.timeout_add(5000, loop.quit)
+        loop.run()
+
+        self.assertEqual(len(caught_signals), 1)
+        method, args = caught_signals[0]
+        self.assertEqual(method, 'Do')
+        self.assertEqual(len(args), 1)
+        self.assertEqual(args[0], 'foo')
+
 if __name__ == '__main__':
     # avoid writing to stderr
     unittest.main(testRunner=unittest.TextTestRunner(stream=sys.stdout, verbosity=2))
