@@ -381,6 +381,10 @@ class DBusMockObject(dbus.service.Object):
 
         self.call_log = []
 
+    @dbus.service.signal(MOCK_IFACE, signature='sav')
+    def MethodCalled(self, name, args):
+        pass
+
     def mock_method(self, interface, dbus_method, in_signature, *args, **kwargs):
         '''Master mock method.
 
@@ -400,6 +404,7 @@ class DBusMockObject(dbus.service.Object):
 
         self.log(dbus_method + self.format_args(args))
         self.call_log.append((int(time.time()), str(dbus_method), args))
+        self.MethodCalled(dbus_method, args)
 
         code = self.methods[interface][dbus_method][2]
         if code:

@@ -1,3 +1,8 @@
+0.6 (UNRELEASED)
+----------------
+ - Emit MethodCalled() signal on the DBusMock interface, as an alternative way
+   of verifying method calls. Thanks Lars Uebernickel.
+
 0.5 (2013-02-03)
 ----------------
  - upower template: Change LidIsClosed property default value to False.
