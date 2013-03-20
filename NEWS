@@ -5,6 +5,7 @@
  - DBusMockObject.AddTemplate() and DBusTestCase.spawn_server_template() can
    now load local templates by specifying a path to a *.py file as template
    name. Thanks Lucas De Marchi.
+ - Quit mock process if the D-BUS it connected to goes down. (LP: #1156561)
 
 0.5 (2013-02-03)
 ----------------

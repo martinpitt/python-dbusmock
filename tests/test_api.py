@@ -15,6 +15,7 @@ import unittest
 import sys
 import tempfile
 import subprocess
+import time
 
 import dbus
 import dbus.mainloop.glib
@@ -533,6 +534,35 @@ def load(mock, parameters):
 
     def test_local_nonexisting(self):
         self.assertRaises(ImportError, self.spawn_server_template, '/non/existing.py')
+
+
+class TestCleanup(dbusmock.DBusTestCase):
+    '''Test cleanup of resources'''
+
+    def test_mock_terminates_with_bus(self):
+        '''Spawned mock processes exit when bus goes down'''
+
+        self.start_session_bus()
+        p_mock = self.spawn_server('org.freedesktop.Test',
+                                   '/',
+                                   'org.freedesktop.Test.Main')
+        self.stop_dbus(self.session_bus_pid)
+
+        # give the mock 2 seconds to terminate
+        timeout = 20
+        while timeout > 0:
+            if p_mock.poll() is not None:
+                break
+            timeout -= 1
+            time.sleep(0.1)
+
+        if p_mock.poll() is None:
+            # clean up manually
+            p_mock.terminate()
+            p_mock.wait()
+            self.fail('mock process did not terminate after 2 seconds')
+
+        self.assertEqual(p_mock.wait(), 0)
 
 
 if __name__ == '__main__':
