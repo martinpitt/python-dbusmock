@@ -526,11 +526,7 @@ def load(mock, parameters):
             (p_mock, dbus_ultimate) = self.spawn_server_template(
                 my_template.name, stdout=subprocess.PIPE)
 
-        try:
-            self.assertEqual(dbus_ultimate.Answer(), 42)
-        finally:
-            p_mock.terminate()
-            p_mock.wait()
+        self.assertEqual(dbus_ultimate.Answer(), 42)
 
     def test_local_nonexisting(self):
         self.assertRaises(ImportError, self.spawn_server_template, '/non/existing.py')
