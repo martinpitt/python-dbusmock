@@ -96,6 +96,8 @@ class DBusMockObject(dbus.service.Object):
     def Get(self, interface_name, property_name):
         '''Standard D-Bus API for getting a property value'''
 
+        if not interface_name:
+            interface_name = self.interface
         try:
             return self.GetAll(interface_name)[property_name]
         except KeyError:
@@ -108,6 +110,8 @@ class DBusMockObject(dbus.service.Object):
     def GetAll(self, interface_name, *args, **kwargs):
         '''Standard D-Bus API for getting all property values'''
 
+        if not interface_name:
+            interface_name = self.interface
         try:
             return self.props[interface_name]
         except KeyError:
