@@ -1,4 +1,4 @@
-0.6 (UNRELEASED)
+0.6 (2013-03-20)
 ----------------
  - Emit MethodCalled() signal on the DBusMock interface, as an alternative way
    of verifying method calls. Thanks Lars Uebernickel.
