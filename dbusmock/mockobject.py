@@ -34,6 +34,20 @@ if sys.version_info[0] >= 3:
     unicode = str
 
 
+def load_module(name):
+    if os.path.exists(name) and os.path.splitext(name)[1] == '.py':
+        sys.path.insert(0, os.path.dirname(os.path.abspath(name)))
+        try:
+            m = os.path.splitext(os.path.basename(name))[0]
+            module = importlib.import_module(m)
+        finally:
+            sys.path.pop(0)
+
+        return module
+
+    return importlib.import_module('dbusmock.templates.' + name)
+
+
 class DBusMockObject(dbus.service.Object):
     '''Mock D-Bus object
 
@@ -292,8 +306,9 @@ class DBusMockObject(dbus.service.Object):
         properties for the tests, and not the skeleton of common properties,
         interfaces, and methods.
 
-        template: Name of the template to load. See "pydoc dbusmock.templates"
-                  for a list of available templates, and
+        template: Name of the template to load or the full path to a *.py file
+                  for custom templates. See "pydoc dbusmock.templates" for a
+                  list of available templates from python-dbusmock package, and
                   "pydoc dbusmock.templates.NAME" for documentation about
                   template NAME.
         parameters: A parameter (string) → value (variant) map, for
@@ -302,7 +317,7 @@ class DBusMockObject(dbus.service.Object):
                     details.
         '''
         try:
-            module = importlib.import_module('dbusmock.templates.' + template)
+            module = load_module(template)
         except ImportError as e:
             raise dbus.exceptions.DBusException('Cannot add template %s: %s' % (template, str(e)))
 

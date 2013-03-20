@@ -14,6 +14,7 @@ __license__ = 'LGPL 3+'
 import unittest
 import sys
 import tempfile
+import subprocess
 
 import dbus
 import dbus.mainloop.glib
@@ -498,6 +499,41 @@ assert args[2] == 5
         self.assertEqual(method, 'Do')
         self.assertEqual(len(args), 1)
         self.assertEqual(args[0], 'foo')
+
+
+class TestTemplates(dbusmock.DBusTestCase):
+    '''Test template API'''
+
+    @classmethod
+    def setUpClass(klass):
+        klass.start_session_bus()
+
+    def test_local(self):
+        '''Load a local template *.py file'''
+
+        with tempfile.NamedTemporaryFile(prefix='answer_', suffix='.py') as my_template:
+            my_template.write(b'''import dbus
+BUS_NAME = 'universe.Ultimate'
+MAIN_OBJ = '/'
+MAIN_IFACE = 'universe.Ultimate'
+SYSTEM_BUS = False
+
+def load(mock, parameters):
+    mock.AddMethods(MAIN_IFACE, [('Answer', '', 'i', 'ret = 42')])
+''')
+            my_template.flush()
+            (p_mock, dbus_ultimate) = self.spawn_server_template(
+                my_template.name, stdout=subprocess.PIPE)
+
+        try:
+            self.assertEqual(dbus_ultimate.Answer(), 42)
+        finally:
+            p_mock.terminate()
+            p_mock.wait()
+
+    def test_local_nonexisting(self):
+        self.assertRaises(ImportError, self.spawn_server_template, '/non/existing.py')
+
 
 if __name__ == '__main__':
     # avoid writing to stderr

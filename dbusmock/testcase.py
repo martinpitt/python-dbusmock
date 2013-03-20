@@ -19,11 +19,10 @@ import subprocess
 import signal
 import os
 import errno
-import importlib
 
 import dbus
 
-from dbusmock.mockobject import MOCK_IFACE
+from dbusmock.mockobject import MOCK_IFACE, load_module
 
 
 class DBusTestCase(unittest.TestCase):
@@ -205,7 +204,7 @@ class DBusTestCase(unittest.TestCase):
         Returns a pair (daemon Popen object, main dbus object).
         '''
         # we need the bus address from the template module
-        module = importlib.import_module('dbusmock.templates.' + template)
+        module = load_module(template)
         daemon = klass.spawn_server(module.BUS_NAME, module.MAIN_OBJ,
                                     module.MAIN_IFACE, module.SYSTEM_BUS, stdout)
 
