@@ -1,3 +1,7 @@
+0.6.1 (UNRELEASED)
+------------------
+ - Add dbusmock.__version__ attribute, as per PEP-0396.
+
 0.6 (2013-03-20)
 ----------------
  - Emit MethodCalled() signal on the DBusMock interface, as an alternative way
