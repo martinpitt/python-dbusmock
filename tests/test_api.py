@@ -573,7 +573,7 @@ class TestSubclass(dbusmock.DBusTestCase):
                 bus_name = dbus.service.BusName('org.test.MyMock',
                                                 dbusmock.testcase.DBusTestCase.get_dbus())
                 dbusmock.mockobject.DBusMockObject.__init__(
-                    self, bus_name, '/', 'org.test.A', {})
+                    self, bus_name, '/', 'org.test.A', {}, os.devnull)
                 self.AddMethod('', 'Ping', '', 'i', 'ret = 42')
 
         m = MyMock()
