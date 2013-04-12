@@ -1,6 +1,7 @@
 0.6.1 (UNRELEASED)
 ------------------
  - Add dbusmock.__version__ attribute, as per PEP-0396.
+ - Fix not being able to inherit from DBusMockObject. Thanks Lucas De Marchi!
 
 0.6 (2013-03-20)
 ----------------

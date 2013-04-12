@@ -70,7 +70,7 @@ class DBusMockObject(dbus.service.Object):
                  also query the called methods over D-BUS with GetCalls() and
                  GetMethodCalls().
         '''
-        super(self.__class__, self).__init__(bus_name, path)
+        dbus.service.Object.__init__(self, bus_name, path)
 
         self.bus_name = bus_name
         self.interface = interface
@@ -504,7 +504,7 @@ class DBusMockObject(dbus.service.Object):
                 mock_interfaces.setdefault(interface, {})[method] = self.methods[interface][method][3]
         self._dbus_class_table[cls] = mock_interfaces
 
-        xml = super(self.__class__, self).Introspect(object_path, connection)
+        xml = dbus.service.Object.Introspect(self, object_path, connection)
 
         # restore original class table
         self._dbus_class_table[cls] = orig_interfaces

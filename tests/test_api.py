@@ -561,6 +561,24 @@ class TestCleanup(dbusmock.DBusTestCase):
         self.assertEqual(p_mock.wait(), 0)
 
 
+class TestSubclass(dbusmock.DBusTestCase):
+    '''Test subclassing DBusMockObject'''
+
+    def test_ctor(self):
+        '''Override DBusMockObject constructor'''
+
+        class MyMock(dbusmock.mockobject.DBusMockObject):
+            def __init__(self):
+                bus_name = dbus.service.BusName('org.test.MyMock',
+                                                dbusmock.testcase.DBusTestCase.get_dbus())
+                dbusmock.mockobject.DBusMockObject.__init__(
+                    self, bus_name, '/', 'org.test.A', {})
+                self.AddMethod('', 'Ping', '', 'i', 'ret = 42')
+
+        m = MyMock()
+        self.assertEqual(m.Ping(), 42)
+
+
 if __name__ == '__main__':
     # avoid writing to stderr
     unittest.main(testRunner=unittest.TextTestRunner(stream=sys.stdout, verbosity=2))
