@@ -2,6 +2,8 @@
 ------------------
  - Add dbusmock.__version__ attribute, as per PEP-0396.
  - Fix not being able to inherit from DBusMockObject. Thanks Lucas De Marchi!
+ - Allow subclassed DBusMockObject constructors to specify props arguments as
+   None.
 
 0.6 (2013-03-20)
 ----------------

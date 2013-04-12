@@ -76,6 +76,8 @@ class DBusMockObject(dbus.service.Object):
         self.interface = interface
         # interface -> name -> value
         self.props = {}
+        if props is None:
+            props = {}
         self.props[interface] = props
 
         # interface -> name -> (in_signature, out_signature, code, dbus_wrapper_fn)

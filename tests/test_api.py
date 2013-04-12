@@ -13,6 +13,7 @@ __license__ = 'LGPL 3+'
 
 import unittest
 import sys
+import os
 import tempfile
 import subprocess
 import time
@@ -577,6 +578,24 @@ class TestSubclass(dbusmock.DBusTestCase):
 
         m = MyMock()
         self.assertEqual(m.Ping(), 42)
+
+    def test_none_props(self):
+        '''object with None properties argument'''
+
+        class MyMock(dbusmock.mockobject.DBusMockObject):
+            def __init__(self):
+                bus_name = dbus.service.BusName('org.test.MyMock',
+                                                dbusmock.testcase.DBusTestCase.get_dbus())
+                dbusmock.mockobject.DBusMockObject.__init__(
+                    self, bus_name, '/mymock', 'org.test.MyMockI', None, os.devnull)
+                self.AddMethod('', 'Ping', '', 'i', 'ret = 42')
+
+        m = MyMock()
+        self.assertEqual(m.Ping(), 42)
+        self.assertEqual(m.GetAll('org.test.MyMockI'), {})
+
+        m.AddProperty('org.test.MyMockI', 'blurb', 5)
+        self.assertEqual(m.GetAll('org.test.MyMockI'), {'blurb': 5})
 
 
 if __name__ == '__main__':
