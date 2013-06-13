@@ -26,20 +26,23 @@ default_caps = ['body', 'body-markup', 'icon-static', 'image/svg+xml',
                 'private-synchronous', 'append', 'private-icon-only',
                 'truncation']
 
-# next notification ID
-next_id = 0
-
-
 def load(mock, parameters):
     if 'capabilities' in parameters:
         caps = parameters['capabilities'].split()
     else:
         caps = default_caps
 
+    # next notification ID
+    mock.next_id = 1
+
     mock.AddMethods(MAIN_IFACE, [
         ('GetCapabilities', '', 'as', 'ret = %s' % repr(caps)),
         ('CloseNotification', 'i', '', ''),
         ('GetServerInformation', '', 'ssss', 'ret = ("mock-notify", "test vendor", "1.0", "1.1")'),
-        #('Notify', 'susssasa{sv}i', 'u', 'next_id += 1; ret = next_id'),
-        ('Notify', 'susssasa{sv}i', 'u', 'ret = 1'),
+        ('Notify', 'susssasa{sv}i', 'u', '''if args[1]:
+    ret = args[1]
+else:
+    ret = self.next_id
+    self.next_id += 1
+'''),
     ])

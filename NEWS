@@ -5,6 +5,8 @@
  - Allow subclassed DBusMockObject constructors to specify props arguments as
    None.
  - Fix failing notification-daemon tests for too old libnotify. (LP: #1190208)
+ - notification_daemon template: Generate new IDs for Notify() calls with an
+   input ID of 0. (LP: #1190209 part 1)
 
 0.6 (2013-03-20)
 ----------------

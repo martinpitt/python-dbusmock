@@ -16,6 +16,7 @@ import sys
 import subprocess
 import fcntl
 import os
+import dbus
 
 import dbusmock
 
@@ -34,6 +35,7 @@ class TestNotificationDaemon(dbusmock.DBusTestCase):
     @classmethod
     def setUpClass(klass):
         klass.start_session_bus()
+        klass.dbus_con = klass.get_dbus(False)
 
     def setUp(self):
         (self.p_mock, self.obj_daemon) = self.spawn_server_template(
@@ -61,6 +63,29 @@ class TestNotificationDaemon(dbusmock.DBusTestCase):
                                '-i', 'warning_icon', 'title', 'my text'])
         log = self.p_mock.stdout.read()
         self.assertRegex(log, b'[0-9.]+ Notify "fooApp" 0 "warning_icon" "title" "my text" \[\] {"urgency": 1} 27\n')
+
+    def test_id(self):
+        '''ID handling'''
+        
+        notify_proxy = dbus.Interface(
+            self.dbus_con.get_object('org.freedesktop.Notifications', '/org/freedesktop/Notifications'),
+            'org.freedesktop.Notifications')
+
+        # with input ID 0 it should generate new IDs
+        id = notify_proxy.Notify('test', 0, '', 'summary', 'body', [], {}, -1)
+        self.assertEqual(id, 1)
+        id = notify_proxy.Notify('test', 0, '', 'summary', 'body', [], {}, -1)
+        self.assertEqual(id, 2)
+
+        # an existing ID should just be bounced back
+        id = notify_proxy.Notify('test', 4, '', 'summary', 'body', [], {}, -1)
+        self.assertEqual(id, 4)
+        id = notify_proxy.Notify('test', 1, '', 'summary', 'body', [], {}, -1)
+        self.assertEqual(id, 1)
+
+        # the previous doesn't forget the counter
+        id = notify_proxy.Notify('test', 0, '', 'summary', 'body', [], {}, -1)
+        self.assertEqual(id, 3)
 
 if __name__ == '__main__':
     # avoid writing to stderr
