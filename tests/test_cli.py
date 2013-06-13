@@ -64,7 +64,6 @@ class TestCLI(dbusmock.DBusTestCase):
             out = subprocess.check_output(['upower', '--dump'],
                                           universal_newlines=True)
             self.assertRegex(out, 'on-battery:\s+no')
-            self.assertRegex(out, 'can-suspend:\s+yes')
 
             mock_out = self.p_mock.stdout.readline()
             self.assertTrue('EnumerateDevices' in mock_out, mock_out)

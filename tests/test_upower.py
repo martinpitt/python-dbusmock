@@ -50,8 +50,6 @@ class TestUPower(dbusmock.DBusTestCase):
         self.assertFalse('Device' in out, out)
         self.assertRegex(out, 'on-battery:\s+yes')
         self.assertRegex(out, 'lid-is-present:\s+yes')
-        self.assertRegex(out, 'can-suspend:\s+yes')
-        self.assertRegex(out, 'can-hibernate.*\sno')
 
     def test_one_ac(self):
         path = self.dbusmock.AddAC('mock_AC', 'Mock AC')

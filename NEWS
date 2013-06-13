@@ -1,3 +1,8 @@
+0.6.3 (UNRELEASED)
+------------------
+ - Drop "can-suspend" and "can-hibernate" checks from upower template test.
+   upower 1.0 deprecates this functionality, and defaults to not building it.
+
 0.6.2 (2013-06-13)
 ------------------
  - Fix test_api.TestSubclass test to work without an existing session D-BUS.
