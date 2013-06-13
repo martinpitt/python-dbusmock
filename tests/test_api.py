@@ -565,6 +565,10 @@ class TestCleanup(dbusmock.DBusTestCase):
 class TestSubclass(dbusmock.DBusTestCase):
     '''Test subclassing DBusMockObject'''
 
+    @classmethod
+    def setUpClass(klass):
+        klass.start_session_bus()
+
     def test_ctor(self):
         '''Override DBusMockObject constructor'''
 

@@ -1,3 +1,7 @@
+0.6.2 (UNRELEASED)
+------------------
+ - Fix test_api.TestSubclass test to work without an existing session D-BUS.
+
 0.6.1 (2013-06-13)
 ------------------
  - Add dbusmock.__version__ attribute, as per PEP-0396.
