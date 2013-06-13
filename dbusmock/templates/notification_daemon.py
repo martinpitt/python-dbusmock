@@ -26,6 +26,7 @@ default_caps = ['body', 'body-markup', 'icon-static', 'image/svg+xml',
                 'private-synchronous', 'append', 'private-icon-only',
                 'truncation']
 
+
 def load(mock, parameters):
     if 'capabilities' in parameters:
         caps = parameters['capabilities'].split()

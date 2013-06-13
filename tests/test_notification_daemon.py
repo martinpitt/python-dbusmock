@@ -24,8 +24,8 @@ try:
     notify_send_version = subprocess.check_output(['notify-send', '--version'],
                                                   universal_newlines=True)
     notify_send_version = notify_send_version.split()[-1]
-except (FileNotFoundError, subprocess.CalledProcessError):
-    notify_send_version = None
+except (OSError, subprocess.CalledProcessError):
+    notify_send_version = ''
 
 
 @unittest.skipUnless(notify_send_version, 'notify-send not installed')
@@ -66,7 +66,7 @@ class TestNotificationDaemon(dbusmock.DBusTestCase):
 
     def test_id(self):
         '''ID handling'''
-        
+
         notify_proxy = dbus.Interface(
             self.dbus_con.get_object('org.freedesktop.Notifications', '/org/freedesktop/Notifications'),
             'org.freedesktop.Notifications')
