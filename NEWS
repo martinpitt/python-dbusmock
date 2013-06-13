@@ -1,4 +1,4 @@
-0.6.2 (UNRELEASED)
+0.6.2 (2013-06-13)
 ------------------
  - Fix test_api.TestSubclass test to work without an existing session D-BUS.
 
