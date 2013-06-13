@@ -87,6 +87,26 @@ class TestNotificationDaemon(dbusmock.DBusTestCase):
         id = notify_proxy.Notify('test', 0, '', 'summary', 'body', [], {}, -1)
         self.assertEqual(id, 3)
 
+    def test_close(self):
+        '''CloseNotification() and NotificationClosed() signal'''
+
+        notify_proxy = dbus.Interface(
+            self.dbus_con.get_object('org.freedesktop.Notifications', '/org/freedesktop/Notifications'),
+            'org.freedesktop.Notifications')
+
+        id = notify_proxy.Notify('test', 0, '', 'summary', 'body', [], {}, -1)
+        self.assertEqual(id, 1)
+
+        # known notification, should send a signal
+        notify_proxy.CloseNotification(id)
+        log = self.p_mock.stdout.read()
+        self.assertRegex(log, b'[0-9.]+ emit .*NotificationClosed 1 1\n')
+
+        # unknown notification, don't send a signal
+        notify_proxy.CloseNotification(id + 1)
+        log = self.p_mock.stdout.read()
+        self.assertNotIn(b'NotificationClosed', log)
+
 if __name__ == '__main__':
     # avoid writing to stderr
     unittest.main(testRunner=unittest.TextTestRunner(stream=sys.stdout, verbosity=2))

@@ -7,6 +7,8 @@
  - Fix failing notification-daemon tests for too old libnotify. (LP: #1190208)
  - notification_daemon template: Generate new IDs for Notify() calls with an
    input ID of 0. (LP: #1190209 part 1)
+ - notification_daemon template: Send NotificationClosed signal in
+   CloseNotification() method for valid IDs. (LP: #1190209 part 2)
 
 0.6 (2013-03-20)
 ----------------
