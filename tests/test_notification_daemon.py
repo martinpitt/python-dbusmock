@@ -19,13 +19,15 @@ import os
 
 import dbusmock
 
+try:
+    notify_send_version = subprocess.check_output(['notify-send', '--version'],
+                                                  universal_newlines=True)
+    notify_send_version = notify_send_version.split()[-1]
+except (FileNotFoundError, subprocess.CalledProcessError):
+    notify_send_version = None
 
-p = subprocess.Popen(['which', 'notify-send'], stdout=subprocess.PIPE)
-p.communicate()
-have_notify_send = (p.returncode == 0)
 
-
-@unittest.skipUnless(have_notify_send, 'notify-send not installed')
+@unittest.skipUnless(notify_send_version, 'notify-send not installed')
 class TestNotificationDaemon(dbusmock.DBusTestCase):
     '''Test mocking notification-daemon'''
 
@@ -51,6 +53,7 @@ class TestNotificationDaemon(dbusmock.DBusTestCase):
         log = self.p_mock.stdout.read()
         self.assertRegex(log, b'[0-9.]+ Notify "notify-send" 0 "" "title" "my text" \[\]')
 
+    @unittest.skipIf(notify_send_version < '0.7.5', 'this requires libnotify >= 0.7.5')
     def test_options(self):
         '''notify-send with some options'''
 
