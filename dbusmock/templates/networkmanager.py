@@ -52,7 +52,12 @@ def load(mock, parameters):
     mock.AddMethods(MAIN_IFACE, [
         ('GetDevices', '', 'ao',
          'ret = [k for k in objects.keys() if "/Devices" in k]'),
-        ('GetPermissions', '', 'a{ss}', 'ret = {}')])
+        ('GetPermissions', '', 'a{ss}', 'ret = {}'),
+        ('state', '', 'u', "ret = self.Get('%s', 'State')" % MAIN_IFACE),
+        ('ActivateConnection', 'ooo', 'o', "ret = args[0]"),
+        ('AddAndActivateConnection', 'a{sa{sv}}oo', 'oo',
+           "ret = (dbus.ObjectPath('/org/freedesktop/NetworkManager/Settings/new'), dbus.ObjectPath('/org/freedesktop/NetworkManager/Settings/new'))"),
+    ])
 
     mock.AddProperties('',
                        {
@@ -96,6 +101,7 @@ def AddEthernetDevice(self, device_name, iface_name, state):
     props = {'DeviceType': dbus.UInt32(1, variant_level=1),
              'State': dbus.UInt32(state, variant_level=1),
              'Interface': dbus.String(iface_name, variant_level=1),
+             'AvailableConnections': dbus.Array([], signature='o'),
              'IpInterface': dbus.String('', variant_level=1)}
 
     obj = dbusmock.get_object(path)
@@ -132,12 +138,14 @@ def AddWiFiDevice(self, device_name, iface_name, state):
                    [
                        ('GetAccessPoints', '', 'ao',
                         'ret = self.access_points'),
+                       ('RequestScan', 'a{sv}', '', ''),
                    ])
 
     dev_obj = dbusmock.get_object(path)
     dev_obj.access_points = []
     dev_obj.AddProperties('org.freedesktop.NetworkManager.Device',
                           {
+                              'AvailableConnections': dbus.Array([], signature='o'),
                               'DeviceType': dbus.UInt32(2, variant_level=1),
                               'State': dbus.UInt32(state, variant_level=1),
                               'Interface': dbus.String(iface_name, variant_level=1),
@@ -184,3 +192,24 @@ def AddAccessPoint(self, dev_path, ap_name, ssid, hw_address,
 
     dev_obj.access_points.append(ap_path)
     return ap_path
+
+@dbus.service.method(MOCK_IFACE,
+                     in_signature='ss', out_signature='s')
+def AddConnection(self, dev_path, connection_name):
+    dev_obj = dbusmock.get_object(dev_path)
+    connection_path = '/org/freedesktop/NetworkManager/Settings/' + connection_name
+    connections = dev_obj.Get('org.freedesktop.NetworkManager.Device', 'AvailableConnections')
+    if connection_path in connections:
+        raise dbus.exceptions.DBusException(
+            MAIN_IFACE + '.AlreadyExists',
+            'Connection %s on device %s already exists' % (connection_name, dev_path))
+    self.AddObject(connection_path,
+                   'org.freedesktop.NetworkManager.Settings.Connection',
+                   {},
+                   [])
+
+    connections.append(connection_path)
+    dev_obj.Set('org.freedesktop.NetworkManager.Device', 'AvailableConnections', connections)
+    return connection_path
+
+
