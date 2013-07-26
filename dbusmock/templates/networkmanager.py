@@ -25,6 +25,11 @@ import dbusmock
 BUS_NAME = 'org.freedesktop.NetworkManager'
 MAIN_OBJ = '/org/freedesktop/NetworkManager'
 MAIN_IFACE = 'org.freedesktop.NetworkManager'
+SETTINGS_OBJ = '/org/freedesktop/NetworkManager/Settings'
+SETTINGS_IFACE = 'org.freedesktop.NetworkManager.Settings'
+DEVICE_IFACE = 'org.freedesktop.NetworkManager.Device'
+ACCESS_POINT_IFACE = 'org.freedesktop.NetworkManager.AccessPoint'
+CSETTINGS_IFACE = 'org.freedesktop.NetworkManager.Settings.Connection'
 SYSTEM_BUS = True
 
 
@@ -72,6 +77,21 @@ def load(mock, parameters):
                            'WwanHardwareEnabled': parameters.get('WwanHardwareEnabled', True)
                        })
 
+    settings_props = {'Hostname': dbus.String('hostname', variant_level=1),
+                      'CanModify': dbus.Boolean(1, variant_level=1),
+                      'Connections': dbus.Array([], signature='o'),
+                     }
+    settings_methods = [
+                           ('ListConnections', '', 'ao', "ret = self.Get('%s', 'Connections')" % SETTINGS_IFACE),
+                           ('GetConnectionByUuid', 's', 'o', ''),
+                           ('AddConnection', 'a{sa{sv}}', 'o', ''),
+                           ('SaveHostname', 's', '', ''),
+                       ]
+    mock.AddObject(SETTINGS_OBJ,
+                   SETTINGS_IFACE,
+                   settings_props,
+                   settings_methods)
+
 
 @dbus.service.method(MOCK_IFACE,
                      in_signature='ssi', out_signature='s')
@@ -105,7 +125,7 @@ def AddEthernetDevice(self, device_name, iface_name, state):
              'IpInterface': dbus.String('', variant_level=1)}
 
     obj = dbusmock.get_object(path)
-    obj.AddProperties('org.freedesktop.NetworkManager.Device', props)
+    obj.AddProperties(DEVICE_IFACE, props)
     return path
 
 
@@ -143,7 +163,7 @@ def AddWiFiDevice(self, device_name, iface_name, state):
 
     dev_obj = dbusmock.get_object(path)
     dev_obj.access_points = []
-    dev_obj.AddProperties('org.freedesktop.NetworkManager.Device',
+    dev_obj.AddProperties(DEVICE_IFACE,
                           {
                               'AvailableConnections': dbus.Array([], signature='o'),
                               'DeviceType': dbus.UInt32(2, variant_level=1),
@@ -176,7 +196,7 @@ def AddAccessPoint(self, dev_path, ap_name, ssid, hw_address,
             MAIN_IFACE + '.AlreadyExists',
             'Access point %s on device %s already exists' % (ap_name, dev_path))
     self.AddObject(ap_path,
-                   'org.freedesktop.NetworkManager.AccessPoint',
+                   ACCESS_POINT_IFACE,
                    {
                        'Ssid': dbus.ByteArray(ssid.encode('UTF-8'), variant_level=1),
                        'HwAddress': dbus.String(hw_address.encode('UTF-8'), variant_level=1),
@@ -194,22 +214,58 @@ def AddAccessPoint(self, dev_path, ap_name, ssid, hw_address,
     return ap_path
 
 @dbus.service.method(MOCK_IFACE,
-                     in_signature='ss', out_signature='s')
-def AddConnection(self, dev_path, connection_name):
+                     in_signature='sss', out_signature='s')
+def AddMockConnection(self, dev_path, connection_name, ssid_name):
     dev_obj = dbusmock.get_object(dev_path)
     connection_path = '/org/freedesktop/NetworkManager/Settings/' + connection_name
-    connections = dev_obj.Get('org.freedesktop.NetworkManager.Device', 'AvailableConnections')
-    if connection_path in connections:
+    connections = dev_obj.Get(DEVICE_IFACE, 'AvailableConnections')
+    
+    settings_obj = dbusmock.get_object(SETTINGS_OBJ)
+    main_connections = settings_obj.ListConnections()
+    
+    if connection_path in connections or connection_path in main_connections:
         raise dbus.exceptions.DBusException(
             MAIN_IFACE + '.AlreadyExists',
             'Connection %s on device %s already exists' % (connection_name, dev_path))
+            
+    settings = dbus.Dictionary({
+        '802-11-wireless': {
+            'security': '802-11-wireless-security',
+            'seen-bssids': ['11:22:33:44:55:66'],
+            'ssid': dbus.ByteArray(ssid_name.encode()),
+            'mac-address': dbus.ByteArray(b'\x11\x22\x33\x44\x55\x66'),
+            'mode': 'infrastructure'
+        },
+        'connection': {
+            'timestamp': dbus.UInt64(1374828522),
+            'type': '802-11-wireless',
+            'id': ssid_name,
+            'uuid': '68bdc83e-035c-491c-9fb9-b6c65e823689'
+        },
+        '802-11-wireless-security': {
+             'key-mgmt': 'wpa-psk',
+             'auth-alg': 'open'
+        }
+    }, signature='sa{sv}')
+    
     self.AddObject(connection_path,
-                   'org.freedesktop.NetworkManager.Settings.Connection',
-                   {},
-                   [])
+                   CSETTINGS_IFACE,
+                   {
+                       'Settings': settings,
+                       'Secrets': dbus.Dictionary({}, signature='sa{sv}'),
+                   },
+                   [
+                       ('Delete', '', '', ''),
+                       ('GetSettings', '', 'a{sa{sv}}', "ret = self.Get('%s', 'Settings')" % CSETTINGS_IFACE),
+                       ('GetSecrets', 's', 'a{sa{sv}}', "ret = self.Get('%s', 'Secrets')" % CSETTINGS_IFACE),
+                       ('Update', 'a{sa{sv}}', '', ''),
+                   ])
 
-    connections.append(connection_path)
-    dev_obj.Set('org.freedesktop.NetworkManager.Device', 'AvailableConnections', connections)
+    connections.append(dbus.ObjectPath(connection_path))
+    dev_obj.Set(DEVICE_IFACE, 'AvailableConnections', connections)
+
+    main_connections.append(connection_path)
+    settings_obj.Set(SETTINGS_IFACE, 'Connections', main_connections)
     return connection_path
 
 
