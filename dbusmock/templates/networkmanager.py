@@ -61,7 +61,7 @@ def load(mock, parameters):
         ('state', '', 'u', "ret = self.Get('%s', 'State')" % MAIN_IFACE),
         ('ActivateConnection', 'ooo', 'o', "ret = args[0]"),
         ('AddAndActivateConnection', 'a{sa{sv}}oo', 'oo',
-           "ret = (dbus.ObjectPath('/org/freedesktop/NetworkManager/Settings/new'), dbus.ObjectPath('/org/freedesktop/NetworkManager/Settings/new'))"),
+         "ret = (dbus.ObjectPath('/org/freedesktop/NetworkManager/Settings/new'), dbus.ObjectPath('/org/freedesktop/NetworkManager/Settings/new'))"),
     ])
 
     mock.AddProperties('',
@@ -79,14 +79,12 @@ def load(mock, parameters):
 
     settings_props = {'Hostname': dbus.String('hostname', variant_level=1),
                       'CanModify': dbus.Boolean(1, variant_level=1),
-                      'Connections': dbus.Array([], signature='o'),
-                     }
-    settings_methods = [
-                           ('ListConnections', '', 'ao', "ret = self.Get('%s', 'Connections')" % SETTINGS_IFACE),
-                           ('GetConnectionByUuid', 's', 'o', ''),
-                           ('AddConnection', 'a{sa{sv}}', 'o', ''),
-                           ('SaveHostname', 's', '', ''),
-                       ]
+                      'Connections': dbus.Array([], signature='o')}
+
+    settings_methods = [('ListConnections', '', 'ao', "ret = self.Get('%s', 'Connections')" % SETTINGS_IFACE),
+                        ('GetConnectionByUuid', 's', 'o', ''),
+                        ('AddConnection', 'a{sa{sv}}', 'o', ''),
+                        ('SaveHostname', 's', '', '')]
     mock.AddObject(SETTINGS_OBJ,
                    SETTINGS_IFACE,
                    settings_props,
@@ -195,39 +193,40 @@ def AddAccessPoint(self, dev_path, ap_name, ssid, hw_address,
         raise dbus.exceptions.DBusException(
             MAIN_IFACE + '.AlreadyExists',
             'Access point %s on device %s already exists' % (ap_name, dev_path))
+
     self.AddObject(ap_path,
                    ACCESS_POINT_IFACE,
-                   {
-                       'Ssid': dbus.ByteArray(ssid.encode('UTF-8'), variant_level=1),
-                       'HwAddress': dbus.String(hw_address.encode('UTF-8'), variant_level=1),
-                       'Flags': dbus.UInt32(1, variant_level=1),
-                       'Frequency': dbus.UInt32(frequency, variant_level=1),
-                       'MaxBitrate': dbus.UInt32(rate, variant_level=1),
-                       'Mode': dbus.UInt32(mode, variant_level=1),
-                       'RsnFlags': dbus.UInt32(324, variant_level=1),
-                       'WpaFlags': dbus.UInt32(security, variant_level=1),
-                       'Strength': dbus.Byte(strength, variant_level=1),
-                   },
+                   {'Ssid': dbus.ByteArray(ssid.encode('UTF-8'), variant_level=1),
+                    'HwAddress': dbus.String(hw_address.encode('UTF-8'), variant_level=1),
+                    'Flags': dbus.UInt32(1, variant_level=1),
+                    'Frequency': dbus.UInt32(frequency, variant_level=1),
+                    'MaxBitrate': dbus.UInt32(rate, variant_level=1),
+                    'Mode': dbus.UInt32(mode, variant_level=1),
+                    'RsnFlags': dbus.UInt32(324, variant_level=1),
+                    'WpaFlags': dbus.UInt32(security, variant_level=1),
+                    'Strength': dbus.Byte(strength, variant_level=1)},
                    [])
 
     dev_obj.access_points.append(ap_path)
+
     return ap_path
 
+
 @dbus.service.method(MOCK_IFACE,
-                     in_signature='sss', out_signature='s')
-def AddMockConnection(self, dev_path, connection_name, ssid_name):
+                     in_signature='ssss', out_signature='s')
+def AddWiFiConnection(self, dev_path, connection_name, ssid_name, key_mgmt):
     dev_obj = dbusmock.get_object(dev_path)
     connection_path = '/org/freedesktop/NetworkManager/Settings/' + connection_name
     connections = dev_obj.Get(DEVICE_IFACE, 'AvailableConnections')
-    
+
     settings_obj = dbusmock.get_object(SETTINGS_OBJ)
     main_connections = settings_obj.ListConnections()
-    
+
     if connection_path in connections or connection_path in main_connections:
         raise dbus.exceptions.DBusException(
             MAIN_IFACE + '.AlreadyExists',
             'Connection %s on device %s already exists' % (connection_name, dev_path))
-            
+
     settings = dbus.Dictionary({
         '802-11-wireless': {
             'security': '802-11-wireless-security',
@@ -243,11 +242,11 @@ def AddMockConnection(self, dev_path, connection_name, ssid_name):
             'uuid': '68bdc83e-035c-491c-9fb9-b6c65e823689'
         },
         '802-11-wireless-security': {
-             'key-mgmt': 'wpa-psk',
-             'auth-alg': 'open'
+            'key-mgmt': key_mgmt,
+            'auth-alg': 'open'
         }
     }, signature='sa{sv}')
-    
+
     self.AddObject(connection_path,
                    CSETTINGS_IFACE,
                    {
@@ -267,5 +266,3 @@ def AddMockConnection(self, dev_path, connection_name, ssid_name):
     main_connections.append(connection_path)
     settings_obj.Set(SETTINGS_IFACE, 'Connections', main_connections)
     return connection_path
-
-
