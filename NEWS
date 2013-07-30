@@ -1,5 +1,5 @@
 0.7 (UNRELEASED)
-------------------
+----------------
  - Accept *.py files for the --template command line option, similar to
    AddTemplate(). Thanks Emanuele Aina.
  - Pass log file to objects created with AddObject(). Thanks Emanuele Aina.
