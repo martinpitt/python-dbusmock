@@ -1,4 +1,4 @@
-0.7 (UNRELEASED)
+0.7 (2013-07-30)
 ----------------
  - Accept *.py files for the --template command line option, similar to
    AddTemplate(). Thanks Emanuele Aina.
