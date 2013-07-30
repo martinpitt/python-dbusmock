@@ -1,8 +1,11 @@
-0.6.4 (UNRELEASED)
+0.7 (UNRELEASED)
 ------------------
  - Accept *.py files for the --template command line option, similar to
    AddTemplate(). Thanks Emanuele Aina.
  - Pass log file to objects created with AddObject(). Thanks Emanuele Aina.
+ - NetworkManager template: Add new method AddWiFiConnection(), to simulate a
+   connection associated to a previously added device (with AddWiFiDevice()).
+   Thanks Pete Woods.
 
 0.6.3 (2013-06-13)
 ------------------
