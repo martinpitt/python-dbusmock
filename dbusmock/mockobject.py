@@ -176,6 +176,8 @@ class DBusMockObject(dbus.service.Object):
                              path,
                              interface,
                              properties)
+        # make sure created objects inherit the log file stream
+        obj.logfile = self.logfile
         obj.AddMethods(interface, methods)
 
         objects[path] = obj

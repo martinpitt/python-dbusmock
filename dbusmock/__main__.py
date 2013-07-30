@@ -48,7 +48,6 @@ def parse_args():
 
 
 if __name__ == '__main__':
-    import importlib
     import dbus.mainloop.glib
     from gi.repository import GLib
 
@@ -56,7 +55,7 @@ if __name__ == '__main__':
     dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 
     if args.template:
-        module = importlib.import_module('dbusmock.templates.' + args.template)
+        module = dbusmock.mockobject.load_module(args.template)
         args.name = module.BUS_NAME
         args.path = module.MAIN_OBJ
         args.interface = module.MAIN_IFACE

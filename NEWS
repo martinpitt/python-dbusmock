@@ -1,3 +1,9 @@
+0.6.4 (UNRELEASED)
+------------------
+ - Accept *.py files for the --template command line option, similar to
+   AddTemplate(). Thanks Emanuele Aina.
+ - Pass log file to objects created with AddObject(). Thanks Emanuele Aina.
+
 0.6.3 (2013-06-13)
 ------------------
  - Drop "can-suspend" and "can-hibernate" checks from upower template test.
