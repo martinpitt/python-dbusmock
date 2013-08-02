@@ -1,4 +1,4 @@
-0.7.1 (UNRELEASED)
+0.7.1 (2013-08-02)
 ------------------
  - Handle the "Disconnected" signal only if it comes from the D-BUS object, to
    avoid accidentally reacting to other signals (like from BlueZ). Thanks
