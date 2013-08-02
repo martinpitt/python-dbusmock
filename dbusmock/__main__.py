@@ -65,7 +65,9 @@ if __name__ == '__main__':
     bus = dbusmock.testcase.DBusTestCase.get_dbus(args.system)
 
     # quit mock when the bus is going down
-    bus.add_signal_receiver(main_loop.quit, signal_name='Disconnected')
+    bus.add_signal_receiver(main_loop.quit, signal_name='Disconnected',
+                            path='/org/freedesktop/DBus/Local',
+                            dbus_interface='org.freedesktop.DBus.Local')
 
     bus_name = dbus.service.BusName(args.name,
                                     bus,

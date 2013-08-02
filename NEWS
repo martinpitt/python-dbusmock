@@ -1,3 +1,9 @@
+0.7.1 (UNRELEASED)
+------------------
+ - Handle the "Disconnected" signal only if it comes from the D-BUS object, to
+   avoid accidentally reacting to other signals (like from BlueZ). Thanks
+   Lucas De Marchi.
+
 0.7 (2013-07-30)
 ----------------
  - Accept *.py files for the --template command line option, similar to
