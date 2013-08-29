@@ -129,14 +129,15 @@ class DBusTestCase(unittest.TestCase):
                 return dbus.SessionBus()
 
     @classmethod
-    def wait_for_bus_object(klass, dest, path, system_bus=False):
+    def wait_for_bus_object(klass, dest, path, system_bus=False, timeout=50):
         '''Wait for an object to appear on D-BUS
 
-        Raise an exception if object does not appear within 5 seconds.
+        Raise an exception if object does not appear within 5 seconds. You can
+        change the timeout with the "timeout" keyword argument which specifies
+        deciseconds.
         '''
         bus = klass.get_dbus(system_bus)
 
-        timeout = 50
         last_exc = None
         # we check whether the name is owned first, to avoid race conditions
         # with service activation; once it's owned, wait until we can actually
