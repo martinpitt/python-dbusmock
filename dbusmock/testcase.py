@@ -19,6 +19,7 @@ import subprocess
 import signal
 import os
 import errno
+import tempfile
 
 import dbus
 
@@ -52,7 +53,26 @@ class DBusTestCase(unittest.TestCase):
 
         This gets stopped automatically in tearDownClass().
         '''
-        (DBusTestCase.system_bus_pid, addr) = klass.start_dbus()
+        # create a temporary configuration which makes the fake bus actually
+        # appear a type "system"
+        with tempfile.NamedTemporaryFile(prefix='dbusmock_cfg') as c:
+            c.write(b'''<!DOCTYPE busconfig PUBLIC "-//freedesktop//DTD D-Bus Bus Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
+<busconfig>
+  <type>system</type>
+  <keep_umask/>
+  <listen>unix:tmpdir=/tmp</listen>
+  <standard_system_servicedirs />
+
+  <policy context="default">
+    <allow send_destination="*" eavesdrop="true"/>
+    <allow eavesdrop="true"/>
+    <allow own="*"/>
+  </policy>
+</busconfig>
+''')
+            c.flush()
+            (DBusTestCase.system_bus_pid, addr) = klass.start_dbus(conf=c.name)
         os.environ['DBUS_SYSTEM_BUS_ADDRESS'] = addr
 
     @classmethod
@@ -69,7 +89,7 @@ class DBusTestCase(unittest.TestCase):
             DBusTestCase.system_bus_pid = None
 
     @classmethod
-    def start_dbus(klass):
+    def start_dbus(klass, conf=None):
         '''Start a D-BUS daemon
 
         Return (pid, address) pair.
@@ -77,7 +97,10 @@ class DBusTestCase(unittest.TestCase):
         Normally you do not need to call this directly. Use start_system_bus()
         and start_session_bus() instead.
         '''
-        out = subprocess.check_output(['dbus-launch'], universal_newlines=True)
+        argv = ['dbus-launch']
+        if conf:
+            argv.append('--config-file=' + conf)
+        out = subprocess.check_output(argv, universal_newlines=True)
         variables = {}
         for line in out.splitlines():
             (k, v) = line.split('=', 1)

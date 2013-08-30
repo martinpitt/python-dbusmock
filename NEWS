@@ -2,6 +2,8 @@
 ------------------
  - Add optional "timeout" argument to DBusTestCase.wait_for_bus_object().
    (LP: #1218318)
+ - DBusTestCase.start_system_bus(): Make the fake bus look more like a real
+   system bus by specifying a configuration file with type "system".
 
 0.7.1 (2013-08-02)
 ------------------
