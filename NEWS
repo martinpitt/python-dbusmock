@@ -1,3 +1,8 @@
+0.8 (UNRELEASED)
+----------------
+ - upower template: Change default daemon version to "0.9", and fix tests to
+   work with both upower 0.9 and 1.0 client tool.
+
 0.7.2 (2013-08-30)
 ------------------
  - Add optional "timeout" argument to DBusTestCase.wait_for_bus_object().

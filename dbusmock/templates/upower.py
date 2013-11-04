@@ -4,6 +4,8 @@ This creates the expected methods and properties of the main
 org.freedesktop.UPower object, but no devices. You can specify any property
 such as 'OnLowBattery' or the return value of 'SuspendAllowed' and
 'HibernateAllowed' in "parameters".
+
+This provides the 0.9 D-BUS API of upower.
 '''
 
 # This program is free software; you can redistribute it and/or modify it under
@@ -14,7 +16,7 @@ such as 'OnLowBattery' or the return value of 'SuspendAllowed' and
 
 __author__ = 'Martin Pitt'
 __email__ = 'martin.pitt@ubuntu.com'
-__copyright__ = '(c) 2012 Canonical Ltd.'
+__copyright__ = '(c) 2012, 2013 Canonical Ltd.'
 __license__ = 'LGPL 3+'
 
 import dbus
@@ -37,7 +39,7 @@ def load(mock, parameters):
 
     mock.AddProperties(MAIN_IFACE,
                        dbus.Dictionary({
-                           'DaemonVersion': parameters.get('DaemonVersion', '0.8.15'),
+                           'DaemonVersion': parameters.get('DaemonVersion', '0.9'),
                            'CanSuspend': parameters.get('CanSuspend', True),
                            'CanHibernate': parameters.get('CanHibernate', True),
                            'OnBattery': parameters.get('OnBattery', False),
@@ -68,6 +70,7 @@ def AddAC(self, device_name, model_name):
                    {
                        'PowerSupply': dbus.Boolean(True, variant_level=1),
                        'Model': dbus.String(model_name, variant_level=1),
+                       'Online': dbus.Boolean(True, variant_level=1),
                    },
                    [])
     return path

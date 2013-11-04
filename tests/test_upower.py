@@ -25,6 +25,12 @@ p = subprocess.Popen(['which', 'upower'], stdout=subprocess.PIPE)
 p.communicate()
 have_upower = (p.returncode == 0)
 
+p = subprocess.Popen(['upower', '--version'], stdout=subprocess.PIPE,
+                     universal_newlines=True)
+out = p.communicate()[0]
+upower_client_version = out.splitlines()[0].split()[-1]
+assert p.returncode == 0
+
 
 @unittest.skipUnless(have_upower, 'upower not installed')
 class TestUPower(dbusmock.DBusTestCase):
@@ -47,13 +53,19 @@ class TestUPower(dbusmock.DBusTestCase):
     def test_no_devices(self):
         out = subprocess.check_output(['upower', '--dump'],
                                       universal_newlines=True)
-        self.assertFalse('Device' in out, out)
+        # upower 1.0 has a "DisplayDevice" which is always there, ignore that
+        # one
+        for line in out.splitlines():
+            if line.endswith('/DisplayDevice'):
+                continue
+            self.assertFalse('Device' in line, out)
         self.assertRegex(out, 'on-battery:\s+yes')
         self.assertRegex(out, 'lid-is-present:\s+yes')
 
     def test_one_ac(self):
         path = self.dbusmock.AddAC('mock_AC', 'Mock AC')
         self.assertEqual(path, '/org/freedesktop/UPower/devices/mock_AC')
+        ac_obj = self.dbus_con.get_object('org.freedesktop.UPower', path)
 
         out = subprocess.check_output(['upower', '--dump'],
                                       universal_newlines=True)
@@ -69,7 +81,16 @@ class TestUPower(dbusmock.DBusTestCase):
                                universal_newlines=True)
 
         time.sleep(0.3)
-        self.dbusmock.EmitSignal('', 'DeviceChanged', 's', [path])
+        if upower_client_version < '0.99':
+            # for 0.9 API
+            self.dbusmock.EmitSignal('', 'DeviceChanged', 's', [path])
+        else:
+            # for 1.0 API
+            ac_obj.EmitSignal(dbus.PROPERTIES_IFACE, 'PropertiesChanged', 'sa{sv}as',
+                              dbus.Array(['org.freedesktop.UPower.Device',
+                                          {'PowerSupply': dbus.Boolean(True, variant_level=1)},
+                                          dbus.Array([], signature='s')],
+                                         signature='v'))
         time.sleep(0.2)
 
         mon.terminate()
