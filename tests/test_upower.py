@@ -134,6 +134,66 @@ class TestUPower(dbusmock.DBusTestCase):
         self.obj_upower.Suspend(dbus_interface='org.freedesktop.UPower')
         self.assertRegex(self.p_mock.stdout.readline(), b'^[0-9.]+ Suspend$')
 
+    @unittest.skipUnless(upower_client_version < '0.99',
+                         '0.9 client API specific test')
+    def test_09_properties(self):
+        '''0.9 API specific properties'''
+
+        out = subprocess.check_output(['upower', '--dump'],
+                                      universal_newlines=True)
+        self.assertRegex(out, 'daemon-version:\s+0.9')
+        self.assertRegex(out, 'can-suspend:\s+yes')
+        self.assertRegex(out, 'can-hibernate:\s+no')
+        self.assertNotIn('critical-action:', out)
+
+
+@unittest.skipUnless(have_upower, 'upower not installed')
+@unittest.skipUnless(upower_client_version >= '0.99', '1.0 client API specific test')
+class TestUPower1(dbusmock.DBusTestCase):
+    '''Test mocking upowerd with 1.0 API'''
+
+    @classmethod
+    def setUpClass(klass):
+        klass.start_system_bus()
+        klass.dbus_con = klass.get_dbus(True)
+
+    def setUp(self):
+        (self.p_mock, self.obj_upower) = self.spawn_server_template(
+            'upower',
+            {'OnBattery': True, 'DaemonVersion': '1.0', 'GetCriticalAction': 'Suspend'},
+            stdout=subprocess.PIPE)
+        self.dbusmock = dbus.Interface(self.obj_upower, dbusmock.MOCK_IFACE)
+
+    def tearDown(self):
+        self.p_mock.terminate()
+        self.p_mock.wait()
+
+    def test_no_devices(self):
+        out = subprocess.check_output(['upower', '--dump'],
+                                      universal_newlines=True)
+        self.assertIn('/DisplayDevice\n', out)
+        # should not have any other device
+        for line in out.splitlines():
+            if line.endswith('/DisplayDevice'):
+                continue
+            self.assertFalse('Device' in line, out)
+        self.assertRegex(out, 'on-battery:\s+yes')
+        self.assertRegex(out, 'lid-is-present:\s+yes')
+
+    def test_properties(self):
+        '''1.0 API specific properties'''
+
+        out = subprocess.check_output(['upower', '--dump'],
+                                      universal_newlines=True)
+        self.assertRegex(out, 'daemon-version:\s+1.0')
+        self.assertRegex(out, 'critical-action:\s+Suspend')
+        self.assertNotIn('can-suspend', out)
+
+    def test_enumerate(self):
+        self.dbusmock.AddAC('mock_AC', 'Mock AC')
+        self.assertEqual(self.obj_upower.EnumerateDevices(),
+                         ['/org/freedesktop/UPower/devices/mock_AC'])
+
 
 if __name__ == '__main__':
     # avoid writing to stderr

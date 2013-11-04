@@ -2,10 +2,12 @@
 
 This creates the expected methods and properties of the main
 org.freedesktop.UPower object, but no devices. You can specify any property
-such as 'OnLowBattery' or the return value of 'SuspendAllowed' and
-'HibernateAllowed' in "parameters".
+such as 'OnLowBattery' or the return value of 'SuspendAllowed',
+'HibernateAllowed', and 'GetCriticalAction' in "parameters".
 
-This provides the 0.9 D-BUS API of upower.
+This provides the 0.9 D-BUS API of upower by default, but if the
+DaemonVersion property (in parameters) is set to >= 0.99 it will provide the
+1.0 D-BUS API instead.
 '''
 
 # This program is free software; you can redistribute it and/or modify it under
@@ -31,24 +33,49 @@ SYSTEM_BUS = True
 
 def load(mock, parameters):
     mock.AddMethods(MAIN_IFACE, [
-        ('Suspend', '', '', ''),
-        ('SuspendAllowed', '', 'b', 'ret = %s' % parameters.get('SuspendAllowed', True)),
-        ('HibernateAllowed', '', 'b', 'ret = %s' % parameters.get('HibernateAllowed', True)),
-        ('EnumerateDevices', '', 'ao', 'ret = [k for k in objects.keys() if "/devices" in k]'),
+        ('EnumerateDevices', '', 'ao', 'ret = [k for k in objects.keys() '
+         'if "/devices" in k and not k.endswith("/DisplayDevice")]'),
     ])
 
-    mock.AddProperties(MAIN_IFACE,
-                       dbus.Dictionary({
-                           'DaemonVersion': parameters.get('DaemonVersion', '0.9'),
-                           'CanSuspend': parameters.get('CanSuspend', True),
-                           'CanHibernate': parameters.get('CanHibernate', True),
-                           'OnBattery': parameters.get('OnBattery', False),
-                           'OnLowBattery': parameters.get('OnLowBattery', True),
-                           'LidIsPresent': parameters.get('LidIsPresent', True),
-                           'LidIsClosed': parameters.get('LidIsClosed', False),
-                           'LidForceSleep': parameters.get('LidForceSleep', True),
-                           'IsDocked': parameters.get('IsDocked', False),
-                       }, signature='sv'))
+    props = dbus.Dictionary({
+        'DaemonVersion': parameters.get('DaemonVersion', '0.9'),
+        'OnBattery': parameters.get('OnBattery', False),
+        'LidIsPresent': parameters.get('LidIsPresent', True),
+        'LidIsClosed': parameters.get('LidIsClosed', False),
+        'LidForceSleep': parameters.get('LidForceSleep', True),
+        'IsDocked': parameters.get('IsDocked', False),
+    }, signature='sv')
+
+    mock.protocol1 = props['DaemonVersion'] >= '0.99'
+
+    if mock.protocol1:
+        mock.AddMethods(MAIN_IFACE, [
+            ('GetCriticalAction', '', 's', 'ret = "%s"' % parameters.get('GetCriticalAction', 'HybridSleep')),
+            ('GetDisplayDevice', '', 'o', 'ret = "/org/freedesktop/UPower/devices/DisplayDevice"')
+        ])
+
+        # add Display device
+        mock.AddObject('/org/freedesktop/UPower/devices/DisplayDevice',
+                       'org.freedesktop.UPower.Device',
+                       {
+                           'PowerSupply': dbus.Boolean(False, variant_level=1),
+                           'IconName': dbus.String('', variant_level=1),
+                       },
+                       [
+                           ('Refresh', '', '', ''),
+                       ])
+    else:
+        props['CanSuspend'] = parameters.get('CanSuspend', True)
+        props['CanHibernate'] = parameters.get('CanHibernate', True)
+        props['OnLowBattery'] = parameters.get('OnLowBattery', True)
+
+        mock.AddMethods(MAIN_IFACE, [
+            ('Suspend', '', '', ''),
+            ('SuspendAllowed', '', 'b', 'ret = %s' % parameters.get('SuspendAllowed', True)),
+            ('HibernateAllowed', '', 'b', 'ret = %s' % parameters.get('HibernateAllowed', True)),
+        ])
+
+    mock.AddProperties(MAIN_IFACE, props)
 
 
 @dbus.service.method(MOCK_IFACE,
