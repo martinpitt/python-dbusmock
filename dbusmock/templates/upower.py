@@ -54,12 +54,23 @@ def load(mock, parameters):
             ('GetDisplayDevice', '', 'o', 'ret = "/org/freedesktop/UPower/devices/DisplayDevice"')
         ])
 
-        # add Display device
+        # add Display device; for defined properties, see
+        # http://cgit.freedesktop.org/upower/tree/src/org.freedesktop.UPower.xml
         mock.AddObject('/org/freedesktop/UPower/devices/DisplayDevice',
                        'org.freedesktop.UPower.Device',
                        {
-                           'PowerSupply': dbus.Boolean(False, variant_level=1),
+                           'Type': dbus.UInt32(0, variant_level=1),
+                           'State': dbus.UInt32(0, variant_level=1),
+                           'Percentage': dbus.Double(0.0, variant_level=1),
+                           'Energy': dbus.Double(0.0, variant_level=1),
+                           'EnergyFull': dbus.Double(0.0, variant_level=1),
+                           'EnergyRate': dbus.Double(0.0, variant_level=1),
+                           'TimeToEmpty': dbus.Int64(0, variant_level=1),
+                           'TimeToFull': dbus.Int64(0, variant_level=1),
+                           'IsPresent': dbus.Boolean(False, variant_level=1),
                            'IconName': dbus.String('', variant_level=1),
+                           # LEVEL_NONE
+                           'WarningLevel': dbus.UInt32(1, variant_level=1),
                        },
                        [
                            ('Refresh', '', '', ''),

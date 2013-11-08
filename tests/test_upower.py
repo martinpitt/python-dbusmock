@@ -20,6 +20,8 @@ import dbus
 
 import dbusmock
 
+UP_DEVICE_LEVEL_UNKNOWN = 0
+UP_DEVICE_LEVEL_NONE = 1
 
 p = subprocess.Popen(['which', 'upower'], stdout=subprocess.PIPE)
 p.communicate()
@@ -193,6 +195,25 @@ class TestUPower1(dbusmock.DBusTestCase):
         self.dbusmock.AddAC('mock_AC', 'Mock AC')
         self.assertEqual(self.obj_upower.EnumerateDevices(),
                          ['/org/freedesktop/UPower/devices/mock_AC'])
+
+    def test_display_device_default(self):
+        path = self.obj_upower.GetDisplayDevice()
+        self.assertEqual(path, '/org/freedesktop/UPower/devices/DisplayDevice')
+        display_dev = self.dbus_con.get_object('org.freedesktop.UPower', path)
+        props = display_dev.GetAll('org.freedesktop.UPower.Device')
+
+        # http://cgit.freedesktop.org/upower/tree/src/org.freedesktop.UPower.xml
+        # defines the properties which are defined
+        self.assertEqual(
+            set(props.keys()),
+            set(['Type', 'State', 'Percentage', 'Energy', 'EnergyFull',
+                 'EnergyRate', 'TimeToEmpty', 'TimeToFull', 'IsPresent',
+                 'IconName', 'WarningLevel']))
+
+        # not set up by default, so should not present
+        self.assertEqual(props['IsPresent'], False)
+        self.assertEqual(props['IconName'], '')
+        self.assertEqual(props['WarningLevel'], UP_DEVICE_LEVEL_NONE)
 
 
 if __name__ == '__main__':
