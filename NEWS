@@ -4,6 +4,9 @@
    work with both upower 0.9 and 1.0 client tool.
  - upower template: Provide 1.0 API if DaemonVersion property/template
    parameter gets set to >= "0.99". (LP: #1245955)
+ - upower template: Add SetupDisplayDevice() method on the mock interface to
+   conveniently configure all defined properties of the DisplayDevice. Only
+   available when using the 1.0 API. (LP: #1245955)
 
 0.7.2 (2013-08-30)
 ------------------

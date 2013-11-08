@@ -148,6 +148,21 @@ class TestUPower(dbusmock.DBusTestCase):
         self.assertRegex(out, 'can-hibernate:\s+no')
         self.assertNotIn('critical-action:', out)
 
+    def test_no_display_device(self):
+        self.assertRaises(dbus.exceptions.DBusException,
+                          self.obj_upower.GetDisplayDevice)
+
+        self.assertRaises(dbus.exceptions.DBusException,
+                          self.dbusmock.SetupDisplayDevice,
+                          2, 1, 50.0, 40.0, 80.0, 2.5, 3600, 1800, True,
+                          'half-battery', 3)
+
+        display_dev = self.dbus_con.get_object(
+            'org.freedesktop.UPower',
+            '/org/freedesktop/UPower/devices/DisplayDevice')
+        self.assertRaises(dbus.exceptions.DBusException,
+                          display_dev.GetAll, '')
+
 
 @unittest.skipUnless(have_upower, 'upower not installed')
 @unittest.skipUnless(upower_client_version >= '0.99', '1.0 client API specific test')
@@ -214,6 +229,34 @@ class TestUPower1(dbusmock.DBusTestCase):
         self.assertEqual(props['IsPresent'], False)
         self.assertEqual(props['IconName'], '')
         self.assertEqual(props['WarningLevel'], UP_DEVICE_LEVEL_NONE)
+
+    def test_setup_display_device(self):
+        self.dbusmock.SetupDisplayDevice(2, 1, 50.0, 40.0, 80.0, 2.5, 3600,
+                                         1800, True, 'half-battery', 3)
+
+        path = self.obj_upower.GetDisplayDevice()
+        display_dev = self.dbus_con.get_object('org.freedesktop.UPower', path)
+        props = display_dev.GetAll('org.freedesktop.UPower.Device')
+
+        # just some spot-checks, check all the values from upower -d
+        self.assertEqual(props['Type'], 2)
+        self.assertEqual(props['Percentage'], 50.0)
+        self.assertEqual(props['WarningLevel'], 3)
+
+        out = subprocess.check_output(['upower', '--dump'],
+                                      universal_newlines=True)
+        self.assertIn('/DisplayDevice\n', out)
+        self.assertIn('  battery\n', out)  # type
+        self.assertRegex(out, 'state:\s+charging')
+        self.assertRegex(out, 'percentage:\s+50%')
+        self.assertRegex(out, 'energy:\s+40 Wh')
+        self.assertRegex(out, 'energy-full:\s+80 Wh')
+        self.assertRegex(out, 'energy-rate:\s+2.5 W')
+        self.assertRegex(out, 'time to empty:\s+1,0 hours')
+        self.assertRegex(out, 'time to full:\s+30,0 minutes')
+        self.assertRegex(out, 'present:\s+yes')
+        self.assertRegex(out, "icon-name:\s+'half-battery'")
+        self.assertRegex(out, 'warning-level:\s+low')
 
 
 if __name__ == '__main__':

@@ -23,7 +23,7 @@ __license__ = 'LGPL 3+'
 
 import dbus
 
-from dbusmock import MOCK_IFACE
+from dbusmock import MOCK_IFACE, mockobject
 
 BUS_NAME = 'org.freedesktop.UPower'
 MAIN_OBJ = '/org/freedesktop/UPower'
@@ -46,17 +46,19 @@ def load(mock, parameters):
         'IsDocked': parameters.get('IsDocked', False),
     }, signature='sv')
 
-    mock.protocol1 = props['DaemonVersion'] >= '0.99'
+    mock.api1 = props['DaemonVersion'] >= '0.99'
 
-    if mock.protocol1:
+    if mock.api1:
         mock.AddMethods(MAIN_IFACE, [
             ('GetCriticalAction', '', 's', 'ret = "%s"' % parameters.get('GetCriticalAction', 'HybridSleep')),
             ('GetDisplayDevice', '', 'o', 'ret = "/org/freedesktop/UPower/devices/DisplayDevice"')
         ])
 
+        mock.p_display_dev = '/org/freedesktop/UPower/devices/DisplayDevice'
+
         # add Display device; for defined properties, see
         # http://cgit.freedesktop.org/upower/tree/src/org.freedesktop.UPower.xml
-        mock.AddObject('/org/freedesktop/UPower/devices/DisplayDevice',
+        mock.AddObject(mock.p_display_dev,
                        'org.freedesktop.UPower.Device',
                        {
                            'Type': dbus.UInt32(0, variant_level=1),
@@ -180,3 +182,45 @@ def AddChargingBattery(self, device_name, model_name, percentage, seconds_to_ful
                    },
                    [])
     return path
+
+
+@dbus.service.method(MOCK_IFACE,
+                     in_signature='uuddddxxbsu', out_signature='')
+def SetupDisplayDevice(self, type, state, percentage, energy, energy_full,
+                       energy_rate, time_to_empty, time_to_full, is_present,
+                       icon_name, warning_level):
+    '''Convenience method to configure DisplayDevice properties
+
+    This calls Set() for all properties that the DisplayDevice is defined to
+    have, and is shorter if you have to completely set it up instead of
+    changing just one or two properties.
+
+    This is only available when mocking the 1.0 API.
+    '''
+    if not self.api1:
+        raise dbus.exceptions.DBusException(
+            MOCK_IFACE + '.APIVersion',
+            'SetupDisplayDevice() can only be used with the 1.0 API')
+
+    display_props = mockobject.objects[self.p_display_dev]
+    display_props.Set('org.freedesktop.UPower.Device', 'Type',
+                      dbus.UInt32(type))
+    display_props.Set('org.freedesktop.UPower.Device', 'State',
+                      dbus.UInt32(state))
+    display_props.Set('org.freedesktop.UPower.Device', 'Percentage',
+                      percentage)
+    display_props.Set('org.freedesktop.UPower.Device', 'Energy', energy)
+    display_props.Set('org.freedesktop.UPower.Device', 'EnergyFull',
+                      energy_full)
+    display_props.Set('org.freedesktop.UPower.Device', 'EnergyRate',
+                      energy_rate)
+    display_props.Set('org.freedesktop.UPower.Device', 'TimeToEmpty',
+                      dbus.Int64(time_to_empty))
+    display_props.Set('org.freedesktop.UPower.Device', 'TimeToFull',
+                      dbus.Int64(time_to_full))
+    display_props.Set('org.freedesktop.UPower.Device', 'IsPresent',
+                      is_present)
+    display_props.Set('org.freedesktop.UPower.Device', 'IconName',
+                      icon_name)
+    display_props.Set('org.freedesktop.UPower.Device', 'WarningLevel',
+                      dbus.UInt32(warning_level))
