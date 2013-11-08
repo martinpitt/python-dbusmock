@@ -1,3 +1,7 @@
+0.8.1 (UNRELEASED)
+------------------
+ - Fix test failure if the "upower" tool is not installed.
+
 0.8 (2013-11-08)
 ----------------
  - upower template: Change default daemon version to "0.9", and fix tests to

@@ -27,11 +27,14 @@ p = subprocess.Popen(['which', 'upower'], stdout=subprocess.PIPE)
 p.communicate()
 have_upower = (p.returncode == 0)
 
-p = subprocess.Popen(['upower', '--version'], stdout=subprocess.PIPE,
-                     universal_newlines=True)
-out = p.communicate()[0]
-upower_client_version = out.splitlines()[0].split()[-1]
-assert p.returncode == 0
+if have_upower:
+    p = subprocess.Popen(['upower', '--version'], stdout=subprocess.PIPE,
+                         universal_newlines=True)
+    out = p.communicate()[0]
+    upower_client_version = out.splitlines()[0].split()[-1]
+    assert p.returncode == 0
+else:
+    upower_client_version = 0
 
 
 @unittest.skipUnless(have_upower, 'upower not installed')
