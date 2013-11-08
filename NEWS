@@ -1,4 +1,4 @@
-0.8 (UNRELEASED)
+0.8 (2013-11-08)
 ----------------
  - upower template: Change default daemon version to "0.9", and fix tests to
    work with both upower 0.9 and 1.0 client tool.
