@@ -15,6 +15,7 @@ import unittest
 import sys
 import subprocess
 import time
+import os
 
 import dbus
 
@@ -246,8 +247,15 @@ class TestUPower1(dbusmock.DBusTestCase):
         self.assertEqual(props['Percentage'], 50.0)
         self.assertEqual(props['WarningLevel'], 3)
 
+        env = os.environ.copy()
+        env['LC_ALL'] = 'C'
+        try:
+            del env['LANGUAGE']
+        except KeyError:
+            pass
+
         out = subprocess.check_output(['upower', '--dump'],
-                                      universal_newlines=True)
+                                      universal_newlines=True, env=env)
         self.assertIn('/DisplayDevice\n', out)
         self.assertIn('  battery\n', out)  # type
         self.assertRegex(out, 'state:\s+charging')
@@ -255,8 +263,8 @@ class TestUPower1(dbusmock.DBusTestCase):
         self.assertRegex(out, 'energy:\s+40 Wh')
         self.assertRegex(out, 'energy-full:\s+80 Wh')
         self.assertRegex(out, 'energy-rate:\s+2.5 W')
-        self.assertRegex(out, 'time to empty:\s+1,0 hours')
-        self.assertRegex(out, 'time to full:\s+30,0 minutes')
+        self.assertRegex(out, 'time to empty:\s+1\.0 hours')
+        self.assertRegex(out, 'time to full:\s+30\.0 minutes')
         self.assertRegex(out, 'present:\s+yes')
         self.assertRegex(out, "icon-name:\s+'half-battery'")
         self.assertRegex(out, 'warning-level:\s+low')
