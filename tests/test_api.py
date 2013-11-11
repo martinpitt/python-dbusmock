@@ -526,8 +526,47 @@ def load(mock, parameters):
             my_template.flush()
             (p_mock, dbus_ultimate) = self.spawn_server_template(
                 my_template.name, stdout=subprocess.PIPE)
+            self.addCleanup(p_mock.wait)
+            self.addCleanup(p_mock.terminate)
 
         self.assertEqual(dbus_ultimate.Answer(), 42)
+
+        # should appear in introspection
+        xml = dbus_ultimate.Introspect()
+        self.assertIn('<interface name="universe.Ultimate">', xml)
+        self.assertIn('<method name="Answer">', xml)
+
+    def test_static_method(self):
+        '''Static method in a template'''
+
+        with tempfile.NamedTemporaryFile(prefix='answer_', suffix='.py') as my_template:
+            my_template.write(b'''import dbus
+BUS_NAME = 'universe.Ultimate'
+MAIN_OBJ = '/'
+MAIN_IFACE = 'universe.Ultimate'
+SYSTEM_BUS = False
+
+def load(mock, parameters):
+    pass
+
+@dbus.service.method(MAIN_IFACE,
+                     in_signature='',
+                     out_signature='i')
+def Answer(self):
+    return 42
+''')
+            my_template.flush()
+            (p_mock, dbus_ultimate) = self.spawn_server_template(
+                my_template.name, stdout=subprocess.PIPE)
+            self.addCleanup(p_mock.wait)
+            self.addCleanup(p_mock.terminate)
+
+        self.assertEqual(dbus_ultimate.Answer(), 42)
+
+        # should appear in introspection
+        xml = dbus_ultimate.Introspect()
+        self.assertIn('<interface name="universe.Ultimate">', xml)
+        self.assertIn('<method name="Answer">', xml)
 
     def test_local_nonexisting(self):
         self.assertRaises(ImportError, self.spawn_server_template, '/non/existing.py')

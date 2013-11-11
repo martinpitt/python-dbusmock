@@ -1,3 +1,8 @@
+0.8.2 (UNRELEASED)
+------------------
+ - Make static template methods appear in introspection. Thanks Philip
+   Whitnall! (LP: #1250096)
+
 0.8.1 (2013-11-11)
 ------------------
  - Fix test failure if the "upower" tool is not installed.

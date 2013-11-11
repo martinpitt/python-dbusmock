@@ -334,6 +334,9 @@ class DBusMockObject(dbus.service.Object):
             fn = getattr(module, symbol)
             if '_dbus_interface' in dir(fn):
                 setattr(self.__class__, symbol, fn)
+                self.methods.setdefault(fn._dbus_interface, {})[str(symbol)] = (
+                    fn._dbus_in_signature, fn._dbus_out_signature, '', fn
+                )
 
         if parameters is None:
             parameters = {}
