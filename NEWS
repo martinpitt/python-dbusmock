@@ -1,4 +1,4 @@
-0.8.1 (UNRELEASED)
+0.8.1 (2013-11-11)
 ------------------
  - Fix test failure if the "upower" tool is not installed.
  - Fix bad upower test which assumed a locale with a comma decimal separator.
