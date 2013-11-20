@@ -413,11 +413,11 @@ class DBusMockObject(dbus.service.Object):
         # pick out all D-BUS service methods and add them to our interface
         for symbol in dir(module):
             fn = getattr(module, symbol)
-            if '_dbus_interface' in dir(fn):
-                setattr(self.__class__, symbol, fn)
-                self.methods.setdefault(fn._dbus_interface, {})[str(symbol)] = (
-                    fn._dbus_in_signature, fn._dbus_out_signature, '', fn
-                )
+            if ('_dbus_interface' in dir(fn) and
+                ('_dbus_is_signal' not in dir(fn) or not fn._dbus_is_signal)):
+                self.AddMethod(fn._dbus_interface, symbol,
+                               fn._dbus_in_signature, fn._dbus_out_signature,
+                               fn)
 
         if parameters is None:
             parameters = {}
