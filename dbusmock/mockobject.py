@@ -490,6 +490,12 @@ class DBusMockObject(dbus.service.Object):
 
     @dbus.service.signal(MOCK_IFACE, signature='sav')
     def MethodCalled(self, name, args):
+        '''Signal emitted for every mock method called on the D-Bus object.
+
+        This is called automatically for all mock methods, including those
+        added statically from Python code and those added dynamically by calling
+        AddMethod over D-Bus or via Python.
+        '''
         pass
 
     def mock_method(self, interface, dbus_method, in_signature, *args, **kwargs):
