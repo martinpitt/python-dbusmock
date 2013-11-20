@@ -93,6 +93,7 @@ class DBusMockObject(dbus.service.Object):
             self.logfile = open(logfile, 'w')
         else:
             self.logfile = None
+        self.is_logfile_owner = True
         self.call_log = []
 
         if props is None:
@@ -101,7 +102,7 @@ class DBusMockObject(dbus.service.Object):
         self._reset(props)
 
     def __del__(self):
-        if self.logfile:
+        if self.logfile and self.is_logfile_owner:
             self.logfile.close()
 
     def _set_up_object_manager(self):
@@ -216,6 +217,7 @@ class DBusMockObject(dbus.service.Object):
                              properties)
         # make sure created objects inherit the log file stream
         obj.logfile = self.logfile
+        obj.is_logfile_owner = False
         obj.AddMethods(interface, methods)
 
         objects[path] = obj
