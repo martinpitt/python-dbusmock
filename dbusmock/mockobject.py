@@ -84,15 +84,10 @@ class DBusMockObject(dbus.service.Object):
         self.bus_name = bus_name
         self.path = path
         self.interface = interface
-        # interface -> name -> value
-        self.props = {}
-        if props is None:
-            props = {}
-        self.props[interface] = props
         self.is_object_manager = is_object_manager
 
-        # interface -> name -> (in_signature, out_signature, code, dbus_wrapper_fn)
-        self.methods = {interface: {}}
+        self.__template = None
+        self.__template_parameters = None
 
         if logfile:
             self.logfile = open(logfile, 'w')
@@ -100,8 +95,10 @@ class DBusMockObject(dbus.service.Object):
             self.logfile = None
         self.call_log = []
 
-        if self.is_object_manager:
-            self._set_up_object_manager()
+        if props is None:
+            props = {}
+
+        self._reset(props)
 
     def __del__(self):
         if self.logfile:
@@ -118,6 +115,16 @@ class DBusMockObject(dbus.service.Object):
                        'GetManagedObjects', '', 'a{oa{sa{sv}}}',
                        'ret = {dbus.ObjectPath(k): objects[k].props ' +
                               'for k in objects.keys() if ' + cond + '}')
+
+    def _reset(self, props):
+        # interface -> name -> value
+        self.props = { self.interface: props }
+
+        # interface -> name -> (in_signature, out_signature, code, dbus_wrapper_fn)
+        self.methods = { self.interface: {} }
+
+        if self.is_object_manager:
+            self._set_up_object_manager()
 
     @dbus.service.method(dbus.PROPERTIES_IFACE,
                          in_signature='ss', out_signature='v')
@@ -224,11 +231,50 @@ class DBusMockObject(dbus.service.Object):
         '''
 
         try:
+            objects[path].remove_from_connection()
             del objects[path]
         except KeyError:
             raise dbus.exceptions.DBusException(
                 'org.freedesktop.DBus.Mock.NameError',
                 'object %s does not exist' % path)
+
+    @dbus.service.method(MOCK_IFACE,
+                         in_signature='', out_signature='')
+    def Reset(self):
+        '''Reset the mock object state.
+
+        Remove all mock objects from the bus and tidy up so the state is as if
+        python-dbusmock had just been restarted. If the mock object was
+        originally created with a template (from the command line or the Python
+        API — _not_ by calling AddTemplate over D-Bus), it will be
+        re-instantiated with that template.
+        '''
+
+        # Clear other existing objects.
+        for obj_name, obj in objects.items():
+            if obj_name != self.path:
+                obj.remove_from_connection()
+        objects.clear()
+
+        # Reinitialise our state. Carefully remove new methods from our dict.
+        for interface, methods in self.methods.items():
+            for method_name in methods.keys():
+                delattr(self.__class__, method_name)
+
+        self._reset({})
+
+        if self.__template is not None:
+            self.AddTemplate(self.__template, self.__template_parameters)
+
+        objects[self.path] = self
+
+    def save_template_for_reset(self, template, template_parameters=None):
+        '''Save the given template and parameters for re-instantiation.
+
+        They will be re-instantiated on the object when Reset() is called.
+        '''
+        self.__template = template
+        self.__template_parameters = template_parameters
 
     @dbus.service.method(MOCK_IFACE,
                          in_signature='sssss',

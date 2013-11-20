@@ -93,6 +93,7 @@ if __name__ == '__main__':
 
     if args.template:
         main_object.AddTemplate(args.template, None)
+        main_object.save_template_for_reset(args.template)
 
     dbusmock.mockobject.objects[args.path] = main_object
     main_loop.run()
