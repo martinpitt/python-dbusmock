@@ -13,6 +13,7 @@ __copyright__ = '(c) 2012 Canonical Ltd.'
 __license__ = 'LGPL 3+'
 
 import time
+import types
 import sys
 import importlib
 
@@ -27,6 +28,7 @@ import dbus.service
 objects = {}
 
 MOCK_IFACE = 'org.freedesktop.DBus.Mock'
+OBJECT_MANAGER_IFACE = 'org.freedesktop.DBus.ObjectManager'
 
 # stubs to keep code compatible with Python 2 and 3
 if sys.version_info[0] >= 3:
@@ -56,7 +58,8 @@ class DBusMockObject(dbus.service.Object):
     that you can control the mock from any programming language.
     '''
 
-    def __init__(self, bus_name, path, interface, props, logfile=None):
+    def __init__(self, bus_name, path, interface, props, logfile=None,
+                 is_object_manager=False):
         '''Create a new DBusMockObject
 
         bus_name: A dbus.service.BusName instance where the object will be put on
@@ -69,16 +72,24 @@ class DBusMockObject(dbus.service.Object):
                  if None, logging will be written to stdout. Note that you can
                  also query the called methods over D-BUS with GetCalls() and
                  GetMethodCalls().
+        is_object_manager: If True, the GetManagedObjects method will
+                           automatically be implemented on the object, returning
+                           all objects which have this one’s path as a prefix of
+                           theirs. Note that the InterfacesAdded and
+                           InterfacesRemoved signals will not be automatically
+                           emitted.
         '''
         dbus.service.Object.__init__(self, bus_name, path)
 
         self.bus_name = bus_name
+        self.path = path
         self.interface = interface
         # interface -> name -> value
         self.props = {}
         if props is None:
             props = {}
         self.props[interface] = props
+        self.is_object_manager = is_object_manager
 
         # interface -> name -> (in_signature, out_signature, code, dbus_wrapper_fn)
         self.methods = {interface: {}}
@@ -89,9 +100,24 @@ class DBusMockObject(dbus.service.Object):
             self.logfile = None
         self.call_log = []
 
+        if self.is_object_manager:
+            self._set_up_object_manager()
+
     def __del__(self):
         if self.logfile:
             self.logfile.close()
+
+    def _set_up_object_manager(self):
+        '''Set up this mock object as a D-Bus ObjectManager.'''
+        if self.path == '/':
+            cond = 'k != \'/\''
+        else:
+            cond = 'k.startswith(\'%s/\')' % self.path
+
+        self.AddMethod(OBJECT_MANAGER_IFACE,
+                       'GetManagedObjects', '', 'a{oa{sa{sv}}}',
+                       'ret = {dbus.ObjectPath(k): objects[k].props ' +
+                              'for k in objects.keys() if ' + cond + '}')
 
     @dbus.service.method(dbus.PROPERTIES_IFACE,
                          in_signature='ss', out_signature='v')
@@ -155,6 +181,11 @@ class DBusMockObject(dbus.service.Object):
                  methods to add to "interface"; see AddMethod() for details of
                  the tuple values
 
+        If this is a D-Bus ObjectManager instance, the InterfacesAdded signal
+        will *not* be emitted for the object automatically; it must be emitted
+        manually if desired. This is because AddInterface may be called after
+        AddObject, but before the InterfacesAdded signal should be emitted.
+
         Example:
         dbus_proxy.AddObject('/com/example/Foo/Manager',
                              'com.example.Foo.Control',
@@ -186,7 +217,11 @@ class DBusMockObject(dbus.service.Object):
                          in_signature='s',
                          out_signature='')
     def RemoveObject(self, path):
-        '''Remove a D-Bus object from the mock'''
+        '''Remove a D-Bus object from the mock
+
+        As with AddObject, this will *not* emit the InterfacesRemoved signal if
+        it’s an ObjectManager instance.
+        '''
 
         try:
             del objects[path]
