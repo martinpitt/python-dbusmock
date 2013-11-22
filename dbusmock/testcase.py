@@ -23,7 +23,7 @@ import tempfile
 
 import dbus
 
-from dbusmock.mockobject import MOCK_IFACE, load_module
+from dbusmock.mockobject import MOCK_IFACE, OBJECT_MANAGER_IFACE, load_module
 
 
 class DBusTestCase(unittest.TestCase):
@@ -229,8 +229,19 @@ class DBusTestCase(unittest.TestCase):
         '''
         # we need the bus address from the template module
         module = load_module(template)
+
+        if hasattr(module, 'IS_OBJECT_MANAGER'):
+            is_object_manager = module.IS_OBJECT_MANAGER
+        else:
+            is_object_manager = False
+
+        if is_object_manager and not hasattr(module, 'MAIN_IFACE'):
+            interface_name = OBJECT_MANAGER_IFACE
+        else:
+            interface_name = module.MAIN_IFACE
+
         daemon = klass.spawn_server(module.BUS_NAME, module.MAIN_OBJ,
-                                    module.MAIN_IFACE, module.SYSTEM_BUS, stdout)
+                                    interface_name, module.SYSTEM_BUS, stdout)
 
         bus = klass.get_dbus(module.SYSTEM_BUS)
         obj = bus.get_object(module.BUS_NAME, module.MAIN_OBJ)
