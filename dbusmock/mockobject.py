@@ -247,8 +247,8 @@ class DBusMockObject(dbus.service.Object):
 
         Remove all mock objects from the bus and tidy up so the state is as if
         python-dbusmock had just been restarted. If the mock object was
-        originally created with a template (from the command line or the Python
-        API — _not_ by calling AddTemplate over D-Bus), it will be
+        originally created with a template (from the command line, the Python
+        API or by calling AddTemplate over D-Bus), it will be
         re-instantiated with that template.
         '''
 
@@ -270,7 +270,7 @@ class DBusMockObject(dbus.service.Object):
 
         objects[self.path] = self
 
-    def save_template_for_reset(self, template, template_parameters=None):
+    def _save_template_for_reset(self, template, template_parameters=None):
         '''Save the given template and parameters for re-instantiation.
 
         They will be re-instantiated on the object when Reset() is called.
@@ -425,6 +425,7 @@ class DBusMockObject(dbus.service.Object):
             parameters = {}
 
         module.load(self, parameters)
+        self._save_template_for_reset(template, parameters)
 
     @dbus.service.method(MOCK_IFACE,
                          in_signature='sssav',

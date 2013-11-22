@@ -238,7 +238,6 @@ class DBusTestCase(unittest.TestCase):
             parameters = dbus.Dictionary({}, signature='sv')
         obj.AddTemplate(template, parameters,
                         dbus_interface=MOCK_IFACE)
-        obj.save_template_for_reset(template, parameters)
 
         return (daemon, obj)
 
