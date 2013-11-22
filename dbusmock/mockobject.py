@@ -412,6 +412,10 @@ class DBusMockObject(dbus.service.Object):
         except ImportError as e:
             raise dbus.exceptions.DBusException('Cannot add template %s: %s' % (template, str(e)))
 
+        # If the template specifies this is an ObjectManager, set that up.
+        if hasattr(module, 'IS_OBJECT_MANAGER') and module.IS_OBJECT_MANAGER:
+            self._set_up_object_manager()
+
         # pick out all D-BUS service methods and add them to our interface
         for symbol in dir(module):
             fn = getattr(module, symbol)
