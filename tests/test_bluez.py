@@ -1,0 +1,210 @@
+#!/usr/bin/python3
+
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU Lesser General Public License as published by the Free
+# Software Foundation; either version 3 of the License, or (at your option) any
+# later version.  See http://www.gnu.org/copyleft/lgpl.html for the full text
+# of the license.
+
+__author__ = 'Philip Withnall'
+__email__ = 'philip.withnall@collabora.co.uk'
+__copyright__ = '(c) 2013 Collabora Ltd.'
+__license__ = 'LGPL 3+'
+
+import unittest
+import sys
+import subprocess
+import time
+import os
+
+import dbus
+
+import dbusmock
+
+UP_DEVICE_LEVEL_UNKNOWN = 0
+UP_DEVICE_LEVEL_NONE = 1
+
+p = subprocess.Popen(['which', 'bluetoothctl'], stdout=subprocess.PIPE)
+p.communicate()
+have_bluetoothctl = (p.returncode == 0)
+
+if have_bluetoothctl:
+    p = subprocess.Popen(['bluetoothctl', '--version'], stdout=subprocess.PIPE,
+                         universal_newlines=True)
+    out = p.communicate()[0]
+    bluetoothctl_client_version = out.splitlines()[0].split()[-1]
+    assert p.returncode == 0
+else:
+    bluetoothctl_client_version = 0
+
+
+def _run_bluetoothctl(command):
+    '''Run bluetoothctl with the given command.
+
+    Return its output as a list of lines, with the command prompt removed
+    from each, and empty lines eliminated.
+
+    If bluetoothctl returns a non-zero exit code, raise an Exception.
+    '''
+    process = subprocess.Popen(['bluetoothctl'], stdin=subprocess.PIPE,
+                               stdout=subprocess.PIPE,
+                               stderr=sys.stderr,
+                               universal_newlines=True)
+
+    time.sleep(1)  # give it time to query the bus
+    out, err = process.communicate(input=command + '\nquit\n')
+
+    # Ignore output on stderr unless bluetoothctl dies.
+    if process.returncode != 0:
+        raise Exception('bluetoothctl died with status ' +
+                        str(process.returncode) + ' and errors: ' +
+                        (err or ""))
+
+    # Strip the prompt from the start of every line, then remove empty
+    # lines.
+    #
+    # The prompt looks like ‘[bluetooth]# ’, potentially containing command
+    # line colour control codes. Split at the first space.
+    #
+    # Sometimes we end up with the final line being ‘\x1b[K’ (partial
+    # control code), which we need to ignore.
+    def remove_prefix(line):
+        if line.startswith('[bluetooth]#') or line.startswith('\x1b'):
+            parts = line.split(' ', 1)
+            try:
+                return parts[1].strip()
+            except IndexError:
+                return ''
+        return line.strip()
+
+    lines = out.split('\n')
+    lines = map(remove_prefix, lines)
+    lines = filter(lambda l: l != '', lines)
+
+    # Filter out the echoed commands. (bluetoothctl uses readline.)
+    lines = filter(lambda l: l not in [command, 'quit'], lines)
+    lines = list(lines)
+
+    return lines
+
+
+@unittest.skipUnless(have_bluetoothctl, 'bluetoothctl not installed')
+class TestBlueZ(dbusmock.DBusTestCase):
+    '''Test mocking bluetoothd'''
+
+    @classmethod
+    def setUpClass(klass):
+        klass.start_system_bus()
+        klass.dbus_con = klass.get_dbus(True)
+
+    def setUp(self):
+        (self.p_mock, self.obj_bluez) = self.spawn_server_template(
+            'bluez5', {}, stdout=subprocess.PIPE)
+        self.dbusmock = dbus.Interface(self.obj_bluez, dbusmock.MOCK_IFACE)
+        self.dbusmock_bluez = dbus.Interface(self.obj_bluez, 'org.bluez.Mock')
+
+    def tearDown(self):
+        self.p_mock.terminate()
+        self.p_mock.wait()
+
+    def test_no_adapters(self):
+        # Check for adapters.
+        out = _run_bluetoothctl('list')
+        self.assertEqual(out, [])
+
+    def test_one_adapter(self):
+        # Chosen parameters.
+        adapter_name = 'hci0'
+        system_name = 'my-computer'
+
+        # Add an adapter
+        path = self.dbusmock_bluez.AddAdapter(adapter_name, system_name)
+        self.assertEqual(path, '/org/bluez/' + adapter_name)
+
+        adapter = self.dbus_con.get_object('org.bluez', path)
+        address = adapter.Get('org.bluez.Adapter1', 'Address')
+
+        # Check for the adapter.
+        out = _run_bluetoothctl('list')
+        self.assertIn('Controller ' + address + ' ' + system_name +
+                      ' [default]', out)
+
+        out = _run_bluetoothctl('show ' + address)
+        self.assertIn('Controller ' + address, out)
+        self.assertIn('Name: ' + system_name, out)
+        self.assertIn('Alias: ' + system_name, out)
+        self.assertIn('Powered: yes', out)
+        self.assertIn('Discoverable: yes', out)
+        self.assertIn('Pairable: yes', out)
+        self.assertIn('Discovering: yes', out)
+
+    def test_no_devices(self):
+        # Add an adapter.
+        adapter_name = 'hci0'
+        path = self.dbusmock_bluez.AddAdapter(adapter_name, 'my-computer')
+        self.assertEqual(path, '/org/bluez/' + adapter_name)
+
+        # Check for devices.
+        out = _run_bluetoothctl('devices')
+        self.assertEqual(out, [
+            # Just the controller lines it printed when it detected them.
+            'Controller 00:01:02:03:04:05 my-computer [default]',
+            'Controller 00:01:02:03:04:05 my-computer [default]',
+        ])
+
+    def test_one_device(self):
+        # Add an adapter.
+        adapter_name = 'hci0'
+        path = self.dbusmock_bluez.AddAdapter(adapter_name, 'my-computer')
+        self.assertEqual(path, '/org/bluez/' + adapter_name)
+
+        # Add a device.
+        address = '11:22:33:44:55:66'
+        alias = 'My Phone'
+
+        path = self.dbusmock_bluez.AddDevice(adapter_name, address, alias)
+        self.assertEqual(path,
+                         '/org/bluez/' + adapter_name + '/dev_' +
+                         address.replace(':', '_'))
+
+        # Check for the device.
+        out = _run_bluetoothctl('devices')
+        self.assertIn('Device ' + address + ' ' + alias, out)
+
+        # Check the device’s properties.
+        out = _run_bluetoothctl('info ' + address)
+        self.assertIn('Device ' + address, out)
+        self.assertIn('Name: ' + alias, out)
+        self.assertIn('Alias: ' + alias, out)
+        self.assertIn('Paired: no', out)
+        self.assertIn('Trusted: no', out)
+        self.assertIn('Blocked: no', out)
+        self.assertIn('Connected: no', out)
+
+    def test_pairing_device(self):
+        # Add an adapter.
+        adapter_name = 'hci0'
+        path = self.dbusmock_bluez.AddAdapter(adapter_name, 'my-computer')
+        self.assertEqual(path, '/org/bluez/' + adapter_name)
+
+        # Add a device.
+        address = '11:22:33:44:55:66'
+        alias = 'My Phone'
+
+        path = self.dbusmock_bluez.AddDevice(adapter_name, address, alias)
+        self.assertEqual(path,
+                         '/org/bluez/' + adapter_name + '/dev_' +
+                         address.replace(':', '_'))
+
+        # Pair with the device.
+        self.dbusmock_bluez.PairDevice(adapter_name, address)
+
+        # Check the device’s properties.
+        out = _run_bluetoothctl('info ' + address)
+        self.assertIn('Device ' + address, out)
+        self.assertIn('Paired: yes', out)
+
+
+if __name__ == '__main__':
+    # avoid writing to stderr
+    unittest.main(testRunner=unittest.TextTestRunner(stream=sys.stdout, verbosity=2))
