@@ -99,9 +99,12 @@ def CreateSession(self, destination, args):
     session = mockobject.objects[path]
     session.AddMethods(PHONEBOOK_ACCESS_IFACE, [
         ('Select', 'ss', '', ''),  # Currently a no-op
-        ('List', 'a{sv}', 'a(ss)', ''),  # Currently a no-op
-        ('ListFilterFields', '', 'as', ''),  # Currently a no-op
+        # Currently a no-op
+        ('List', 'a{sv}', 'a(ss)', 'ret = dbus.Array(signature="(ss)")'),
+        # Currently a no-op
+        ('ListFilterFields', '', 'as', 'ret = dbus.Array(signature="(s)")'),
         ('PullAll', 'sa{sv}', 'sa{sv}', PullAll),
+        ('GetSize', '', 'q', 'ret = 0'),  # TODO
     ])
 
     manager = mockobject.objects['/']
