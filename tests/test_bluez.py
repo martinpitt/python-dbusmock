@@ -18,24 +18,21 @@ import time
 import os
 
 import dbus
+import dbus.mainloop.glib
 
 import dbusmock
 
-UP_DEVICE_LEVEL_UNKNOWN = 0
-UP_DEVICE_LEVEL_NONE = 1
+from gi.repository import GLib
+
+dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 
 p = subprocess.Popen(['which', 'bluetoothctl'], stdout=subprocess.PIPE)
 p.communicate()
 have_bluetoothctl = (p.returncode == 0)
 
-if have_bluetoothctl:
-    p = subprocess.Popen(['bluetoothctl', '--version'], stdout=subprocess.PIPE,
-                         universal_newlines=True)
-    out = p.communicate()[0]
-    bluetoothctl_client_version = out.splitlines()[0].split()[-1]
-    assert p.returncode == 0
-else:
-    bluetoothctl_client_version = 0
+p = subprocess.Popen(['which', 'pbap-client'], stdout=subprocess.PIPE)
+p.communicate()
+have_pbap_client = (p.returncode == 0)
 
 
 def _run_bluetoothctl(command):
@@ -203,6 +200,124 @@ class TestBlueZ(dbusmock.DBusTestCase):
         out = _run_bluetoothctl('info ' + address)
         self.assertIn('Device ' + address, out)
         self.assertIn('Paired: yes', out)
+
+
+@unittest.skipUnless(have_pbap_client,
+                     'pbap-client not installed (copy it from bluez/test)')
+class TestBlueZObex(dbusmock.DBusTestCase):
+    '''Test mocking obexd'''
+
+    @classmethod
+    def setUpClass(klass):
+        klass.start_session_bus()
+        klass.start_system_bus()
+        klass.dbus_con = klass.get_dbus(True)
+
+    def setUp(self):
+        # bluetoothd
+        (self.p_mock, self.obj_bluez) = self.spawn_server_template(
+            'bluez5', {}, stdout=subprocess.PIPE)
+        self.dbusmock_bluez = dbus.Interface(self.obj_bluez, 'org.bluez.Mock')
+
+        # obexd
+        (self.p_mock, self.obj_obex) = self.spawn_server_template(
+            'bluez5-obex', {}, stdout=subprocess.PIPE)
+        self.dbusmock = dbus.Interface(self.obj_obex, dbusmock.MOCK_IFACE)
+        self.dbusmock_obex = dbus.Interface(self.obj_obex,
+                                            'org.bluez.obex.Mock')
+
+    def tearDown(self):
+        self.p_mock.terminate()
+        self.p_mock.wait()
+
+    def test_everything(self):
+        # Set up an adapter and device.
+        adapter_name = 'hci0'
+        device_address = '11:22:33:44:55:66'
+        device_alias = 'My Phone'
+
+        ml = GLib.MainLoop()
+
+        self.dbusmock_bluez.AddAdapter(adapter_name, 'my-computer')
+        self.dbusmock_bluez.AddDevice(adapter_name, device_address,
+                                      device_alias)
+        self.dbusmock_bluez.PairDevice(adapter_name, device_address)
+
+        transferred_files = []
+
+        def _transfer_created_cb(path, params, transfer_filename):
+            bus = self.get_dbus(False)
+            obj = bus.get_object('org.bluez.obex', path)
+            transfer = dbus.Interface(obj, 'org.bluez.obex.transfer1.Mock')
+
+            with open(transfer_filename, 'w') as f:
+                f.write(
+                    'BEGIN:VCARD\r\n' +
+                    'VERSION:3.0\r\n' +
+                    'FN:Forrest Gump\r\n' +
+                    'TEL;TYPE=WORK,VOICE:(111) 555-1212\r\n' +
+                    'TEL;TYPE=HOME,VOICE:(404) 555-1212\r\n' +
+                    'EMAIL;TYPE=PREF,INTERNET:forrestgump@example.com\r\n' +
+                    'EMAIL:test@example.com\r\n' +
+                    'URL;TYPE=HOME:http://example.com/\r\n' +
+                    'URL:http://forest.com/\r\n' +
+                    'URL:https://test.com/\r\n' +
+                    'END:VCARD\r\n'
+                )
+
+            transfer.UpdateStatus(True)
+            transferred_files.append(transfer_filename)
+
+        self.dbusmock_obex.connect_to_signal('TransferCreated',
+                                             _transfer_created_cb)
+
+        # Run pbap-client, then run the GLib main loop. The main loop will quit
+        # after a timeout, at which point the code handles output from
+        # pbap-client and waits for it to terminate. Integrating
+        # process.communicate() with the GLib main loop to avoid the timeout is
+        # too difficult.
+        process = subprocess.Popen(['pbap-client', device_address],
+                                   stdout=subprocess.PIPE,
+                                   stderr=sys.stderr,
+                                   universal_newlines=True)
+
+        GLib.timeout_add(5000, ml.quit)
+        ml.run()
+
+        out, err = process.communicate()
+
+        lines = out.split('\n')
+        lines = filter(lambda l: l != '', lines)
+        lines = list(lines)
+
+        # Clean up the transferred files.
+        for f in transferred_files:
+            try:
+                os.remove(f)
+            except:
+                pass
+
+        # See what pbap-client sees.
+        self.assertIn('Creating Session', lines)
+        self.assertIn('--- Select Phonebook PB ---', lines)
+        self.assertIn('--- GetSize ---', lines)
+        self.assertIn('Size = 0', lines)
+        self.assertIn('--- List vCard ---', lines)
+        self.assertIn(
+            'Transfer /org/bluez/obex/client/session0/transfer0 complete',
+            lines)
+        self.assertIn(
+            'Transfer /org/bluez/obex/client/session0/transfer1 complete',
+            lines)
+        self.assertIn(
+            'Transfer /org/bluez/obex/client/session0/transfer2 complete',
+            lines)
+        self.assertIn(
+            'Transfer /org/bluez/obex/client/session0/transfer3 complete',
+            lines)
+        self.assertIn('FINISHED', lines)
+
+        self.assertNotIn('ERROR', lines)
 
 
 if __name__ == '__main__':
