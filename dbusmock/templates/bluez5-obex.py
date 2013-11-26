@@ -19,6 +19,8 @@ __copyright__ = '(c) 2013 Collabora Ltd.'
 __license__ = 'LGPL 3+'
 
 import dbus
+import tempfile
+import os
 
 from dbusmock import OBJECT_MANAGER_IFACE, mockobject
 
@@ -160,7 +162,8 @@ def PullAll(self, target_file, filters):
     successful (and the transfer is completed). This target_file is actually
     emitted in a TransferCreated signal, which is a special part of the mock
     interface designed to be handled by the test driver, which should then
-    populate that file and call Activate and Create on the Session.
+    populate that file and call UpdateStatus on the Transfer object. The test
+    driver is responsible for deleting the file once the test is complete.
 
     The filters parameter is a map of filters to be applied to the results
     device-side before transmitting them back to the adapter.
@@ -177,11 +180,20 @@ def PullAll(self, target_file, filters):
         transfer_id += 1
 
     transfer_path = session_path + '/transfer' + str(transfer_id)
+
+    # Create a new temporary file to transfer to.
+    temp_file = tempfile.NamedTemporaryFile(suffix='.vcf',
+                                            prefix='tmp-bluez5-obex-PullAll_',
+                                            delete=False)
+    filename = os.path.abspath(temp_file.name)
+
     props = {
         'Status': dbus.String('queued', variant_level=1),
         'Session': dbus.ObjectPath(session_path,
                                    variant_level=1),
         'Name': dbus.String(target_file, variant_level=1),
+        'Filename': dbus.String(filename, variant_level=1),
+        'Transferred': dbus.UInt64(0, variant_level=1),
     }
 
     self.AddObject(transfer_path,
@@ -195,8 +207,7 @@ def PullAll(self, target_file, filters):
 
     transfer = mockobject.objects[transfer_path]
     transfer.AddMethods (TRANSFER_MOCK_IFACE, [
-        ('Activate', '', '', Activate),
-        ('Complete', 's', '', Complete),
+        ('UpdateStatus', 'b', '', UpdateStatus),
     ])
 
     manager = mockobject.objects['/']
@@ -207,73 +218,64 @@ def PullAll(self, target_file, filters):
         ])
 
     # Emit a behind-the-scenes signal that a new transfer has been created.
-    manager.EmitSignal(OBEX_MOCK_IFACE, 'TransferCreated', 'sa{sv}',
-                       [transfer_path, filters])
+    manager.EmitSignal(OBEX_MOCK_IFACE, 'TransferCreated', 'sa{sv}s',
+                       [transfer_path, filters, filename])
 
     return (transfer_path, props)
 
 
-@dbus.service.signal(OBEX_MOCK_IFACE, signature='sa{sv}')
-def TransferCreated(self, path, filters):
+@dbus.service.signal(OBEX_MOCK_IFACE, signature='sa{sv}s')
+def TransferCreated(self, path, filters, transfer_filename):
     '''Mock signal emitted when a new Transfer object is created.
 
     This is not part of the BlueZ OBEX interface; it is purely for use by test
     driver code. It is emitted by the PullAll method, and is intended to be
-    used as a signal to call Activate and Complete on the newly created Transfer
+    used as a signal to call UpdateStatus on the newly created Transfer
     (potentially after a timeout).
 
     The path is of the new Transfer object, and the filters are as provided to
-    PullAll.
+    PullAll. The transfer filename is the full path and filename of a newly
+    created empty temporary file which the test driver should write to.
+
+    The test driver should then call UpdateStatus on the Transfer object each
+    time a write is made to the transfer file. The final call to UpdateStatus
+    should mark the transfer as complete.
+
+    The test driver is responsible for deleting the transfer file once the test
+    is complete.
+
+    FIXME: Ideally the UpdateStatus method would only be used for completion,
+    and all intermediate updates would be found by watching the size of the
+    transfer file. However, that means adding a dependency on an inotify
+    package, which seems a little much.
     '''
     pass
 
 
 @dbus.service.method(TRANSFER_MOCK_IFACE,
                      in_signature='', out_signature='')
-def Activate(self):
-    '''Mock method to activate the transfer.
+def UpdateStatus(self, is_complete):
+    '''Mock method to update the transfer status.
 
-    This marks the transfer as active, and sets it as having an arbitrary
-    number of bytes transferred already.
+    If is_complete is False, this marks the transfer is active; otherwise it
+    marks the transfer as complete. It is an error to call this method after
+    calling it with is_complete as True.
+
+    In both cases, it updates the number of bytes transferred to be the current
+    size of the transfer file (whose filename was emitted in the TransferCreated
+    signal).
     '''
-    self.Set(TRANSFER_IFACE, 'Status', dbus.String('active', variant_level=1))
-    self.AddProperty(TRANSFER_IFACE, 'Transferred',
-                     dbus.UInt64(123, variant_level=1))
+    status = 'complete' if is_complete else 'active'
+    transferred = os.path.getsize(self.props[TRANSFER_IFACE]['Filename'])
+
+    self.props[TRANSFER_IFACE]['Status'] = status
+    self.props[TRANSFER_IFACE]['Transferred'] = transferred
 
     self.EmitSignal(dbus.PROPERTIES_IFACE, 'PropertiesChanged', 'sa{sv}as', [
         TRANSFER_IFACE,
         {
-            'Status': dbus.String('active', variant_level=1),
-            'Transferred': dbus.UInt64(123, variant_level=1),
-        },
-        [],
-    ])
-
-
-@dbus.service.method(TRANSFER_MOCK_IFACE,
-                     in_signature='s', out_signature='')
-def Complete(self, filename):
-    '''Mock method to complete the transfer.
-
-    This marks the transfer as complete, and sets it as having a larger number
-    of bytes transferred than Active does.
-
-    The given filename is set as the Transfer’s Filename property, and should
-    have already been created by the test driver code with zero or more vCards,
-    separated by new-line characters.
-    '''
-    self.Set(TRANSFER_IFACE, 'Status', dbus.String('complete', variant_level=1))
-    self.AddProperties(TRANSFER_IFACE, {
-        'Transferred': dbus.UInt64(999, variant_level=1),
-        'Filename': dbus.String(filename, variant_level=1),
-    })
-
-    self.EmitSignal(dbus.PROPERTIES_IFACE, 'PropertiesChanged', 'sa{sv}as', [
-        TRANSFER_IFACE,
-        {
-            'Status': dbus.String('complete', variant_level=1),
-            'Transferred': dbus.UInt64(999, variant_level=1),
-            'Filename': dbus.String(filename, variant_level=1),
+            'Status': dbus.String(status, variant_level=1),
+            'Transferred': dbus.UInt64(transferred, variant_level=1),
         },
         [],
     ])
