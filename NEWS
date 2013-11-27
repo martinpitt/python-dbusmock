@@ -1,7 +1,10 @@
-0.8.2 (UNRELEASED)
-------------------
+0.9 (UNRELEASED)
+----------------
  - Make static template methods appear in introspection. Thanks Philip
    Whitnall! (LP: #1250096)
+ - Add support for the D-Bus ObjectManager interface. This can now be enabled
+   in templates (IS_OBJECT_MANAGER = True) or the CLI (--is-object-manager/-m).
+   Thanks Philip Whitnall!
 
 0.8.1 (2013-11-11)
 ------------------

@@ -34,6 +34,8 @@ def parse_args():
                         help='D-BUS object path for initial/main object (if not using -t)')
     parser.add_argument('interface', metavar='INTERFACE', nargs='?',
                         help='main D-BUS interface name for initial object (if not using -t)')
+    parser.add_argument('-m', '--is-object-manager', action='store_true',
+                        help='automatically implement the org.freedesktop.DBus.ObjectManager interface')
 
     args = parser.parse_args()
 
@@ -58,8 +60,17 @@ if __name__ == '__main__':
         module = dbusmock.mockobject.load_module(args.template)
         args.name = module.BUS_NAME
         args.path = module.MAIN_OBJ
-        args.interface = module.MAIN_IFACE
         args.system = module.SYSTEM_BUS
+
+        if hasattr(module, 'IS_OBJECT_MANAGER'):
+            args.is_object_manager = module.IS_OBJECT_MANAGER
+        else:
+            args.is_object_manager = False
+
+        if args.is_object_manager and not hasattr(module, 'MAIN_IFACE'):
+            args.interface = dbusmock.mockobject.OBJECT_MANAGER_IFACE
+        else:
+            args.interface = module.MAIN_IFACE
 
     main_loop = GLib.MainLoop()
     bus = dbusmock.testcase.DBusTestCase.get_dbus(args.system)
@@ -75,7 +86,10 @@ if __name__ == '__main__':
                                     replace_existing=True,
                                     do_not_queue=True)
 
-    main_object = dbusmock.mockobject.DBusMockObject(bus_name, args.path, args.interface, {}, args.logfile)
+    main_object = dbusmock.mockobject.DBusMockObject(bus_name, args.path,
+                                                     args.interface, {},
+                                                     args.logfile,
+                                                     args.is_object_manager)
 
     if args.template:
         main_object.AddTemplate(args.template, None)

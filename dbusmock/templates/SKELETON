@@ -20,10 +20,15 @@ import dbus
 
 from dbusmock import MOCK_IFACE
 
+SYSTEM_BUS = True  # CHANGEME
 BUS_NAME = 'org.freedesktop.CHANGEME'
 MAIN_OBJ = '/org/freedesktop/CHANGEME'
+# If your top-level object is an org.freedesktop.DBus.ObjectManager, you can
+# skip setting MAIN_IFACE and set IS_OBJECT_MANAGER to True; then dbusmock will
+# automatically provide the GetManagedObjects() API. In all other cases,
+# specify the interface name of the main object here.
 MAIN_IFACE = 'org.freedesktop.CHANGEME'
-SYSTEM_BUS = True  # CHANGEME
+# IS_OBJECT_MANAGER = True
 
 
 def load(mock, parameters):

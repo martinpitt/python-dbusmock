@@ -536,6 +536,10 @@ def load(mock, parameters):
         self.assertIn('<interface name="universe.Ultimate">', xml)
         self.assertIn('<method name="Answer">', xml)
 
+        # should not have ObjectManager API by default
+        self.assertRaises(dbus.exceptions.DBusException,
+                          dbus_ultimate.GetManagedObjects)
+
     def test_static_method(self):
         '''Static method in a template'''
 
@@ -570,6 +574,39 @@ def Answer(self):
 
     def test_local_nonexisting(self):
         self.assertRaises(ImportError, self.spawn_server_template, '/non/existing.py')
+
+    def test_object_manager(self):
+        '''Template with ObjectManager API'''
+
+        with tempfile.NamedTemporaryFile(prefix='objmgr_', suffix='.py') as my_template:
+            my_template.write(b'''import dbus
+BUS_NAME = 'org.test.Things'
+MAIN_OBJ = '/org/test/Things'
+IS_OBJECT_MANAGER = True
+SYSTEM_BUS = False
+
+def load(mock, parameters):
+    mock.AddObject('/org/test/Things/Thing1', 'org.test.Do', {'name': 'one'}, [])
+    mock.AddObject('/org/test/Things/Thing2', 'org.test.Do', {'name': 'two'}, [])
+    mock.AddObject('/org/test/Peer', 'org.test.Do', {'name': 'peer'}, [])
+''')
+            my_template.flush()
+            (p_mock, dbus_objmgr) = self.spawn_server_template(
+                my_template.name, stdout=subprocess.PIPE)
+            self.addCleanup(p_mock.wait)
+            self.addCleanup(p_mock.terminate)
+
+        # should have the two Things, but not the Peer
+        self.assertEqual(dbus_objmgr.GetManagedObjects(),
+                         {'/org/test/Things/Thing1': {'org.test.Do': {'name': 'one'}},
+                          '/org/test/Things/Thing2': {'org.test.Do': {'name': 'two'}}})
+
+        # should appear in introspection
+        xml = dbus_objmgr.Introspect()
+        self.assertIn('<interface name="org.freedesktop.DBus.ObjectManager">', xml)
+        self.assertIn('<method name="GetManagedObjects">', xml)
+        self.assertIn('<node name="Thing1"/>', xml)
+        self.assertIn('<node name="Thing2"/>', xml)
 
 
 class TestCleanup(dbusmock.DBusTestCase):
