@@ -224,14 +224,29 @@ def PairDevice(self, adapter_device_name, device_address):
         '0000112f-0000-1000-8000-00805f9b34fb',
         '00001200-0000-1000-8000-00805f9b34fb',
     ]
-    device.Set(DEVICE_IFACE, 'UUIDs', dbus.Array(uuids, variant_level=1))
-    device.Set(DEVICE_IFACE, 'Paired', dbus.Boolean(True, variant_level=1))
-    device.Set(DEVICE_IFACE, 'LegacyPairing',
-               dbus.Boolean(True, variant_level=1))
+
+    device.props[DEVICE_IFACE]['UUIDs'] = dbus.Array(uuids, variant_level=1)
+    device.props[DEVICE_IFACE]['Paired'] = dbus.Boolean(True, variant_level=1)
+    device.props[DEVICE_IFACE]['LegacyPairing'] = dbus.Boolean(True,
+                                                               variant_level=1)
 
     device.AddProperties(DEVICE_IFACE, {
         'Modalias': dbus.String('bluetooth:v000Fp1200d1436', variant_level=1),
         'Class': dbus.UInt32(5898764, variant_level=1),
         'Icon': dbus.String('phone', variant_level=1),
     })
+
+    device.EmitSignal(dbus.PROPERTIES_IFACE, 'PropertiesChanged', 'sa{sv}as', [
+        DEVICE_IFACE,
+        {
+            'UUIDs': dbus.Array(uuids, variant_level=1),
+            'Paired': dbus.Boolean(True, variant_level=1),
+            'LegacyPairing': dbus.Boolean(True, variant_level=1),
+            'Modalias': dbus.String('bluetooth:v000Fp1200d1436',
+                                    variant_level=1),
+            'Class': dbus.UInt32(5898764, variant_level=1),
+            'Icon': dbus.String('phone', variant_level=1),
+        },
+        [],
+    ])
 
