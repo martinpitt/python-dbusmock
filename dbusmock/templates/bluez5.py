@@ -192,6 +192,8 @@ def PairDevice(self, adapter_device_name, device_address):
     (e.g. 'AA:BB:CC:DD:EE:FF'). The adapter device name is the device_name
     passed to AddAdapter.
 
+    This unblocks the device if it was blocked.
+
     If the specified adapter or device don’t exist, a NoSuchAdapter or
     NoSuchDevice error will be returned on the bus.
 
@@ -229,12 +231,16 @@ def PairDevice(self, adapter_device_name, device_address):
     device.props[DEVICE_IFACE]['Paired'] = dbus.Boolean(True, variant_level=1)
     device.props[DEVICE_IFACE]['LegacyPairing'] = dbus.Boolean(True,
                                                                variant_level=1)
+    device.props[DEVICE_IFACE]['Blocked'] = dbus.Boolean(False, variant_level=1)
 
-    device.AddProperties(DEVICE_IFACE, {
-        'Modalias': dbus.String('bluetooth:v000Fp1200d1436', variant_level=1),
-        'Class': dbus.UInt32(5898764, variant_level=1),
-        'Icon': dbus.String('phone', variant_level=1),
-    })
+    try:
+        device.props[DEVICE_IFACE]['Modalias']
+    except KeyError:
+        device.AddProperties(DEVICE_IFACE, {
+            'Modalias': dbus.String('bluetooth:v000Fp1200d1436', variant_level=1),
+            'Class': dbus.UInt32(5898764, variant_level=1),
+            'Icon': dbus.String('phone', variant_level=1),
+        })
 
     device.EmitSignal(dbus.PROPERTIES_IFACE, 'PropertiesChanged', 'sa{sv}as', [
         DEVICE_IFACE,
@@ -242,10 +248,53 @@ def PairDevice(self, adapter_device_name, device_address):
             'UUIDs': dbus.Array(uuids, variant_level=1),
             'Paired': dbus.Boolean(True, variant_level=1),
             'LegacyPairing': dbus.Boolean(True, variant_level=1),
+            'Blocked': dbus.Boolean(False, variant_level=1),
             'Modalias': dbus.String('bluetooth:v000Fp1200d1436',
                                     variant_level=1),
             'Class': dbus.UInt32(5898764, variant_level=1),
             'Icon': dbus.String('phone', variant_level=1),
+        },
+        [],
+    ])
+
+@dbus.service.method(BLUEZ_MOCK_IFACE,
+                     in_signature='ss', out_signature='')
+def BlockDevice(self, adapter_device_name, device_address):
+    '''Convenience method to mark an existing device as blocked.
+
+    You have to specify a device address which must be a valid Bluetooth address
+    (e.g. 'AA:BB:CC:DD:EE:FF'). The adapter device name is the device_name
+    passed to AddAdapter.
+
+    If the specified adapter or device don’t exist, a NoSuchAdapter or
+    NoSuchDevice error will be returned on the bus.
+
+    Returns nothing.
+    '''
+    device_name = 'dev_' + device_address.replace(':', '_').upper()
+    adapter_path = '/org/bluez/' + adapter_device_name
+    device_path = adapter_path + '/' + device_name
+
+    if adapter_path not in mockobject.objects:
+        raise dbus.exceptions.DBusException(BLUEZ_MOCK_IFACE + '.NoSuchAdapter',
+                                            'Adapter %s does not exist.' %
+                                                adapter_device_name)
+    if device_path not in mockobject.objects:
+        raise dbus.exceptions.DBusException(BLUEZ_MOCK_IFACE + '.NoSuchDevice',
+                                            'Device %s does not exist.' %
+                                                device_name)
+
+    device = mockobject.objects[device_path]
+
+    device.props[DEVICE_IFACE]['Blocked'] = dbus.Boolean(True, variant_level=1)
+    device.props[DEVICE_IFACE]['Connected'] = dbus.Boolean(False,
+                                                           variant_level=1)
+
+    device.EmitSignal(dbus.PROPERTIES_IFACE, 'PropertiesChanged', 'sa{sv}as', [
+        DEVICE_IFACE,
+        {
+            'Blocked': dbus.Boolean(True, variant_level=1),
+            'Connected': dbus.Boolean(False, variant_level=1),
         },
         [],
     ])
