@@ -648,7 +648,7 @@ def load(mock, parameters):
         dbus_con = self.get_dbus(True)
         obj_logind = dbus_con.get_object('org.freedesktop.login1',
                                          '/org/freedesktop/login1')
-        self.assertEqual(obj_logind.ListInhibitors(), [])
+        self.assertEqual(obj_logind.CanSuspend(), 'yes')
 
         # resets properties
         self.assertRaises(dbus.exceptions.DBusException,
