@@ -488,6 +488,12 @@ class DBusMockObject(dbus.service.Object):
 
     @dbus.service.signal(MOCK_IFACE, signature='sav')
     def MethodCalled(self, name, args):
+        '''Signal emitted for every called mock method.
+
+        This is emitted for all mock method calls.  This can be used to confirm
+        that a particular method was called with particular arguments, as an
+        alternative to reading the mock's log or GetCalls().
+        '''
         pass
 
     def mock_method(self, interface, dbus_method, in_signature, *args, **kwargs):
