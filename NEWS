@@ -12,6 +12,8 @@
    killing python-dbusmock and re-starting it. Thanks Philip Whitnall!  
  - logind template: Fix return value of CanSuspend() and related methods,
    calling them previously caused a crash.
+ - Don't close the log file multiple times if it is shared between objects.
+   Thanks Philip Whitnall!
 
 0.8.1 (2013-11-11)
 ------------------
