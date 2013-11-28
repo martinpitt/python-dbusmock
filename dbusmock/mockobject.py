@@ -14,6 +14,7 @@ __license__ = 'LGPL 3+'
 
 import time
 import sys
+import types
 import importlib
 
 # we do not use this ourselves, but mock methods often want to use this
@@ -510,8 +511,13 @@ class DBusMockObject(dbus.service.Object):
         self.call_log.append((int(time.time()), str(dbus_method), args))
         self.MethodCalled(dbus_method, args)
 
+        # The code may be a Python 3 string to interpret, or may be a function
+        # object (if AddMethod was called from within Python itself, rather than
+        # over D-Bus).
         code = self.methods[interface][dbus_method][2]
-        if code:
+        if code and isinstance(code, types.FunctionType):
+            return code(self, *args)
+        elif code:
             loc = locals().copy()
             exec(code, globals(), loc)
             if 'ret' in loc:
