@@ -502,6 +502,24 @@ assert args[2] == 5
         self.assertEqual(len(args), 1)
         self.assertEqual(args[0], 'foo')
 
+    def test_reset(self):
+        '''resetting to pristine state'''
+
+        self.dbus_mock.AddMethod('', 'Do', '', '', '')
+        self.dbus_mock.AddProperty('', 'propone', True)
+        self.dbus_mock.AddProperty('org.Test.Other', 'proptwo', 1)
+        self.dbus_mock.AddObject('/obj1', '', {}, [])
+
+        self.dbus_mock.Reset()
+
+        # resets properties and keeps the initial object
+        self.assertEqual(self.dbus_props.GetAll(''), {})
+        # resets methods
+        self.assertRaises(dbus.exceptions.DBusException, self.dbus_test.Do)
+        # resets other objects
+        obj1 = self.dbus_con.get_object('org.freedesktop.Test', '/obj1')
+        self.assertRaises(dbus.exceptions.DBusException, obj1.GetAll, '')
+
 
 class TestTemplates(dbusmock.DBusTestCase):
     '''Test template API'''
@@ -509,6 +527,7 @@ class TestTemplates(dbusmock.DBusTestCase):
     @classmethod
     def setUpClass(klass):
         klass.start_session_bus()
+        klass.start_system_bus()
 
     def test_local(self):
         '''Load a local template *.py file'''
@@ -607,6 +626,41 @@ def load(mock, parameters):
         self.assertIn('<method name="GetManagedObjects">', xml)
         self.assertIn('<node name="Thing1"/>', xml)
         self.assertIn('<node name="Thing2"/>', xml)
+
+    def test_reset(self):
+        '''Reset() puts the template back to pristine state'''
+
+        (p_mock, obj_logind) = self.spawn_server_template(
+            'logind', stdout=subprocess.PIPE)
+        self.addCleanup(p_mock.wait)
+        self.addCleanup(p_mock.terminate)
+
+        # do some property, method, and object changes
+        obj_logind.Set('org.freedesktop.login1.Manager', 'IdleAction', 'frob')
+        mock_logind = dbus.Interface(obj_logind, dbusmock.MOCK_IFACE)
+        mock_logind.AddProperty('org.Test.Other', 'walk', 'silly')
+        mock_logind.AddMethod('', 'DoWalk', '', '', '')
+        mock_logind.AddObject('/obj1', '', {}, [])
+
+        mock_logind.Reset()
+
+        # keeps the objects from the template
+        dbus_con = self.get_dbus(True)
+        obj_logind = dbus_con.get_object('org.freedesktop.login1',
+                                         '/org/freedesktop/login1')
+        self.assertEqual(obj_logind.ListInhibitors(), [])
+
+        # resets properties
+        self.assertRaises(dbus.exceptions.DBusException,
+                          obj_logind.GetAll, 'org.Test.Other')
+        self.assertEqual(
+            obj_logind.Get('org.freedesktop.login1.Manager', 'IdleAction'),
+            'ignore')
+        # resets methods
+        self.assertRaises(dbus.exceptions.DBusException, obj_logind.DoWalk)
+        # resets other objects
+        obj1 = dbus_con.get_object('org.freedesktop.login1', '/obj1')
+        self.assertRaises(dbus.exceptions.DBusException, obj1.GetAll, '')
 
 
 class TestCleanup(dbusmock.DBusTestCase):

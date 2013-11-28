@@ -5,6 +5,11 @@
  - Add support for the D-Bus ObjectManager interface. This can now be enabled
    in templates (IS_OBJECT_MANAGER = True) or the CLI (--is-object-manager/-m).
    Thanks Philip Whitnall!
+ - Add Reset() mock interface method to reset that object’s state (including
+   removing all its sub-objects) as if the object or template had been
+   destroyed and re-created. This is intended for use at the end of test cases
+   to reset state before the next test case is run, as an alternative to
+   killing python-dbusmock and re-starting it. Thanks Philip Whitnall!  
 
 0.8.1 (2013-11-11)
 ------------------
