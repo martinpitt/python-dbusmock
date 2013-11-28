@@ -132,6 +132,8 @@ class DBusMockObject(dbus.service.Object):
     def Get(self, interface_name, property_name):
         '''Standard D-Bus API for getting a property value'''
 
+        self.log('Get %s.%s' % (interface_name, property_name))
+
         if not interface_name:
             interface_name = self.interface
         try:
@@ -146,6 +148,8 @@ class DBusMockObject(dbus.service.Object):
     def GetAll(self, interface_name, *args, **kwargs):
         '''Standard D-Bus API for getting all property values'''
 
+        self.log('GetAll ' + interface_name)
+
         if not interface_name:
             interface_name = self.interface
         try:
@@ -159,6 +163,10 @@ class DBusMockObject(dbus.service.Object):
                          in_signature='ssv', out_signature='')
     def Set(self, interface_name, property_name, value, *args, **kwargs):
         '''Standard D-Bus API for setting a property value'''
+
+        self.log('Set %s.%s%s' % (interface_name,
+                                  property_name,
+                                  self.format_args((value,))))
 
         try:
             iface_props = self.props[interface_name]

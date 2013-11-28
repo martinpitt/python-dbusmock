@@ -270,6 +270,14 @@ assert args[2] == 5
                             dbus.Int32(4, variant_level=1))
         self.assertEqual(self.dbus_props.Get('org.freedesktop.Test.Main', 'version'), 4)
 
+        # check that the Get/Set calls get logged
+        with open(self.mock_log.name) as f:
+            contents = f.read()
+            self.assertRegex(contents, '\n[0-9.]+ Get org.freedesktop.Test.Main.version\n')
+            self.assertRegex(contents, '\n[0-9.]+ Get org.freedesktop.Test.Main.connected\n')
+            self.assertRegex(contents, '\n[0-9.]+ GetAll org.freedesktop.Test.Main\n')
+            self.assertRegex(contents, '\n[0-9.]+ Set org.freedesktop.Test.Main.version 4\n')
+
         # add property to different interface
         self.dbus_mock.AddProperty('org.freedesktop.Test.Other',
                                    'color',
