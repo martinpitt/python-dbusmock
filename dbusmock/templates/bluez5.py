@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 '''bluetoothd mock template
 
 This creates the expected methods and properties of the object manager
