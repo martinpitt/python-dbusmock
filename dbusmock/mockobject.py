@@ -13,8 +13,8 @@ __copyright__ = '(c) 2012 Canonical Ltd.'
 __license__ = 'LGPL 3+'
 
 import time
-import types
 import sys
+import types
 import importlib
 
 # we do not use this ourselves, but mock methods often want to use this
@@ -86,8 +86,8 @@ class DBusMockObject(dbus.service.Object):
         self.interface = interface
         self.is_object_manager = is_object_manager
 
-        self.__template = None
-        self.__template_parameters = None
+        self._template = None
+        self._template_parameters = None
 
         if logfile:
             self.logfile = open(logfile, 'w')
@@ -115,14 +115,14 @@ class DBusMockObject(dbus.service.Object):
         self.AddMethod(OBJECT_MANAGER_IFACE,
                        'GetManagedObjects', '', 'a{oa{sa{sv}}}',
                        'ret = {dbus.ObjectPath(k): objects[k].props ' +
-                              'for k in objects.keys() if ' + cond + '}')
+                       '  for k in objects.keys() if ' + cond + '}')
 
     def _reset(self, props):
         # interface -> name -> value
-        self.props = { self.interface: props }
+        self.props = {self.interface: props}
 
         # interface -> name -> (in_signature, out_signature, code, dbus_wrapper_fn)
-        self.methods = { self.interface: {} }
+        self.methods = {self.interface: {}}
 
         if self.is_object_manager:
             self._set_up_object_manager()
@@ -132,7 +132,7 @@ class DBusMockObject(dbus.service.Object):
     def Get(self, interface_name, property_name):
         '''Standard D-Bus API for getting a property value'''
 
-        self.log('Get ' + interface_name + '.' + property_name)
+        self.log('Get %s.%s' % (interface_name, property_name))
 
         if not interface_name:
             interface_name = self.interface
@@ -148,7 +148,7 @@ class DBusMockObject(dbus.service.Object):
     def GetAll(self, interface_name, *args, **kwargs):
         '''Standard D-Bus API for getting all property values'''
 
-        self.log('GetAll ' + interface_name + ' ' + self.format_args(args))
+        self.log('GetAll ' + interface_name)
 
         if not interface_name:
             interface_name = self.interface
@@ -164,8 +164,9 @@ class DBusMockObject(dbus.service.Object):
     def Set(self, interface_name, property_name, value, *args, **kwargs):
         '''Standard D-Bus API for setting a property value'''
 
-        self.log('Set ' + interface_name + '.' + property_name + ' ' +
-                 self.format_args(args))
+        self.log('Set %s.%s%s' % (interface_name,
+                                  property_name,
+                                  self.format_args((value,))))
 
         try:
             iface_props = self.props[interface_name]
@@ -238,7 +239,6 @@ class DBusMockObject(dbus.service.Object):
         As with AddObject, this will *not* emit the InterfacesRemoved signal if
         it’s an ObjectManager instance.
         '''
-
         try:
             objects[path].remove_from_connection()
             del objects[path]
@@ -258,7 +258,6 @@ class DBusMockObject(dbus.service.Object):
         API or by calling AddTemplate over D-Bus), it will be
         re-instantiated with that template.
         '''
-
         # Clear other existing objects.
         for obj_name, obj in objects.items():
             if obj_name != self.path:
@@ -272,18 +271,10 @@ class DBusMockObject(dbus.service.Object):
 
         self._reset({})
 
-        if self.__template is not None:
-            self.AddTemplate(self.__template, self.__template_parameters)
+        if self._template is not None:
+            self.AddTemplate(self._template, self._template_parameters)
 
         objects[self.path] = self
-
-    def _save_template_for_reset(self, template, template_parameters=None):
-        '''Save the given template and parameters for re-instantiation.
-
-        They will be re-instantiated on the object when Reset() is called.
-        '''
-        self.__template = template
-        self.__template_parameters = template_parameters
 
     @dbus.service.method(MOCK_IFACE,
                          in_signature='sssss',
@@ -419,7 +410,7 @@ class DBusMockObject(dbus.service.Object):
         except ImportError as e:
             raise dbus.exceptions.DBusException('Cannot add template %s: %s' % (template, str(e)))
 
-        # If the template specifies this is an ObjectManager, set that up.
+        # If the template specifies this is an ObjectManager, set that up
         if hasattr(module, 'IS_OBJECT_MANAGER') and module.IS_OBJECT_MANAGER:
             self._set_up_object_manager()
 
@@ -427,7 +418,7 @@ class DBusMockObject(dbus.service.Object):
         for symbol in dir(module):
             fn = getattr(module, symbol)
             if ('_dbus_interface' in dir(fn) and
-                ('_dbus_is_signal' not in dir(fn) or not fn._dbus_is_signal)):
+                    ('_dbus_is_signal' not in dir(fn) or not fn._dbus_is_signal)):
                 self.AddMethod(fn._dbus_interface, symbol,
                                fn._dbus_in_signature, fn._dbus_out_signature,
                                fn)
@@ -436,7 +427,10 @@ class DBusMockObject(dbus.service.Object):
             parameters = {}
 
         module.load(self, parameters)
-        self._save_template_for_reset(template, parameters)
+        # save the given template and parameters for re-instantiation on
+        # Reset()
+        self._template = template
+        self._template_parameters = parameters
 
     @dbus.service.method(MOCK_IFACE,
                          in_signature='sssav',
@@ -504,11 +498,11 @@ class DBusMockObject(dbus.service.Object):
 
     @dbus.service.signal(MOCK_IFACE, signature='sav')
     def MethodCalled(self, name, args):
-        '''Signal emitted for every mock method called on the D-Bus object.
+        '''Signal emitted for every called mock method.
 
-        This is called automatically for all mock methods, including those
-        added statically from Python code and those added dynamically by calling
-        AddMethod over D-Bus or via Python.
+        This is emitted for all mock method calls.  This can be used to confirm
+        that a particular method was called with particular arguments, as an
+        alternative to reading the mock's log or GetCalls().
         '''
         pass
 

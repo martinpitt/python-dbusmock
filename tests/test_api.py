@@ -270,6 +270,14 @@ assert args[2] == 5
                             dbus.Int32(4, variant_level=1))
         self.assertEqual(self.dbus_props.Get('org.freedesktop.Test.Main', 'version'), 4)
 
+        # check that the Get/Set calls get logged
+        with open(self.mock_log.name) as f:
+            contents = f.read()
+            self.assertRegex(contents, '\n[0-9.]+ Get org.freedesktop.Test.Main.version\n')
+            self.assertRegex(contents, '\n[0-9.]+ Get org.freedesktop.Test.Main.connected\n')
+            self.assertRegex(contents, '\n[0-9.]+ GetAll org.freedesktop.Test.Main\n')
+            self.assertRegex(contents, '\n[0-9.]+ Set org.freedesktop.Test.Main.version 4\n')
+
         # add property to different interface
         self.dbus_mock.AddProperty('org.freedesktop.Test.Other',
                                    'color',
@@ -502,6 +510,24 @@ assert args[2] == 5
         self.assertEqual(len(args), 1)
         self.assertEqual(args[0], 'foo')
 
+    def test_reset(self):
+        '''resetting to pristine state'''
+
+        self.dbus_mock.AddMethod('', 'Do', '', '', '')
+        self.dbus_mock.AddProperty('', 'propone', True)
+        self.dbus_mock.AddProperty('org.Test.Other', 'proptwo', 1)
+        self.dbus_mock.AddObject('/obj1', '', {}, [])
+
+        self.dbus_mock.Reset()
+
+        # resets properties and keeps the initial object
+        self.assertEqual(self.dbus_props.GetAll(''), {})
+        # resets methods
+        self.assertRaises(dbus.exceptions.DBusException, self.dbus_test.Do)
+        # resets other objects
+        obj1 = self.dbus_con.get_object('org.freedesktop.Test', '/obj1')
+        self.assertRaises(dbus.exceptions.DBusException, obj1.GetAll, '')
+
 
 class TestTemplates(dbusmock.DBusTestCase):
     '''Test template API'''
@@ -509,6 +535,7 @@ class TestTemplates(dbusmock.DBusTestCase):
     @classmethod
     def setUpClass(klass):
         klass.start_session_bus()
+        klass.start_system_bus()
 
     def test_local(self):
         '''Load a local template *.py file'''
@@ -535,6 +562,10 @@ def load(mock, parameters):
         xml = dbus_ultimate.Introspect()
         self.assertIn('<interface name="universe.Ultimate">', xml)
         self.assertIn('<method name="Answer">', xml)
+
+        # should not have ObjectManager API by default
+        self.assertRaises(dbus.exceptions.DBusException,
+                          dbus_ultimate.GetManagedObjects)
 
     def test_static_method(self):
         '''Static method in a template'''
@@ -570,6 +601,74 @@ def Answer(self):
 
     def test_local_nonexisting(self):
         self.assertRaises(ImportError, self.spawn_server_template, '/non/existing.py')
+
+    def test_object_manager(self):
+        '''Template with ObjectManager API'''
+
+        with tempfile.NamedTemporaryFile(prefix='objmgr_', suffix='.py') as my_template:
+            my_template.write(b'''import dbus
+BUS_NAME = 'org.test.Things'
+MAIN_OBJ = '/org/test/Things'
+IS_OBJECT_MANAGER = True
+SYSTEM_BUS = False
+
+def load(mock, parameters):
+    mock.AddObject('/org/test/Things/Thing1', 'org.test.Do', {'name': 'one'}, [])
+    mock.AddObject('/org/test/Things/Thing2', 'org.test.Do', {'name': 'two'}, [])
+    mock.AddObject('/org/test/Peer', 'org.test.Do', {'name': 'peer'}, [])
+''')
+            my_template.flush()
+            (p_mock, dbus_objmgr) = self.spawn_server_template(
+                my_template.name, stdout=subprocess.PIPE)
+            self.addCleanup(p_mock.wait)
+            self.addCleanup(p_mock.terminate)
+
+        # should have the two Things, but not the Peer
+        self.assertEqual(dbus_objmgr.GetManagedObjects(),
+                         {'/org/test/Things/Thing1': {'org.test.Do': {'name': 'one'}},
+                          '/org/test/Things/Thing2': {'org.test.Do': {'name': 'two'}}})
+
+        # should appear in introspection
+        xml = dbus_objmgr.Introspect()
+        self.assertIn('<interface name="org.freedesktop.DBus.ObjectManager">', xml)
+        self.assertIn('<method name="GetManagedObjects">', xml)
+        self.assertIn('<node name="Thing1"/>', xml)
+        self.assertIn('<node name="Thing2"/>', xml)
+
+    def test_reset(self):
+        '''Reset() puts the template back to pristine state'''
+
+        (p_mock, obj_logind) = self.spawn_server_template(
+            'logind', stdout=subprocess.PIPE)
+        self.addCleanup(p_mock.wait)
+        self.addCleanup(p_mock.terminate)
+
+        # do some property, method, and object changes
+        obj_logind.Set('org.freedesktop.login1.Manager', 'IdleAction', 'frob')
+        mock_logind = dbus.Interface(obj_logind, dbusmock.MOCK_IFACE)
+        mock_logind.AddProperty('org.Test.Other', 'walk', 'silly')
+        mock_logind.AddMethod('', 'DoWalk', '', '', '')
+        mock_logind.AddObject('/obj1', '', {}, [])
+
+        mock_logind.Reset()
+
+        # keeps the objects from the template
+        dbus_con = self.get_dbus(True)
+        obj_logind = dbus_con.get_object('org.freedesktop.login1',
+                                         '/org/freedesktop/login1')
+        self.assertEqual(obj_logind.CanSuspend(), 'yes')
+
+        # resets properties
+        self.assertRaises(dbus.exceptions.DBusException,
+                          obj_logind.GetAll, 'org.Test.Other')
+        self.assertEqual(
+            obj_logind.Get('org.freedesktop.login1.Manager', 'IdleAction'),
+            'ignore')
+        # resets methods
+        self.assertRaises(dbus.exceptions.DBusException, obj_logind.DoWalk)
+        # resets other objects
+        obj1 = dbus_con.get_object('org.freedesktop.login1', '/obj1')
+        self.assertRaises(dbus.exceptions.DBusException, obj1.GetAll, '')
 
 
 class TestCleanup(dbusmock.DBusTestCase):

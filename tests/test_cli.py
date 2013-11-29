@@ -15,6 +15,8 @@ import unittest
 import sys
 import subprocess
 
+import dbus
+
 import dbusmock
 
 
@@ -69,6 +71,21 @@ class TestCLI(dbusmock.DBusTestCase):
             self.assertTrue('EnumerateDevices' in mock_out, mock_out)
 
         self.p_mock.stdout.close()
+
+    def test_object_manager(self):
+        self.p_mock = subprocess.Popen([sys.executable, '-m', 'dbusmock',
+                                        '-m', 'com.example.Test', '/', 'TestIface'],
+                                       stdout=subprocess.PIPE)
+        self.wait_for_bus_object('com.example.Test', '/')
+
+        obj = self.session_con.get_object('com.example.Test', '/')
+        if_om = dbus.Interface(obj, dbusmock.OBJECT_MANAGER_IFACE)
+        self.assertEqual(if_om.GetManagedObjects(), {})
+
+        # add a new object, should appear
+        obj.AddObject('/a/b', 'org.Test', {'name': 'foo'}, dbus.Array([], signature='(ssss)'))
+
+        self.assertEqual(if_om.GetManagedObjects(), {'/a/b': {'org.Test': {'name': 'foo'}}})
 
     def test_no_args(self):
         p = subprocess.Popen([sys.executable, '-m', 'dbusmock'],

@@ -13,8 +13,8 @@ __copyright__ = '(c) 2012 Canonical Ltd.'
 __license__ = 'LGPL 3+'
 __version__ = '0.8.1'
 
-from dbusmock.mockobject import DBusMockObject, MOCK_IFACE
-from dbusmock.mockobject import OBJECT_MANAGER_IFACE, get_object, get_objects
+from dbusmock.mockobject import (DBusMockObject, MOCK_IFACE,
+                                 OBJECT_MANAGER_IFACE, get_object, get_objects)
 from dbusmock.testcase import DBusTestCase
 
 __all__ = ['DBusMockObject', 'MOCK_IFACE', 'OBJECT_MANAGER_IFACE',
