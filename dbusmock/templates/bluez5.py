@@ -46,7 +46,7 @@ def load(mock, parameters):
     ])
 
     bluez = mockobject.objects['/org/bluez']
-    bluez.AddMethods (PROFILE_MANAGER_IFACE, [
+    bluez.AddMethods(PROFILE_MANAGER_IFACE, [
         ('RegisterProfile', 'osa{sv}', '', ''),
         ('UnregisterProfile', 'o', '', ''),
     ])
@@ -117,10 +117,10 @@ def AddAdapter(self, device_name, system_name):
 
     manager = mockobject.objects['/']
     manager.EmitSignal(OBJECT_MANAGER_IFACE, 'InterfacesAdded',
-        'oa{sa{sv}}', [
-            dbus.ObjectPath(path),
-            { ADAPTER_IFACE: adapter_properties },
-        ])
+                       'oa{sa{sv}}', [
+                           dbus.ObjectPath(path),
+                           {ADAPTER_IFACE: adapter_properties},
+                       ])
 
     return path
 
@@ -130,10 +130,10 @@ def AddAdapter(self, device_name, system_name):
 def AddDevice(self, adapter_device_name, device_address, alias):
     '''Convenience method to add a Bluetooth device
 
-    You have to specify a device address which must be a valid Bluetooth address
-    (e.g. 'AA:BB:CC:DD:EE:FF'). The alias is the human-readable name for the
-    device (e.g. as set on the device itself), and the adapter device name is
-    the device_name passed to AddAdapter.
+    You have to specify a device address which must be a valid Bluetooth
+    address (e.g. 'AA:BB:CC:DD:EE:FF'). The alias is the human-readable name
+    for the device (e.g. as set on the device itself), and the adapter device
+    name is the device_name passed to AddAdapter.
 
     This will create a new, unpaired and unconnected device.
 
@@ -144,9 +144,10 @@ def AddDevice(self, adapter_device_name, device_address, alias):
     path = adapter_path + '/' + device_name
 
     if adapter_path not in mockobject.objects:
-        raise dbus.exceptions.DBusException(BLUEZ_MOCK_IFACE + '.NoSuchAdapter',
+        ex = BLUEZ_MOCK_IFACE + '.NoSuchAdapter'
+        raise dbus.exceptions.DBusException(ex,
                                             'Adapter %s does not exist.' %
-                                                adapter_device_name)
+                                            adapter_device_name)
 
     properties = {
         'UUIDs': dbus.Array([], signature='s', variant_level=1),
@@ -178,21 +179,22 @@ def AddDevice(self, adapter_device_name, device_address, alias):
 
     manager = mockobject.objects['/']
     manager.EmitSignal(OBJECT_MANAGER_IFACE, 'InterfacesAdded',
-        'oa{sa{sv}}', [
-            dbus.ObjectPath(path),
-            { DEVICE_IFACE: properties },
-        ])
+                       'oa{sa{sv}}', [
+                           dbus.ObjectPath(path),
+                           {DEVICE_IFACE: properties},
+                       ])
 
     return path
+
 
 @dbus.service.method(BLUEZ_MOCK_IFACE,
                      in_signature='ss', out_signature='')
 def PairDevice(self, adapter_device_name, device_address):
     '''Convenience method to mark an existing device as paired.
 
-    You have to specify a device address which must be a valid Bluetooth address
-    (e.g. 'AA:BB:CC:DD:EE:FF'). The adapter device name is the device_name
-    passed to AddAdapter.
+    You have to specify a device address which must be a valid Bluetooth
+    address (e.g. 'AA:BB:CC:DD:EE:FF'). The adapter device name is the
+    device_name passed to AddAdapter.
 
     This unblocks the device if it was blocked.
 
@@ -206,13 +208,14 @@ def PairDevice(self, adapter_device_name, device_address):
     device_path = adapter_path + '/' + device_name
 
     if adapter_path not in mockobject.objects:
-        raise dbus.exceptions.DBusException(BLUEZ_MOCK_IFACE + '.NoSuchAdapter',
+        ex = BLUEZ_MOCK_IFACE + '.NoSuchAdapter'
+        raise dbus.exceptions.DBusException(ex,
                                             'Adapter %s does not exist.' %
-                                                adapter_device_name)
+                                            adapter_device_name)
     if device_path not in mockobject.objects:
         raise dbus.exceptions.DBusException(BLUEZ_MOCK_IFACE + '.NoSuchDevice',
                                             'Device %s does not exist.' %
-                                                device_name)
+                                            device_name)
 
     device = mockobject.objects[device_path]
 
@@ -233,13 +236,15 @@ def PairDevice(self, adapter_device_name, device_address):
     device.props[DEVICE_IFACE]['Paired'] = dbus.Boolean(True, variant_level=1)
     device.props[DEVICE_IFACE]['LegacyPairing'] = dbus.Boolean(True,
                                                                variant_level=1)
-    device.props[DEVICE_IFACE]['Blocked'] = dbus.Boolean(False, variant_level=1)
+    device.props[DEVICE_IFACE]['Blocked'] = dbus.Boolean(False,
+                                                         variant_level=1)
 
     try:
         device.props[DEVICE_IFACE]['Modalias']
     except KeyError:
         device.AddProperties(DEVICE_IFACE, {
-            'Modalias': dbus.String('bluetooth:v000Fp1200d1436', variant_level=1),
+            'Modalias': dbus.String('bluetooth:v000Fp1200d1436',
+                                    variant_level=1),
             'Class': dbus.UInt32(5898764, variant_level=1),
             'Icon': dbus.String('phone', variant_level=1),
         })
@@ -259,14 +264,15 @@ def PairDevice(self, adapter_device_name, device_address):
         [],
     ])
 
+
 @dbus.service.method(BLUEZ_MOCK_IFACE,
                      in_signature='ss', out_signature='')
 def BlockDevice(self, adapter_device_name, device_address):
     '''Convenience method to mark an existing device as blocked.
 
-    You have to specify a device address which must be a valid Bluetooth address
-    (e.g. 'AA:BB:CC:DD:EE:FF'). The adapter device name is the device_name
-    passed to AddAdapter.
+    You have to specify a device address which must be a valid Bluetooth
+    address (e.g. 'AA:BB:CC:DD:EE:FF'). The adapter device name is the
+    device_name passed to AddAdapter.
 
     This disconnects the device if it was connected.
 
@@ -280,13 +286,14 @@ def BlockDevice(self, adapter_device_name, device_address):
     device_path = adapter_path + '/' + device_name
 
     if adapter_path not in mockobject.objects:
-        raise dbus.exceptions.DBusException(BLUEZ_MOCK_IFACE + '.NoSuchAdapter',
+        ex = BLUEZ_MOCK_IFACE + '.NoSuchAdapter'
+        raise dbus.exceptions.DBusException(ex,
                                             'Adapter %s does not exist.' %
-                                                adapter_device_name)
+                                            adapter_device_name)
     if device_path not in mockobject.objects:
         raise dbus.exceptions.DBusException(BLUEZ_MOCK_IFACE + '.NoSuchDevice',
                                             'Device %s does not exist.' %
-                                                device_name)
+                                            device_name)
 
     device = mockobject.objects[device_path]
 
@@ -303,14 +310,15 @@ def BlockDevice(self, adapter_device_name, device_address):
         [],
     ])
 
+
 @dbus.service.method(BLUEZ_MOCK_IFACE,
                      in_signature='ss', out_signature='')
 def ConnectDevice(self, adapter_device_name, device_address):
     '''Convenience method to mark an existing device as connected.
 
-    You have to specify a device address which must be a valid Bluetooth address
-    (e.g. 'AA:BB:CC:DD:EE:FF'). The adapter device name is the device_name
-    passed to AddAdapter.
+    You have to specify a device address which must be a valid Bluetooth
+    address (e.g. 'AA:BB:CC:DD:EE:FF'). The adapter device name is the
+    device_name passed to AddAdapter.
 
     This unblocks the device if it was blocked.
 
@@ -324,17 +332,19 @@ def ConnectDevice(self, adapter_device_name, device_address):
     device_path = adapter_path + '/' + device_name
 
     if adapter_path not in mockobject.objects:
-        raise dbus.exceptions.DBusException(BLUEZ_MOCK_IFACE + '.NoSuchAdapter',
+        ex = BLUEZ_MOCK_IFACE + '.NoSuchAdapter'
+        raise dbus.exceptions.DBusException(ex,
                                             'Adapter %s does not exist.' %
-                                                adapter_device_name)
+                                            adapter_device_name)
     if device_path not in mockobject.objects:
         raise dbus.exceptions.DBusException(BLUEZ_MOCK_IFACE + '.NoSuchDevice',
                                             'Device %s does not exist.' %
-                                                device_name)
+                                            device_name)
 
     device = mockobject.objects[device_path]
 
-    device.props[DEVICE_IFACE]['Blocked'] = dbus.Boolean(False, variant_level=1)
+    device.props[DEVICE_IFACE]['Blocked'] = dbus.Boolean(False,
+                                                         variant_level=1)
     device.props[DEVICE_IFACE]['Connected'] = dbus.Boolean(True,
                                                            variant_level=1)
 
@@ -347,14 +357,15 @@ def ConnectDevice(self, adapter_device_name, device_address):
         [],
     ])
 
+
 @dbus.service.method(BLUEZ_MOCK_IFACE,
                      in_signature='ss', out_signature='')
 def DisconnectDevice(self, adapter_device_name, device_address):
     '''Convenience method to mark an existing device as disconnected.
 
-    You have to specify a device address which must be a valid Bluetooth address
-    (e.g. 'AA:BB:CC:DD:EE:FF'). The adapter device name is the device_name
-    passed to AddAdapter.
+    You have to specify a device address which must be a valid Bluetooth
+    address (e.g. 'AA:BB:CC:DD:EE:FF'). The adapter device name is the
+    device_name passed to AddAdapter.
 
     This does not change the device’s blocked status.
 
@@ -368,13 +379,14 @@ def DisconnectDevice(self, adapter_device_name, device_address):
     device_path = adapter_path + '/' + device_name
 
     if adapter_path not in mockobject.objects:
-        raise dbus.exceptions.DBusException(BLUEZ_MOCK_IFACE + '.NoSuchAdapter',
+        ex = BLUEZ_MOCK_IFACE + '.NoSuchAdapter'
+        raise dbus.exceptions.DBusException(ex,
                                             'Adapter %s does not exist.' %
-                                                adapter_device_name)
+                                            adapter_device_name)
     if device_path not in mockobject.objects:
         raise dbus.exceptions.DBusException(BLUEZ_MOCK_IFACE + '.NoSuchDevice',
                                             'Device %s does not exist.' %
-                                                device_name)
+                                            device_name)
 
     device = mockobject.objects[device_path]
 
@@ -388,4 +400,3 @@ def DisconnectDevice(self, adapter_device_name, device_address):
         },
         [],
     ])
-

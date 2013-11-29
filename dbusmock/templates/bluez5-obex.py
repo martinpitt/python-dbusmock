@@ -47,7 +47,7 @@ def load(mock, parameters):
     ])
 
     obex = mockobject.objects['/org/bluez/obex']
-    obex.AddMethods (CLIENT_IFACE, [
+    obex.AddMethods(CLIENT_IFACE, [
         ('CreateSession', 'sa{sv}', 'o', CreateSession),
         ('RemoveSession', 'o', '', RemoveSession),
     ])
@@ -58,12 +58,12 @@ def load(mock, parameters):
 def CreateSession(self, destination, args):
     '''OBEX method to create a new transfer session.
 
-    The destination must be the address of the destination Bluetooth device. The
-    given arguments must be a map from well-known keys to values, containing at
-    least the ‘Target’ key, whose value must be ‘PBAP’ (other keys and values
-    are accepted by the real daemon, but not by this mock daemon at the moment).
-    If the target is missing or incorrect, an Unsupported error is returned on
-    the bus.
+    The destination must be the address of the destination Bluetooth device.
+    The given arguments must be a map from well-known keys to values,
+    containing at least the ‘Target’ key, whose value must be ‘PBAP’ (other
+    keys and values are accepted by the real daemon, but not by this mock
+    daemon at the moment). If the target is missing or incorrect, an
+    Unsupported error is returned on the bus.
 
     Returns the path of a new Session object.
     '''
@@ -111,10 +111,10 @@ def CreateSession(self, destination, args):
 
     manager = mockobject.objects['/']
     manager.EmitSignal(OBJECT_MANAGER_IFACE, 'InterfacesAdded',
-        'oa{sa{sv}}', [
-            dbus.ObjectPath(path),
-            { SESSION_IFACE: properties },
-        ])
+                       'oa{sa{sv}}', [
+                           dbus.ObjectPath(path),
+                           {SESSION_IFACE: properties},
+                       ])
 
     return path
 
@@ -138,19 +138,19 @@ def RemoveSession(self, session_path):
         self.RemoveObject(transfer_path)
 
         manager.EmitSignal(OBJECT_MANAGER_IFACE, 'InterfacesRemoved',
-            'oas', [
-                dbus.ObjectPath(transfer_path),
-                [ TRANSFER_IFACE ],
-            ])
+                           'oas', [
+                               dbus.ObjectPath(transfer_path),
+                               [TRANSFER_IFACE],
+                           ])
 
     # Remove the session itself.
     self.RemoveObject(session_path)
 
     manager.EmitSignal(OBJECT_MANAGER_IFACE, 'InterfacesRemoved',
-        'oas', [
-            dbus.ObjectPath(session_path),
-            [ SESSION_IFACE, PHONEBOOK_ACCESS_IFACE ],
-        ])
+                       'oas', [
+                           dbus.ObjectPath(session_path),
+                           [SESSION_IFACE, PHONEBOOK_ACCESS_IFACE],
+                       ])
 
 
 @dbus.service.method(PHONEBOOK_ACCESS_IFACE,
@@ -162,9 +162,9 @@ def PullAll(self, target_file, filters):
     completing the transfer must be provided by the test driver, as it’s
     too complex and test-specific to put here.
 
-    The target_file is the absolute path for a file which will have zero or more
-    vCards, separated by new-line characters, written to it if the method is
-    successful (and the transfer is completed). This target_file is actually
+    The target_file is the absolute path for a file which will have zero or
+    more vCards, separated by new-line characters, written to it if the method
+    is successful (and the transfer is completed). This target_file is actually
     emitted in a TransferCreated signal, which is a special part of the mock
     interface designed to be handled by the test driver, which should then
     populate that file and call UpdateStatus on the Transfer object. The test
@@ -211,16 +211,16 @@ def PullAll(self, target_file, filters):
                    ])
 
     transfer = mockobject.objects[transfer_path]
-    transfer.AddMethods (TRANSFER_MOCK_IFACE, [
+    transfer.AddMethods(TRANSFER_MOCK_IFACE, [
         ('UpdateStatus', 'b', '', UpdateStatus),
     ])
 
     manager = mockobject.objects['/']
     manager.EmitSignal(OBJECT_MANAGER_IFACE, 'InterfacesAdded',
-        'oa{sa{sv}}', [
-            dbus.ObjectPath(transfer_path),
-            { TRANSFER_IFACE: props },
-        ])
+                       'oa{sa{sv}}', [
+                           dbus.ObjectPath(transfer_path),
+                           {TRANSFER_IFACE: props},
+                       ])
 
     # Emit a behind-the-scenes signal that a new transfer has been created.
     manager.EmitSignal(OBEX_MOCK_IFACE, 'TransferCreated', 'sa{sv}s',
@@ -267,8 +267,8 @@ def UpdateStatus(self, is_complete):
     calling it with is_complete as True.
 
     In both cases, it updates the number of bytes transferred to be the current
-    size of the transfer file (whose filename was emitted in the TransferCreated
-    signal).
+    size of the transfer file (whose filename was emitted in the
+    TransferCreated signal).
     '''
     status = 'complete' if is_complete else 'active'
     transferred = os.path.getsize(self.props[TRANSFER_IFACE]['Filename'])
@@ -284,4 +284,3 @@ def UpdateStatus(self, is_complete):
         },
         [],
     ])
-
