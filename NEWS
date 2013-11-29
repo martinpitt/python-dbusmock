@@ -15,6 +15,9 @@
  - Don't close the log file multiple times if it is shared between objects.
    Thanks Philip Whitnall!
  - Log calls to Get(), GetAll(), and Set().
+ - Add templates for BlueZ 5 and BlueZ-OBEX. These templates are moderately
+   well featured, though currently targeted exclusively at testing OBEX vCard
+   transfers from phones to computers. Thanks Philip Whitnall!
 
 0.8.1 (2013-11-11)
 ------------------
