@@ -49,8 +49,8 @@ def _run_bluetoothctl(command):
                                stderr=sys.stderr,
                                universal_newlines=True)
 
-    time.sleep(1)  # give it time to query the bus
-    out, err = process.communicate(input=command + '\nquit\n')
+    time.sleep(0.5)  # give it time to query the bus
+    out, err = process.communicate(input='list\n' + command + '\nquit\n')
 
     # Ignore output on stderr unless bluetoothctl dies.
     if process.returncode != 0:
@@ -80,7 +80,7 @@ def _run_bluetoothctl(command):
     lines = filter(lambda l: l != '', lines)
 
     # Filter out the echoed commands. (bluetoothctl uses readline.)
-    lines = filter(lambda l: l not in [command, 'quit'], lines)
+    lines = filter(lambda l: l not in ['list', command, 'quit'], lines)
     lines = list(lines)
 
     return lines
@@ -144,11 +144,8 @@ class TestBlueZ(dbusmock.DBusTestCase):
 
         # Check for devices.
         out = _run_bluetoothctl('devices')
-        self.assertEqual(out, [
-            # Just the controller lines it printed when it detected them.
-            'Controller 00:01:02:03:04:05 my-computer [default]',
-            'Controller 00:01:02:03:04:05 my-computer [default]',
-        ])
+        self.assertIn('Controller 00:01:02:03:04:05 my-computer [default]',
+                      out)
 
     def test_one_device(self):
         # Add an adapter.
