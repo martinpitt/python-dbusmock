@@ -94,16 +94,18 @@ class TestBlueZ(dbusmock.DBusTestCase):
     def setUpClass(klass):
         klass.start_system_bus()
         klass.dbus_con = klass.get_dbus(True)
+        (klass.p_mock, klass.obj_bluez) = klass.spawn_server_template(
+            'bluez5', {}, stdout=subprocess.PIPE)
 
     def setUp(self):
-        (self.p_mock, self.obj_bluez) = self.spawn_server_template(
-            'bluez5', {}, stdout=subprocess.PIPE)
+        self.obj_bluez.Reset()
         self.dbusmock = dbus.Interface(self.obj_bluez, dbusmock.MOCK_IFACE)
         self.dbusmock_bluez = dbus.Interface(self.obj_bluez, 'org.bluez.Mock')
 
-    def tearDown(self):
-        self.p_mock.terminate()
-        self.p_mock.wait()
+    @classmethod
+    def tearDownClass(klass):
+        klass.p_mock.terminate()
+        klass.p_mock.wait()
 
     def test_no_adapters(self):
         # Check for adapters.
