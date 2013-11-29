@@ -266,6 +266,8 @@ def BlockDevice(self, adapter_device_name, device_address):
     (e.g. 'AA:BB:CC:DD:EE:FF'). The adapter device name is the device_name
     passed to AddAdapter.
 
+    This disconnects the device if it was connected.
+
     If the specified adapter or device don’t exist, a NoSuchAdapter or
     NoSuchDevice error will be returned on the bus.
 
@@ -294,6 +296,92 @@ def BlockDevice(self, adapter_device_name, device_address):
         DEVICE_IFACE,
         {
             'Blocked': dbus.Boolean(True, variant_level=1),
+            'Connected': dbus.Boolean(False, variant_level=1),
+        },
+        [],
+    ])
+
+@dbus.service.method(BLUEZ_MOCK_IFACE,
+                     in_signature='ss', out_signature='')
+def ConnectDevice(self, adapter_device_name, device_address):
+    '''Convenience method to mark an existing device as connected.
+
+    You have to specify a device address which must be a valid Bluetooth address
+    (e.g. 'AA:BB:CC:DD:EE:FF'). The adapter device name is the device_name
+    passed to AddAdapter.
+
+    This unblocks the device if it was blocked.
+
+    If the specified adapter or device don’t exist, a NoSuchAdapter or
+    NoSuchDevice error will be returned on the bus.
+
+    Returns nothing.
+    '''
+    device_name = 'dev_' + device_address.replace(':', '_').upper()
+    adapter_path = '/org/bluez/' + adapter_device_name
+    device_path = adapter_path + '/' + device_name
+
+    if adapter_path not in mockobject.objects:
+        raise dbus.exceptions.DBusException(BLUEZ_MOCK_IFACE + '.NoSuchAdapter',
+                                            'Adapter %s does not exist.' %
+                                                adapter_device_name)
+    if device_path not in mockobject.objects:
+        raise dbus.exceptions.DBusException(BLUEZ_MOCK_IFACE + '.NoSuchDevice',
+                                            'Device %s does not exist.' %
+                                                device_name)
+
+    device = mockobject.objects[device_path]
+
+    device.props[DEVICE_IFACE]['Blocked'] = dbus.Boolean(False, variant_level=1)
+    device.props[DEVICE_IFACE]['Connected'] = dbus.Boolean(True,
+                                                           variant_level=1)
+
+    device.EmitSignal(dbus.PROPERTIES_IFACE, 'PropertiesChanged', 'sa{sv}as', [
+        DEVICE_IFACE,
+        {
+            'Blocked': dbus.Boolean(False, variant_level=1),
+            'Connected': dbus.Boolean(True, variant_level=1),
+        },
+        [],
+    ])
+
+@dbus.service.method(BLUEZ_MOCK_IFACE,
+                     in_signature='ss', out_signature='')
+def DisconnectDevice(self, adapter_device_name, device_address):
+    '''Convenience method to mark an existing device as disconnected.
+
+    You have to specify a device address which must be a valid Bluetooth address
+    (e.g. 'AA:BB:CC:DD:EE:FF'). The adapter device name is the device_name
+    passed to AddAdapter.
+
+    This does not change the device’s blocked status.
+
+    If the specified adapter or device don’t exist, a NoSuchAdapter or
+    NoSuchDevice error will be returned on the bus.
+
+    Returns nothing.
+    '''
+    device_name = 'dev_' + device_address.replace(':', '_').upper()
+    adapter_path = '/org/bluez/' + adapter_device_name
+    device_path = adapter_path + '/' + device_name
+
+    if adapter_path not in mockobject.objects:
+        raise dbus.exceptions.DBusException(BLUEZ_MOCK_IFACE + '.NoSuchAdapter',
+                                            'Adapter %s does not exist.' %
+                                                adapter_device_name)
+    if device_path not in mockobject.objects:
+        raise dbus.exceptions.DBusException(BLUEZ_MOCK_IFACE + '.NoSuchDevice',
+                                            'Device %s does not exist.' %
+                                                device_name)
+
+    device = mockobject.objects[device_path]
+
+    device.props[DEVICE_IFACE]['Connected'] = dbus.Boolean(False,
+                                                           variant_level=1)
+
+    device.EmitSignal(dbus.PROPERTIES_IFACE, 'PropertiesChanged', 'sa{sv}as', [
+        DEVICE_IFACE,
+        {
             'Connected': dbus.Boolean(False, variant_level=1),
         },
         [],
