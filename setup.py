@@ -11,8 +11,8 @@ multiprocessing  # pyflakes
 with open('README.rst') as f:
     readme = f.read()
 
-with open('NEWS') as f:
-    version = f.readline().split()[0]
+with open('NEWS', 'rb') as f:
+    version = f.readline().decode().split()[0]
 
 setuptools.setup(
     name='python-dbusmock',
