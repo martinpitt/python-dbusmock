@@ -1,3 +1,8 @@
+0.9.1 (UNRELEASED)
+------------------
+ - Fix UnicodeDecodeError in NEWS parsing when trying to build with a C locale.
+   Thanks Dmitry Shachnev.
+
 0.9 (2013-11-29)
 ----------------
  - Make static template methods appear in introspection. Thanks Philip
