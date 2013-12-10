@@ -1,4 +1,4 @@
-0.9.1 (UNRELEASED)
+0.9.1 (2013-12-10)
 ------------------
  - Fix UnicodeDecodeError in NEWS parsing when trying to build with a C locale.
    Thanks Dmitry Shachnev.
