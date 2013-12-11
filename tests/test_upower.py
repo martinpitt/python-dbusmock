@@ -16,6 +16,7 @@ import sys
 import subprocess
 import time
 import os
+import fcntl
 
 import dbus
 
@@ -50,6 +51,9 @@ class TestUPower(dbusmock.DBusTestCase):
     def setUp(self):
         (self.p_mock, self.obj_upower) = self.spawn_server_template(
             'upower', {'OnBattery': True, 'HibernateAllowed': False}, stdout=subprocess.PIPE)
+        # set log to nonblocking
+        flags = fcntl.fcntl(self.p_mock.stdout, fcntl.F_GETFL)
+        fcntl.fcntl(self.p_mock.stdout, fcntl.F_SETFL, flags | os.O_NONBLOCK)
         self.dbusmock = dbus.Interface(self.obj_upower, dbusmock.MOCK_IFACE)
 
     def tearDown(self):
@@ -72,6 +76,9 @@ class TestUPower(dbusmock.DBusTestCase):
         path = self.dbusmock.AddAC('mock_AC', 'Mock AC')
         self.assertEqual(path, '/org/freedesktop/UPower/devices/mock_AC')
         ac_obj = self.dbus_con.get_object('org.freedesktop.UPower', path)
+
+        self.assertRegex(self.p_mock.stdout.read(),
+                         b'emit org.freedesktop.UPower.DeviceAdded "%s"\n' % path)
 
         out = subprocess.check_output(['upower', '--dump'],
                                       universal_newlines=True)
@@ -108,6 +115,9 @@ class TestUPower(dbusmock.DBusTestCase):
         path = self.dbusmock.AddDischargingBattery('mock_BAT', 'Mock Battery', 30.0, 1200)
         self.assertEqual(path, '/org/freedesktop/UPower/devices/mock_BAT')
 
+        self.assertRegex(self.p_mock.stdout.read(),
+                         b'emit org.freedesktop.UPower.DeviceAdded "%s"\n' % path)
+
         out = subprocess.check_output(['upower', '--dump'],
                                       universal_newlines=True)
         self.assertRegex(out, 'Device: ' + path)
@@ -123,6 +133,9 @@ class TestUPower(dbusmock.DBusTestCase):
     def test_charging_battery(self):
         path = self.dbusmock.AddChargingBattery('mock_BAT', 'Mock Battery', 30.0, 1200)
         self.assertEqual(path, '/org/freedesktop/UPower/devices/mock_BAT')
+
+        self.assertRegex(self.p_mock.stdout.read(),
+                         b'emit org.freedesktop.UPower.DeviceAdded "%s"\n' % path)
 
         out = subprocess.check_output(['upower', '--dump'],
                                       universal_newlines=True)
