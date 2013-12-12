@@ -40,6 +40,10 @@ class TestCLI(dbusmock.DBusTestCase):
 
     def tearDown(self):
         if self.p_mock:
+            if self.p_mock.stdout:
+                self.p_mock.stdout.close()
+            if self.p_mock.stderr:
+                self.p_mock.stdout.close()
             self.p_mock.terminate()
             self.p_mock.wait()
             self.p_mock = None
@@ -69,8 +73,6 @@ class TestCLI(dbusmock.DBusTestCase):
 
             mock_out = self.p_mock.stdout.readline()
             self.assertTrue('EnumerateDevices' in mock_out, mock_out)
-
-        self.p_mock.stdout.close()
 
     def test_object_manager(self):
         self.p_mock = subprocess.Popen([sys.executable, '-m', 'dbusmock',

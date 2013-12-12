@@ -555,6 +555,7 @@ def load(mock, parameters):
                 my_template.name, stdout=subprocess.PIPE)
             self.addCleanup(p_mock.wait)
             self.addCleanup(p_mock.terminate)
+            self.addCleanup(p_mock.stdout.close)
 
         self.assertEqual(dbus_ultimate.Answer(), 42)
 
@@ -591,6 +592,7 @@ def Answer(self):
                 my_template.name, stdout=subprocess.PIPE)
             self.addCleanup(p_mock.wait)
             self.addCleanup(p_mock.terminate)
+            self.addCleanup(p_mock.stdout.close)
 
         self.assertEqual(dbus_ultimate.Answer(), 42)
 
@@ -622,6 +624,7 @@ def load(mock, parameters):
                 my_template.name, stdout=subprocess.PIPE)
             self.addCleanup(p_mock.wait)
             self.addCleanup(p_mock.terminate)
+            self.addCleanup(p_mock.stdout.close)
 
         # should have the two Things, but not the Peer
         self.assertEqual(dbus_objmgr.GetManagedObjects(),
@@ -642,6 +645,7 @@ def load(mock, parameters):
             'logind', stdout=subprocess.PIPE)
         self.addCleanup(p_mock.wait)
         self.addCleanup(p_mock.terminate)
+        self.addCleanup(p_mock.stdout.close)
 
         # do some property, method, and object changes
         obj_logind.Set('org.freedesktop.login1.Manager', 'IdleAction', 'frob')
