@@ -1,3 +1,8 @@
+0.9.2 (UNRELEASED)
+------------------
+ - upower template: Emit DeviceAdded when adding new a new AC adapter or
+   battery. Thanks Iain Lane!
+
 0.9.1 (2013-12-10)
 ------------------
  - Fix UnicodeDecodeError in NEWS parsing when trying to build with a C locale.
