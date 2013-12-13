@@ -31,7 +31,7 @@ def setProperty(prop):
 def load(mock, parameters):
     mock.AddMethods(MAIN_IFACE, [
         # There's nothing this can usefully do, but provide it for compatibility
-        ('SetTime', 'xbb', '', ''), 
+        ('SetTime', 'xbb', '', ''),
         ('SetTimezone', 'sb', '', setProperty('Timezone')),
         ('SetLocalRTC', 'bbb', '', setProperty('LocalRTC')),
         ('SetNTP', 'bb', '', setProperty('NTP'))
