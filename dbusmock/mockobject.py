@@ -625,6 +625,9 @@ class DBusMockObject(dbus.service.Object):
         tree = ET.fromstring(xml)
 
         for name in self.props:
+            # We might have properties for new interfaces we don't know about
+            # yet. Try to find an existing <interface> node named after our
+            # interface to append to, and create one if we can't.
             interface = tree.find(".//interface[@name='%s']" % name)
             if interface is None:
                 interface = ET.Element("interface", {"name": name})
@@ -633,7 +636,9 @@ class DBusMockObject(dbus.service.Object):
             for prop in self.props[name]:
                 elem = ET.Element("property", {
                     "name": prop,
+                    # We don't store the signature anywhere, so guess it.
                     "type": dbus.lowlevel.Message.guess_signature(self.props[name][prop]),
+                    # Assume read-only.
                     "access": "read"})
 
                 interface.append(elem)
