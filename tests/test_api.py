@@ -305,24 +305,25 @@ assert args[2] == 5
         self.assertFalse(xml_empty == xml_method, 'No change from empty XML')
         self.assertTrue('<interface name="org.freedesktop.Test.Main">' in xml_method, xml_method)
         self.assertTrue('''<method name="Do">
-      <arg direction="in"  type="s" name="arg1" />
-      <arg direction="in"  type="ai" name="arg2" />
-      <arg direction="in"  type="v" name="arg3" />
+      <arg direction="in" name="arg1" type="s" />
+      <arg direction="in" name="arg2" type="ai" />
+      <arg direction="in" name="arg3" type="v" />
       <arg direction="out" type="i" />
     </method>''' in xml_method, xml_method)
 
     # properties in introspection are not supported by dbus-python right now
-    #def test_introspection_properties(self):
-    #    '''dynamically added properties appear in introspection'''
+    def test_introspection_properties(self):
+        '''dynamically added properties appear in introspection'''
 
-    #    self.dbus_mock.AddProperty('', 'Color', 'yellow')
-    #    self.dbus_mock.AddProperty('org.freedesktop.Test.Sub', 'Count', 5)
+        self.dbus_mock.AddProperty('', 'Color', 'yellow')
+        self.dbus_mock.AddProperty('org.freedesktop.Test.Sub', 'Count', 5)
 
-    #    xml = self.obj_test.Introspect(dbus_interface=dbus.INTROSPECTABLE_IFACE)
-    #    self.assertTrue('<interface name="org.freedesktop.Test.Main">' in xml, xml)
-    #    self.assertTrue('<interface name="org.freedesktop.Test.Sub">' in xml, xml)
-    #    self.assertTrue('<property name="Color" type="s" access="read" />' in xml, xml)
-    #    self.assertTrue('<property name="Count" type="i" access="read" />' in xml, xml)
+        xml = self.obj_test.Introspect()
+
+        self.assertTrue('<interface name="org.freedesktop.Test.Main">' in xml, xml)
+        self.assertTrue('<interface name="org.freedesktop.Test.Sub">' in xml, xml)
+        self.assertTrue('<property access="read" name="Color" type="s" />' in xml, xml)
+        self.assertTrue('<property access="read" name="Count" type="i" />' in xml, xml)
 
     def test_objects_map(self):
         '''access global objects map'''
@@ -635,8 +636,8 @@ def load(mock, parameters):
         xml = dbus_objmgr.Introspect()
         self.assertIn('<interface name="org.freedesktop.DBus.ObjectManager">', xml)
         self.assertIn('<method name="GetManagedObjects">', xml)
-        self.assertIn('<node name="Thing1"/>', xml)
-        self.assertIn('<node name="Thing2"/>', xml)
+        self.assertIn('<node name="Thing1" />', xml)
+        self.assertIn('<node name="Thing2" />', xml)
 
     def test_reset(self):
         '''Reset() puts the template back to pristine state'''
