@@ -12,10 +12,12 @@ __email__ = 'martin.pitt@ubuntu.com'
 __copyright__ = '(c) 2012 Canonical Ltd.'
 __license__ = 'LGPL 3+'
 
+import copy
 import time
 import sys
 import types
 import importlib
+from xml.etree import ElementTree
 
 # we do not use this ourselves, but mock methods often want to use this
 import os
@@ -367,6 +369,13 @@ class DBusMockObject(dbus.service.Object):
         except KeyError:
             # this is what we expect
             pass
+
+        # copy.copy removes one level of variant-ness, which means that the
+        # types get exported in introspection data correctly, but we can't do
+        # this for container types.
+        if not (isinstance(value, dbus.Dictionary) or isinstance(value, dbus.Array)):
+            value = copy.copy(value)
+
         self.props.setdefault(interface, {})[name] = value
 
     @dbus.service.method(MOCK_IFACE,
@@ -612,6 +621,28 @@ class DBusMockObject(dbus.service.Object):
         self._dbus_class_table[cls] = mock_interfaces
 
         xml = dbus.service.Object.Introspect(self, object_path, connection)
+
+        tree = ElementTree.fromstring(xml)
+
+        for name in self.props:
+            # We might have properties for new interfaces we don't know about
+            # yet. Try to find an existing <interface> node named after our
+            # interface to append to, and create one if we can't.
+            interface = tree.find(".//interface[@name='%s']" % name)
+            if interface is None:
+                interface = ElementTree.Element("interface", {"name": name})
+                tree.append(interface)
+
+            for prop in self.props[name]:
+                elem = ElementTree.Element("property", {
+                    "name": prop,
+                    # We don't store the signature anywhere, so guess it.
+                    "type": dbus.lowlevel.Message.guess_signature(self.props[name][prop]),
+                    "access": "readwrite"})
+
+                interface.append(elem)
+
+        xml = ElementTree.tostring(tree, encoding='utf8', method='xml').decode('utf8')
 
         # restore original class table
         self._dbus_class_table[cls] = orig_interfaces

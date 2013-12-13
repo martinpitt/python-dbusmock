@@ -1,3 +1,8 @@
+0.10 (UNRELEASED)
+-----------------
+ - Add dynamic properties to introspection XML, to make mocked properties work
+   with Qt's property support, d-feet, and other tools. Thanks Iain Lane!
+
 0.9.2 (2013-12-13)
 ------------------
  - upower template: Emit DeviceAdded when adding new a new AC adapter or
