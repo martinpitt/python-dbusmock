@@ -1,4 +1,4 @@
-0.9.2 (UNRELEASED)
+0.9.2 (2013-12-13)
 ------------------
  - upower template: Emit DeviceAdded when adding new a new AC adapter or
    battery. Thanks Iain Lane!
