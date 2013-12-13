@@ -2,6 +2,8 @@
 -----------------
  - Add dynamic properties to introspection XML, to make mocked properties work
    with Qt's property support, d-feet, and other tools. Thanks Iain Lane!
+ - Fix frequent KeyError() when calling static methods from a template.
+   Regression from 0.9.
 
 0.9.2 (2013-12-13)
 ------------------
