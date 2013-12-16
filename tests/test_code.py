@@ -30,8 +30,8 @@ class StaticCodeTests(unittest.TestCase):
                                      stdout=subprocess.PIPE) != 0,
                      'pep8 not installed')
     def test_pep8(self):
-        pep8 = subprocess.Popen(['pep8', '--ignore=E501', '.'], stdout=subprocess.PIPE,
-                                universal_newlines=True)
+        pep8 = subprocess.Popen(['pep8', '--ignore=E124,E501', '.'],
+                                stdout=subprocess.PIPE, universal_newlines=True)
         (out, err) = pep8.communicate()
         self.assertEqual(pep8.returncode, 0, out)
 

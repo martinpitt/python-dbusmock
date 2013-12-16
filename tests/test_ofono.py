@@ -1,0 +1,96 @@
+#!/usr/bin/python3
+
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU Lesser General Public License as published by the Free
+# Software Foundation; either version 3 of the License, or (at your option) any
+# later version.  See http://www.gnu.org/copyleft/lgpl.html for the full text
+# of the license.
+
+__author__ = 'Martin Pitt'
+__email__ = 'martin.pitt@ubuntu.com'
+__copyright__ = '(c) 2013 Canonical Ltd.'
+__license__ = 'LGPL 3+'
+
+import unittest
+import sys
+import subprocess
+import os
+
+import dbusmock
+
+script_dir = os.environ.get('OFONO_SCRIPT_DIR', '/usr/share/ofono/scripts')
+
+have_scripts = os.access(os.path.join(script_dir, 'list-modems'), os.X_OK)
+
+
+@unittest.skipUnless(have_scripts,
+                     'ofono scripts not available, set $OFONO_SCRIPT_DIR')
+class TestOfono(dbusmock.DBusTestCase):
+    '''Test mocking ofonod'''
+
+    @classmethod
+    def setUpClass(klass):
+        klass.start_system_bus()
+        klass.dbus_con = klass.get_dbus(True)
+        (klass.p_mock, klass.obj_ofono) = klass.spawn_server_template(
+            'ofono', {}, stdout=subprocess.PIPE)
+
+    def setUp(self):
+        self.obj_ofono.Reset()
+
+    def test_list_modems(self):
+        '''Manager.GetModems()'''
+
+        out = subprocess.check_output([os.path.join(script_dir, 'list-modems')])
+        self.assertTrue(out.startswith(b'[ /ril_0 ]'), out)
+        self.assertIn(b'Powered = 1', out)
+        self.assertIn(b'Online = 1', out)
+        self.assertIn(b'Model = Mock Modem', out)
+
+    def test_outgoing_call(self):
+        '''outgoing voice call'''
+
+        # no calls by default
+        out = subprocess.check_output([os.path.join(script_dir, 'list-calls')])
+        self.assertEqual(out, b'[ /ril_0 ]\n')
+
+        # start call
+        out = subprocess.check_output([os.path.join(script_dir, 'dial-number'), '12345'])
+        self.assertEqual(out, b'Using modem /ril_0\n/ril_0/voicecall01\n')
+
+        out = subprocess.check_output([os.path.join(script_dir, 'list-calls')])
+        self.assertIn(b'/ril_0/voicecall01', out)
+        self.assertIn(b'LineIdentification = 12345', out)
+        self.assertIn(b'State = dialing', out)
+
+        out = subprocess.check_output([os.path.join(script_dir, 'hangup-call'),
+                                      '/ril_0/voicecall01'])
+        self.assertEqual(out, b'')
+
+        # no active calls any more
+        out = subprocess.check_output([os.path.join(script_dir, 'list-calls')])
+        self.assertEqual(out, b'[ /ril_0 ]\n')
+
+    def test_hangup_all(self):
+        '''multiple outgoing voice calls'''
+
+        out = subprocess.check_output([os.path.join(script_dir, 'dial-number'), '12345'])
+        self.assertEqual(out, b'Using modem /ril_0\n/ril_0/voicecall01\n')
+
+        out = subprocess.check_output([os.path.join(script_dir, 'dial-number'), '54321'])
+        self.assertEqual(out, b'Using modem /ril_0\n/ril_0/voicecall02\n')
+
+        out = subprocess.check_output([os.path.join(script_dir, 'list-calls')])
+        self.assertIn(b'/ril_0/voicecall01', out)
+        self.assertIn(b'/ril_0/voicecall02', out)
+        self.assertIn(b'LineIdentification = 12345', out)
+        self.assertIn(b'LineIdentification = 54321', out)
+
+        out = subprocess.check_output([os.path.join(script_dir, 'hangup-all')])
+        out = subprocess.check_output([os.path.join(script_dir, 'list-calls')])
+        self.assertEqual(out, b'[ /ril_0 ]\n')
+
+
+if __name__ == '__main__':
+    # avoid writing to stderr
+    unittest.main(testRunner=unittest.TextTestRunner(stream=sys.stdout, verbosity=2))
