@@ -36,15 +36,11 @@ def load(mock, parameters):
         ('SetLocalRTC', 'bbb', '', setProperty('LocalRTC')),
         ('SetNTP', 'bb', '', setProperty('NTP'))
     ])
-    mock.timezone = parameters.get('Timezone', 'Etc/Utc')
-    mock.local_rtc = parameters.get('LocalRTC', False)
-    mock.ntp = parameters.get('NTP', True)
-    mock.can_ntp = parameters.get('CanNTP', True)
 
     mock.AddProperties(MAIN_IFACE,
                        dbus.Dictionary({
-                           'Timezone': mock.timezone,
-                           'LocalRTC': mock.local_rtc,
-                           'NTP': mock.ntp,
-                           'CanNTP': mock.can_ntp
+                           'Timezone': parameters.get('Timezone', 'Etc/Utc'),
+                           'LocalRTC': parameters.get('LocalRTC', False),
+                           'NTP': parameters.get('NTP', True),
+                           'CanNTP': parameters.get('CanNTP', True)
                        }, signature='sv'))
