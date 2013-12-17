@@ -33,8 +33,13 @@ NOT_IMPLEMENTED = 'raise dbus.exceptions.DBusException("org.ofono.Error.NotImple
 #      ModemRemoved(o path);
 #  };
 
+_parameters = {}
+
+
 def load(mock, parameters):
+    global _parameters
     mock.modems = []  # object paths
+    _parameters = parameters
     mock.AddMethod(MAIN_IFACE, 'GetModems', '', 'a(oa{sv})',
                    'ret = [(m, objects[m].GetAll("org.ofono.Modem")) for m in self.modems]')
 
@@ -76,15 +81,15 @@ def AddModem(self, name, properties):
                        'Revision': dbus.String('0815.42', variant_level=1),
                        'Type': dbus.String('hardware', variant_level=1),
                        'Interfaces': ['org.ofono.CallVolume',
+                                      'org.ofono.VoiceCallManager',
+                                      'org.ofono.NetworkRegistration',
                                       #'org.ofono.MessageManager',
-                                      #'org.ofono.NetworkRegistration',
                                       #'org.ofono.ConnectionManager',
                                       #'org.ofono.NetworkTime',
                                       #'org.ofono.SimManager'
-                                      'org.ofono.VoiceCallManager'
                                      ],
                        #'Features': ['sms', 'net', 'gprs', 'sim']
-                       'Features': ['gprs'],
+                       'Features': ['gprs', 'net'],
                    },
                    [
                        ('GetProperties', '', 'a{sv}', 'ret = self.GetAll("org.ofono.Modem")'),
@@ -94,8 +99,10 @@ def AddModem(self, name, properties):
                   )
     obj = dbusmock.mockobject.objects[path]
     add_voice_call_api(obj)
+    add_netreg_api(obj)
     self.modems.append(path)
-    self.EmitSignal(MAIN_IFACE, 'ModemAdded', 'oa{sv}', [path, obj.GetProperties()])
+    props = obj.GetAll('org.ofono.Modem', dbus_interface=dbus.PROPERTIES_IFACE)
+    self.EmitSignal(MAIN_IFACE, 'ModemAdded', 'oa{sv}', [path, props])
     return path
 
 #  interface org.ofono.VoiceCallManager {
@@ -191,6 +198,73 @@ def HangupAll(self):
         dbusmock.mockobject.objects[c].Hangup()
     assert self.calls == []
 
+
+#  interface org.ofono.NetworkRegistration {
+#    methods:
+#      GetProperties(out a{sv} properties);
+#      Register();
+#      GetOperators(out a(oa{sv}) operators_with_properties);
+#      Scan(out a(oa{sv}) operators_with_properties);
+#    signals:
+#      PropertyChanged(s name,
+#                      v value);
+#  };
+#
+#  for /<modem>/operator/<CountryCode><NetworkCode>:
+#  interface org.ofono.NetworkOperator {
+#          methods:
+#            GetProperties(out a{sv} properties);
+#            Register();
+#          signals:
+#            PropertyChanged(s name,
+#                                                  v value);
+#          properties:
+#        };
+
+
+def add_netreg_api(mock):
+    '''Add org.ofono.NetworkRegistration API to a mock'''
+
+    # also add an emergency number which is not a real one, in case one runs a
+    # test case against a production ofono :-)
+    mock.AddProperties('org.ofono.NetworkRegistration', {
+        'Mode': 'auto',
+        'Status': 'registered',
+        'LocationAreaCode': _parameters.get('LocationAreaCode', 987),
+        'CellId': _parameters.get('CellId', 10203),
+        'MobileCountryCode': _parameters.get('MobileCountryCode', '777'),
+        'MobileNetworkCode': _parameters.get('MobileNetworkCode', '11'),
+        'Technology': _parameters.get('Technology', 'gsm'),
+        'Name': _parameters.get('Name', 'fake.tel'),
+        'Strength': _parameters.get('Strength', dbus.Byte(80)),
+        'BaseStation': _parameters.get('BaseStation', ''),
+    })
+
+    mock.AddMethods('org.ofono.NetworkRegistration', [
+        ('GetProperties', '', 'a{sv}', 'ret = self.GetAll("org.ofono.NetworkRegistration")'),
+        ('Register', '', '', ''),
+        ('GetOperators', '', 'a(oa{sv})',
+         'ret = [(m, objects[m].GetAll("org.ofono.NetworkOperator"))'
+         '  for m in objects if "/operator/" in m]'),
+        ('Scan', '', 'a(oa{sv})', 'ret = []'),
+    ])
+
+    mock.AddObject('/%s/operator/op1' % _parameters.get('ModemName', 'ril_0'),
+                   'org.ofono.NetworkOperator',
+                   {
+                       'Name': _parameters.get('Name', 'fake.tel'),
+                       'Status': 'current',
+                       'MobileCountryCode': _parameters.get('MobileCountryCode', '777'),
+                       'MobileNetworkCode': _parameters.get('MobileNetworkCode', '11'),
+                       'Technologies': [_parameters.get('Technology', 'gsm')],
+                   },
+                   [
+                       ('GetProperties', '', 'a{sv}', 'ret = self.GetAll("org.ofono.NetworkOperator")'),
+                       ('Register', '', '', ''),
+                   ]
+                  )
+
+
 # unimplemented Modem object interfaces:
 #
 #  interface org.ofono.SimManager {
@@ -239,16 +313,6 @@ def HangupAll(self):
 #      ContextAdded(o path,
 #                   v properties);
 #      ContextRemoved(o path);
-#  };
-#  interface org.ofono.NetworkRegistration {
-#    methods:
-#      GetProperties(out a{sv} properties);
-#      Register();
-#      GetOperators(out a(oa{sv}) operators_with_properties);
-#      Scan(out a(oa{sv}) operators_with_properties);
-#    signals:
-#      PropertyChanged(s name,
-#                      v value);
 #  };
 #  interface org.ofono.MessageManager {
 #    methods:

@@ -46,6 +46,11 @@ class TestOfono(dbusmock.DBusTestCase):
         self.assertIn(b'Powered = 1', out)
         self.assertIn(b'Online = 1', out)
         self.assertIn(b'Model = Mock Modem', out)
+        self.assertIn(b'[ org.ofono.NetworkRegistration ]', out)
+        self.assertIn(b'Status = registered', out)
+        self.assertIn(b'Name = fake.tel', out)
+        self.assertIn(b'LocationAreaCode = 987', out)
+        self.assertIn(b'CellId = 10203', out)
 
     def test_outgoing_call(self):
         '''outgoing voice call'''
@@ -89,6 +94,19 @@ class TestOfono(dbusmock.DBusTestCase):
         out = subprocess.check_output([os.path.join(script_dir, 'hangup-all')])
         out = subprocess.check_output([os.path.join(script_dir, 'list-calls')])
         self.assertEqual(out, b'[ /ril_0 ]\n')
+
+    def test_list_operators(self):
+        '''list operators'''
+
+        out = subprocess.check_output([os.path.join(script_dir, 'list-operators')],
+                                      universal_newlines=True)
+        self.assertTrue(out.startswith('[ /ril_0 ]'), out)
+        self.assertIn('[ /ril_0/operator/op1 ]', out)
+        self.assertIn('Status = current', out)
+        self.assertIn('Technologies = gsm', out)
+        self.assertIn('MobileNetworkCode = 11', out)
+        self.assertIn('MobileCountryCode = 777', out)
+        self.assertIn('Name = fake.tel', out)
 
 
 if __name__ == '__main__':
