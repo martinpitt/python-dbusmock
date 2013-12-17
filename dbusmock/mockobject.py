@@ -643,11 +643,14 @@ class DBusMockObject(dbus.service.Object):
                 interface = ElementTree.Element("interface", {"name": name})
                 tree.append(interface)
 
-            for prop in self.props[name]:
+            for prop, val in self.props[name].items():
+                if val is None:
+                    # can't guess type from None, skip
+                    continue
                 elem = ElementTree.Element("property", {
                     "name": prop,
                     # We don't store the signature anywhere, so guess it.
-                    "type": dbus.lowlevel.Message.guess_signature(self.props[name][prop]),
+                    "type": dbus.lowlevel.Message.guess_signature(val),
                     "access": "readwrite"})
 
                 interface.append(elem)
