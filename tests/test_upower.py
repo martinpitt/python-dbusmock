@@ -165,7 +165,7 @@ class TestUPower(dbusmock.DBusTestCase):
                                       universal_newlines=True)
         self.assertRegex(out, 'daemon-version:\s+0.9')
         self.assertRegex(out, 'can-suspend:\s+yes')
-        self.assertRegex(out, 'can-hibernate:\s+no')
+        self.assertRegex(out, 'can-hibernate:?\s+no')
         self.assertNotIn('critical-action:', out)
 
     def test_no_display_device(self):
