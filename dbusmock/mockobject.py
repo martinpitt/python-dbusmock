@@ -266,10 +266,14 @@ class DBusMockObject(dbus.service.Object):
                 obj.remove_from_connection()
         objects.clear()
 
-        # Reinitialise our state. Carefully remove new methods from our dict.
-        for interface, methods in self.methods.items():
-            for method_name in methods.keys():
+        # Reinitialise our state. Carefully remove new methods from our dict;
+        # they don't not actually exist if they are a statically defined
+        # template function
+        for method_name in self.methods[self.interface]:
+            try:
                 delattr(self.__class__, method_name)
+            except AttributeError:
+                pass
 
         self._reset({})
 
@@ -328,7 +332,10 @@ class DBusMockObject(dbus.service.Object):
         dbus_method._dbus_in_signature = in_sig
         dbus_method._dbus_args = ['arg%i' % i for i in range(1, n_args + 1)]
 
-        setattr(self.__class__, name, dbus_method)
+        # for convenience, add mocked methods on the primary interface as
+        # callable methods
+        if interface == self.interface:
+            setattr(self.__class__, name, dbus_method)
 
         self.methods.setdefault(interface, {})[str(name)] = (in_sig, out_sig, code, dbus_method)
 
@@ -428,6 +435,7 @@ class DBusMockObject(dbus.service.Object):
             fn = getattr(module, symbol)
             if ('_dbus_interface' in dir(fn) and
                     ('_dbus_is_signal' not in dir(fn) or not fn._dbus_is_signal)):
+                # for dbus-python compatibility, add methods as callables
                 setattr(self.__class__, symbol, fn)
                 self.methods.setdefault(fn._dbus_interface, {})[str(symbol)] = (
                     fn._dbus_in_signature,
@@ -650,6 +658,22 @@ class DBusMockObject(dbus.service.Object):
         self._dbus_class_table[cls] = orig_interfaces
 
         return xml
+
+
+# Overwrite dbus-python's _method_lookup(), as that offers no way to have the
+# same method name on different interfaces
+orig_method_lookup = dbus.service._method_lookup
+
+
+def _dbusmock_method_lookup(obj, method_name, dbus_interface):
+    try:
+        m = obj.methods[dbus_interface or obj.interface][method_name]
+        return (m[3], m[3])
+    except KeyError:
+        return orig_method_lookup(obj, method_name, dbus_interface)
+
+dbus.service._method_lookup = _dbusmock_method_lookup
+
 
 #
 # Helper API for templates

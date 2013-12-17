@@ -4,6 +4,7 @@
    with Qt's property support, d-feet, and other tools. Thanks Iain Lane!
  - Fix frequent KeyError() when calling static methods from a template.
    Regression from 0.9.
+ - Support having the same method name on different D-BUS interfaces.
  - Add initial ofono template with support for the Manager and VoiceCallManager
    interfaces.
  - Add template for systemd's timedated. Thanks Iain Lane!

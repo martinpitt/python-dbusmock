@@ -142,6 +142,30 @@ assert args[2] == 5
         with open(self.mock_log.name) as f:
             self.assertRegex(f.read(), '^[0-9.]+ OtherDo\n[0-9.]+ OtherDo2\n[0-9.]+ OtherDo3 42$')
 
+    def test_methods_same_name(self):
+        '''methods with same name on different interfaces'''
+
+        self.dbus_mock.AddMethod('org.iface1', 'Do', 'i', 'i', 'ret = args[0] + 2')
+        self.dbus_mock.AddMethod('org.iface2', 'Do', 'i', 'i', 'ret = args[0] + 3')
+
+        # should not be on the main interface
+        self.assertRaises(dbus.exceptions.DBusException,
+                          self.dbus_test.Do)
+
+        # should be on the other interface
+        self.assertEqual(self.obj_test.Do(10, dbus_interface='org.iface1'), 12)
+        self.assertEqual(self.obj_test.Do(11, dbus_interface='org.iface2'), 14)
+
+        # check that it's logged correctly
+        with open(self.mock_log.name) as f:
+            self.assertRegex(f.read(), '^[0-9.]+ Do 10\n[0-9.]+ Do 11$')
+
+        # now add it to the primary interface, too
+        self.dbus_mock.AddMethod('', 'Do', 'i', 'i', 'ret = args[0] + 1')
+        self.assertEqual(self.obj_test.Do(9, dbus_interface='org.freedesktop.Test.Main'), 10)
+        self.assertEqual(self.obj_test.Do(10, dbus_interface='org.iface1'), 12)
+        self.assertEqual(self.obj_test.Do(11, dbus_interface='org.iface2'), 14)
+
     def test_methods_type_mismatch(self):
         '''calling methods with wrong arguments'''
 
