@@ -1,4 +1,4 @@
-0.10 (UNRELEASED)
+0.10 (2013-12-18)
 -----------------
  - Add dynamic properties to introspection XML, to make mocked properties work
    with Qt's property support, d-feet, and other tools. Thanks Iain Lane!
