@@ -5,7 +5,7 @@ set -e
 # should solely be used by upstream developers, distributors do not need to
 # worry about it.
 
-[ -z "`bzr status | grep -v shelve`" ] || {
+[ -z "`git status -s`" ] || {
     echo "Uncommitted changes, aborting" >&2
     exit 1
 }
@@ -14,7 +14,7 @@ set -e
 ./setup.py test
 python setup.py test
 
-bzr clean-tree --ignored --detritus --force
+git clean -fdx
 
 # update version in NEWS
 version=$(grep '(UNRELEASED)' NEWS | cut -f1 -d' ')
@@ -28,11 +28,13 @@ sed -i "s/(UNRELEASED)/$(date '+(%Y-%m-%d)')/" NEWS
 sed -i -r "s/__version__ = '[0-9.]*'/__version__ = '${version}'/" dbusmock/__init__.py
 
 # commit release
-bzr commit -m "release $version"
-bzr tag "$version"
+git add NEWS dbusmock/__init__.py
+git commit -m "release $version"
+git tag -s "$version"
 
 # upload to PyPI and Launchpad
 ./setup.py sdist upload
 lp-project-upload python-dbusmock "$version" "dist/python-dbusmock-$version.tar.gz"
 
-bzr push
+git push
+git push --tags

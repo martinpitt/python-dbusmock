@@ -276,21 +276,16 @@ mock server as a program.
 
 Development
 -----------
-python-dbusmock is hosted on Launchpad:
+python-dbusmock is hosted on gitorious:
 
-  https://launchpad.net/python-dbusmock
+  https://gitorious.org/python-dbusmock/python-dbusmock
 
-For getting the latest code, you can check out the bzr branch:
+For getting the latest code, you can check out the branch:
 
-  bzr branch lp:python-dbusmock
-
-Or look at the branch in your browser:
-
-  http://bazaar.launchpad.net/~pitti/python-dbusmock/trunk/
-
+  git clone git://gitorious.org/python-dbusmock/python-dbusmock.git
 
 Feedback
 --------
-For feature requests and bugs, please file bug reports at
+For feature requests and bugs, please file reports at
 
   https://bugs.launchpad.net/python-dbusmock

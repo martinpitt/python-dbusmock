@@ -1,3 +1,8 @@
+0.10.1 (UNRELEASED)
+-------------------
+ - Move code from bzr to git, adjust README.rsr, do-release, and other files
+   accordingly.
+
 0.10 (2013-12-18)
 -----------------
  - Add dynamic properties to introspection XML, to make mocked properties work
