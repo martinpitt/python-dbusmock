@@ -25,8 +25,9 @@ SYSTEM_BUS = True
 
 
 def setProperty(prop):
-    return 'self.Set("%s", "%s", args[0])' % (MAIN_IFACE, prop)
-
+    return 'self.Set("%s", "%s", args[0]); self.EmitSignal("%s", \
+            "PropertiesChanged", "sa{sv}as", ["%s", {"%s":args[0]},["%s"]])' \
+            % (MAIN_IFACE, prop, dbus.PROPERTIES_IFACE, MAIN_IFACE, prop, prop)
 
 def load(mock, parameters):
     mock.AddMethods(MAIN_IFACE, [
