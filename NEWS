@@ -1,4 +1,4 @@
-0.10.1 (UNRELEASED)
+0.10.1 (2014-01-30)
 -------------------
  - Move code from bzr to git, adjust README.rst, do-release, and other files
    accordingly.
