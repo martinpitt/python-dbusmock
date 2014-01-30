@@ -29,6 +29,7 @@ def setProperty(prop):
             "PropertiesChanged", "sa{sv}as", ["%s", {"%s":args[0]},["%s"]])' \
             % (MAIN_IFACE, prop, dbus.PROPERTIES_IFACE, MAIN_IFACE, prop, prop)
 
+
 def load(mock, parameters):
     mock.AddMethods(MAIN_IFACE, [
         # There's nothing this can usefully do, but provide it for compatibility
