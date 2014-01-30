@@ -1,6 +1,6 @@
 0.10.1 (UNRELEASED)
 -------------------
- - Move code from bzr to git, adjust README.rsr, do-release, and other files
+ - Move code from bzr to git, adjust README.rst, do-release, and other files
    accordingly.
  - timedated template: Emit PropertiesChanged when setting properties. Thanks
    Iain Lane.
