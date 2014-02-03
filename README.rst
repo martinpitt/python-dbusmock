@@ -57,28 +57,28 @@ is how you would set up a mock upower in your test case:
       def setUpClass(klass):
           klass.start_system_bus()
           klass.dbus_con = klass.get_dbus(True)
-  
+
       def setUp(self):
           self.p_mock = self.spawn_server('org.freedesktop.UPower',
                                           '/org/freedesktop/UPower',
                                           'org.freedesktop.UPower',
                                           system_bus=True,
                                           stdout=subprocess.PIPE)
-  
+
           # Get a proxy for the UPower object's Mock interface
           self.dbus_upower_mock = dbus.Interface(self.dbus_con.get_object(
               'org.freedesktop.UPower', '/org/freedesktop/UPower'),
               dbusmock.MOCK_IFACE)
-  
+
           self.dbus_upower_mock.AddMethod('', 'Suspend', '', '', '')
-  
+
       def tearDown(self):
           self.p_mock.terminate()
           self.p_mock.wait()
-  
+
       def test_suspend_on_idle(self):
           # run your program in a way that should trigger one suspend call
-          
+
           # now check the log that we got one Suspend() call
           self.assertRegex(self.p_mock.stdout.readline(), b'^[0-9.]+ Suspend$')
 
@@ -96,8 +96,8 @@ Let's walk through:
  - ``setUp()`` spawns the mock D-Bus server process for an initial
    ``/org/freedesktop/UPower`` object with an ``org.freedesktop.UPower`` D-Bus
    interface on the system bus. We capture its stdout to be able to verify that
-   methods were called. 
-   
+   methods were called.
+
    We then call ``org.freedesktop.DBus.Mock.AddMethod()`` to add a
    ``Suspend()`` method to our new object to the default D-Bus interface. This
    will not do anything (except log its call to stdout). It takes no input
@@ -174,7 +174,7 @@ Usually you want to verify which methods have been called on the mock with
 which arguments. There are three ways to do that:
 
  - By default, the mock process writes the call log to stdout.
- 
+
  - You can call the mock process with the ``-l``/``--logfile`` argument, or
    specify a log file object in the ``spawn_server()`` method  if you are using
    Python.
@@ -182,7 +182,7 @@ which arguments. There are three ways to do that:
  - You can use the ``GetCalls()``, ``GetMethodCalls()`` and ``ClearCalls()``
    methods on the ``org.freedesktop.DBus.Mock`` D-BUS interface to get an array
    of tuples describing the calls.
- 
+
 
 Templates
 ---------
@@ -246,7 +246,7 @@ Have a look at the test suite for two real-live use cases:
 
  - ``tests/test_consolekit.py`` simulates ConsoleKit and verifies that
    ``ck-list-sessions`` works with the mock.
- 
+
  - ``tests/test_api.py`` runs a mock on the session bus and exercises all
    available functionality, such as adding additional objects, properties,
    multiple methods, input arguments, return values, code in methods, raising

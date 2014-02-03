@@ -38,7 +38,7 @@
    removing all its sub-objects) as if the object or template had been
    destroyed and re-created. This is intended for use at the end of test cases
    to reset state before the next test case is run, as an alternative to
-   killing python-dbusmock and re-starting it. Thanks Philip Whitnall!  
+   killing python-dbusmock and re-starting it. Thanks Philip Whitnall!
  - logind template: Fix return value of CanSuspend() and related methods,
    calling them previously caused a crash.
  - Don't close the log file multiple times if it is shared between objects.
