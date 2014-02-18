@@ -221,6 +221,10 @@ def HangupAll(self):
 #          properties:
 #        };
 
+def get_all_operators():
+    return 'ret = [(m, objects[m].GetAll("org.ofono.NetworkOperator")) ' \
+           'for m in objects if "/operator/" in m]'
+
 
 def add_netreg_api(mock):
     '''Add org.ofono.NetworkRegistration API to a mock'''
@@ -243,10 +247,8 @@ def add_netreg_api(mock):
     mock.AddMethods('org.ofono.NetworkRegistration', [
         ('GetProperties', '', 'a{sv}', 'ret = self.GetAll("org.ofono.NetworkRegistration")'),
         ('Register', '', '', ''),
-        ('GetOperators', '', 'a(oa{sv})',
-         'ret = [(m, objects[m].GetAll("org.ofono.NetworkOperator"))'
-         '  for m in objects if "/operator/" in m]'),
-        ('Scan', '', 'a(oa{sv})', 'ret = []'),
+        ('GetOperators', '', 'a(oa{sv})', get_all_operators()),
+        ('Scan', '', 'a(oa{sv})', get_all_operators()),
     ])
 
     mock.AddObject('/%s/operator/op1' % _parameters.get('ModemName', 'ril_0'),

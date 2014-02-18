@@ -1,3 +1,7 @@
+0.10.2 (UNRELEASED)
+-------------------
+ - ofono: Make Scan() do the same as GetOperators(). Thanks Iain Lane.
+
 0.10.1 (2014-01-30)
 -------------------
  - Move code from bzr to git, adjust README.rst, do-release, and other files
