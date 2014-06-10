@@ -27,7 +27,7 @@ have_nmcli = (p.returncode == 0)
 
 
 @unittest.skipUnless(have_nmcli, 'nmcli not installed')
-class TestNeworkManager(dbusmock.DBusTestCase):
+class TestNetworkManager(dbusmock.DBusTestCase):
     '''Test mocking NetworkManager'''
 
     @classmethod
