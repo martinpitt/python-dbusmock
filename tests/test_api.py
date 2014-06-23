@@ -682,7 +682,7 @@ def load(mock, parameters):
         mock_logind.Reset()
 
         # keeps the objects from the template
-        dbus_con = self.get_dbus(True)
+        dbus_con = self.get_dbus(system_bus=True)
         obj_logind = dbus_con.get_object('org.freedesktop.login1',
                                          '/org/freedesktop/login1')
         self.assertEqual(obj_logind.CanSuspend(), 'yes')

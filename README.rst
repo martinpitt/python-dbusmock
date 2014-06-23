@@ -56,7 +56,7 @@ is how you would set up a mock upower in your test case:
       @classmethod
       def setUpClass(klass):
           klass.start_system_bus()
-          klass.dbus_con = klass.get_dbus(True)
+          klass.dbus_con = klass.get_dbus(system_bus=True)
 
       def setUp(self):
           self.p_mock = self.spawn_server('org.freedesktop.UPower',
