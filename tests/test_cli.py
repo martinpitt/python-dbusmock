@@ -72,7 +72,8 @@ class TestCLI(dbusmock.DBusTestCase):
             self.assertRegex(out, 'on-battery:\s+no')
 
             mock_out = self.p_mock.stdout.readline()
-            self.assertTrue('EnumerateDevices' in mock_out, mock_out)
+            self.assertTrue('EnumerateDevices' in mock_out or 'GetAll' in mock_out,
+                            mock_out)
 
     def test_object_manager(self):
         self.p_mock = subprocess.Popen([sys.executable, '-m', 'dbusmock',
