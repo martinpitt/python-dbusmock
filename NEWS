@@ -5,6 +5,8 @@
    bus.
  - Fix code to be compliant with pep8 1.5.
  - Fix TestCLI.test_template_system test with upower 0.99. (LP: #1330037)
+ - ofono template: Support adding a second modem with AddModem().
+   (LP: #1340590)
 
 0.10.1 (2014-01-30)
 -------------------

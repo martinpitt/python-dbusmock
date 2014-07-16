@@ -99,7 +99,7 @@ def AddModem(self, name, properties):
                   )
     obj = dbusmock.mockobject.objects[path]
     add_voice_call_api(obj)
-    add_netreg_api(obj)
+    add_netreg_api(obj, name)
     self.modems.append(path)
     props = obj.GetAll('org.ofono.Modem', dbus_interface=dbus.PROPERTIES_IFACE)
     self.EmitSignal(MAIN_IFACE, 'ModemAdded', 'oa{sv}', [path, props])
@@ -226,7 +226,7 @@ def get_all_operators():
            'for m in objects if "/operator/" in m]'
 
 
-def add_netreg_api(mock):
+def add_netreg_api(mock, modem_name):
     '''Add org.ofono.NetworkRegistration API to a mock'''
 
     # also add an emergency number which is not a real one, in case one runs a
@@ -251,7 +251,7 @@ def add_netreg_api(mock):
         ('Scan', '', 'a(oa{sv})', get_all_operators()),
     ])
 
-    mock.AddObject('/%s/operator/op1' % _parameters.get('ModemName', 'ril_0'),
+    mock.AddObject('/%s/operator/op1' % modem_name,
                    'org.ofono.NetworkOperator',
                    {
                        'Name': _parameters.get('Name', 'fake.tel'),

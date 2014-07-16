@@ -108,6 +108,16 @@ class TestOfono(dbusmock.DBusTestCase):
         self.assertIn('MobileCountryCode = 777', out)
         self.assertIn('Name = fake.tel', out)
 
+    def test_second_modem(self):
+        '''Add a second modem'''
+
+        self.obj_ofono.AddModem('sim2', {'Powered': True})
+
+        out = subprocess.check_output([os.path.join(script_dir, 'list-modems')])
+        self.assertTrue(out.startswith(b'[ /ril_0 ]'), out)
+        self.assertIn(b'[ /sim2 ]', out)
+        self.assertIn(b'Powered = 1', out)
+
 
 if __name__ == '__main__':
     # avoid writing to stderr
