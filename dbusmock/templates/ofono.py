@@ -83,12 +83,12 @@ def AddModem(self, name, properties):
                        'Interfaces': ['org.ofono.CallVolume',
                                       'org.ofono.VoiceCallManager',
                                       'org.ofono.NetworkRegistration',
-                                      #'org.ofono.MessageManager',
-                                      #'org.ofono.ConnectionManager',
-                                      #'org.ofono.NetworkTime',
-                                      #'org.ofono.SimManager'
+                                      # 'org.ofono.MessageManager',
+                                      # 'org.ofono.ConnectionManager',
+                                      # 'org.ofono.NetworkTime',
+                                      # 'org.ofono.SimManager'
                                      ],
-                       #'Features': ['sms', 'net', 'gprs', 'sim']
+                       # 'Features': ['sms', 'net', 'gprs', 'sim']
                        'Features': ['gprs', 'net'],
                    },
                    [
@@ -263,7 +263,7 @@ def add_netreg_api(mock):
                    [
                        ('GetProperties', '', 'a{sv}', 'ret = self.GetAll("org.ofono.NetworkOperator")'),
                        ('Register', '', '', ''),
-                   ]
+                   ]  # noqa: silly pep8 error here about hanging indent
                   )
 
 

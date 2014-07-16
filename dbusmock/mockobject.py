@@ -531,7 +531,7 @@ class DBusMockObject(dbus.service.Object):
         This gets "instantiated" in AddMethod(). Execute the code snippet of
         the method and return the "ret" variable if it was set.
         '''
-        #print('mock_method', dbus_method, self, in_signature, args, kwargs, file=sys.stderr)
+        # print('mock_method', dbus_method, self, in_signature, args, kwargs, file=sys.stderr)
 
         # convert types of arguments according to signature, using
         # MethodCallMessage.append(); this will also provide type/length

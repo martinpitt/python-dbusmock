@@ -75,13 +75,13 @@ class TestLogind(dbusmock.DBusTestCase):
 
         # note, this does an actual getpwnam() in the client, so we cannot call
         # this with hardcoded user names; get from actual user in the system
-        #out = subprocess.check_output(['loginctl', 'show-user', 'joe'],
-        #                              universal_newlines=True)
-        #self.assertRegex(out, 'UID=500')
-        #self.assertRegex(out, 'GID=500')
-        #self.assertRegex(out, 'Name=joe')
-        #self.assertRegex(out, 'Sessions=c1')
-        #self.assertRegex(out, 'State=active')
+        # out = subprocess.check_output(['loginctl', 'show-user', 'joe'],
+        #                               universal_newlines=True)
+        # self.assertRegex(out, 'UID=500')
+        # self.assertRegex(out, 'GID=500')
+        # self.assertRegex(out, 'Name=joe')
+        # self.assertRegex(out, 'Sessions=c1')
+        # self.assertRegex(out, 'State=active')
 
         out = subprocess.check_output(['loginctl', 'list-sessions'],
                                       universal_newlines=True)

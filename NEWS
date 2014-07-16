@@ -3,6 +3,7 @@
  - ofono: Make Scan() do the same as GetOperators(). Thanks Iain Lane.
  - README.rst: Clarify that the "True" argument to get_dbus() means the system
    bus.
+ - Fix code to be compliant with pep8 1.5.
 
 0.10.1 (2014-01-30)
 -------------------
