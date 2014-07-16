@@ -1,4 +1,4 @@
-0.10.3 (UNRELEASED)
+0.10.3 (2014-07-16)
 -------------------
  - Fix upower tests to work for upower 0.99 in environments without a system
    D-BUS.
