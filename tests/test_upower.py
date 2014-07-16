@@ -33,8 +33,13 @@ if have_upower:
     p = subprocess.Popen(['upower', '--version'], stdout=subprocess.PIPE,
                          universal_newlines=True)
     out = p.communicate()[0]
-    upower_client_version = out.splitlines()[0].split()[-1]
-    assert p.returncode == 0
+    try:
+        upower_client_version = out.splitlines()[0].split()[-1]
+        assert p.returncode == 0
+    except IndexError:
+        # FIXME: this happens in environments without a system D-BUS; upower
+        # 0.9 still prints the client version, 0.99 just crashes
+        upower_client_version = '0.99'
 else:
     upower_client_version = 0
 

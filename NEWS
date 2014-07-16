@@ -1,3 +1,8 @@
+0.10.3 (UNRELEASED)
+-------------------
+ - Fix upower tests to work for upower 0.99 in environments without a system
+   D-BUS.
+
 0.10.2 (2014-07-16)
 -------------------
  - ofono: Make Scan() do the same as GetOperators(). Thanks Iain Lane.
