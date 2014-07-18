@@ -16,6 +16,7 @@ import sys
 import subprocess
 import os
 
+import dbus
 import dbusmock
 
 script_dir = os.environ.get('OFONO_SCRIPT_DIR', '/usr/share/ofono/scripts')
@@ -107,6 +108,32 @@ class TestOfono(dbusmock.DBusTestCase):
         self.assertIn('MobileNetworkCode = 11', out)
         self.assertIn('MobileCountryCode = 777', out)
         self.assertIn('Name = fake.tel', out)
+
+    def test_get_operators_for_two_modems(self):
+        '''Add second modem, list operators on both'''
+
+        iface = 'org.ofono.NetworkRegistration'
+
+        # add second modem
+        self.obj_ofono.AddModem('sim2', {'Powered': True})
+
+        # get modem proxy, get netreg interface
+        modem_0 = self.dbus_con.get_object('org.ofono', '/ril_0')
+        modem_0_netreg = dbus.Interface(
+            modem_0, dbus_interface=iface)
+        modem_0_ops = modem_0_netreg.GetOperators()
+
+        # get modem proxy, get netreg interface
+        modem_1 = self.dbus_con.get_object('org.ofono', '/sim2')
+        modem_1_netreg = dbus.Interface(
+            modem_1, dbus_interface=iface)
+        modem_1_ops = modem_1_netreg.GetOperators()
+
+        self.assertIn('/ril_0/operator/op1', str(modem_0_ops))
+        self.assertNotIn('/sim2', str(modem_0_ops))
+
+        self.assertIn('/sim2/operator/op1', str(modem_1_ops))
+        self.assertNotIn('/ril_0', str(modem_1_ops))
 
     def test_second_modem(self):
         '''Add a second modem'''

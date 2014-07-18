@@ -98,8 +98,9 @@ def AddModem(self, name, properties):
                    ]
                   )
     obj = dbusmock.mockobject.objects[path]
+    obj.name = name
     add_voice_call_api(obj)
-    add_netreg_api(obj, name)
+    add_netreg_api(obj)
     self.modems.append(path)
     props = obj.GetAll('org.ofono.Modem', dbus_interface=dbus.PROPERTIES_IFACE)
     self.EmitSignal(MAIN_IFACE, 'ModemAdded', 'oa{sv}', [path, props])
@@ -221,12 +222,12 @@ def HangupAll(self):
 #          properties:
 #        };
 
-def get_all_operators():
+def get_all_operators(mock):
     return 'ret = [(m, objects[m].GetAll("org.ofono.NetworkOperator")) ' \
-           'for m in objects if "/operator/" in m]'
+           'for m in objects if "%s/operator/" in m]' % mock.name
 
 
-def add_netreg_api(mock, modem_name):
+def add_netreg_api(mock):
     '''Add org.ofono.NetworkRegistration API to a mock'''
 
     # also add an emergency number which is not a real one, in case one runs a
@@ -244,14 +245,7 @@ def add_netreg_api(mock, modem_name):
         'BaseStation': _parameters.get('BaseStation', ''),
     })
 
-    mock.AddMethods('org.ofono.NetworkRegistration', [
-        ('GetProperties', '', 'a{sv}', 'ret = self.GetAll("org.ofono.NetworkRegistration")'),
-        ('Register', '', '', ''),
-        ('GetOperators', '', 'a(oa{sv})', get_all_operators()),
-        ('Scan', '', 'a(oa{sv})', get_all_operators()),
-    ])
-
-    mock.AddObject('/%s/operator/op1' % modem_name,
+    mock.AddObject('/%s/operator/op1' % mock.name,
                    'org.ofono.NetworkOperator',
                    {
                        'Name': _parameters.get('Name', 'fake.tel'),
@@ -266,6 +260,12 @@ def add_netreg_api(mock, modem_name):
                    ]  # noqa: silly pep8 error here about hanging indent
                   )
 
+    mock.AddMethods('org.ofono.NetworkRegistration', [
+        ('GetProperties', '', 'a{sv}', 'ret = self.GetAll("org.ofono.NetworkRegistration")'),
+        ('Register', '', '', ''),
+        ('GetOperators', '', 'a(oa{sv})', get_all_operators(mock)),
+        ('Scan', '', 'a(oa{sv})', get_all_operators(mock)),
+    ])
 
 # unimplemented Modem object interfaces:
 #

@@ -1,3 +1,8 @@
+0.10.4 (UNRELEASED)
+-------------------
+ - ofono: Fix GetOperators() to only apply to its own modem, not all modems.
+   Thanks to Jonas Grønås Drange.
+
 0.10.3 (2014-07-16)
 -------------------
  - Fix upower tests to work for upower 0.99 in environments without a system
