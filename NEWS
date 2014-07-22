@@ -1,7 +1,8 @@
-0.10.4 (UNRELEASED)
--------------------
+0.11 (UNRELEASED)
+-----------------
  - ofono: Fix GetOperators() to only apply to its own modem, not all modems.
    Thanks to Jonas Grønås Drange.
+ - Add template for BlueZ 4. Thanks to Mathieu Trudel-Lapierre!
 
 0.10.3 (2014-07-16)
 -------------------
