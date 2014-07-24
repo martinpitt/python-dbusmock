@@ -1,3 +1,8 @@
+0.11.1 (UNRELEASED)
+-------------------
+ - Rename bluez test classes to TestBlueZ4 and TestBlueZ5, to tell them apart
+   in the output.
+
 0.11 (2014-07-24)
 -----------------
  - ofono: Fix GetOperators() to only apply to its own modem, not all modems.

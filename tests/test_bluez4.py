@@ -68,7 +68,7 @@ def _run_test_command(prog, command):
 
 @unittest.skipUnless(have_test_adapter and have_test_device,
                      'bluez 4 not installed')
-class TestBlueZ(dbusmock.DBusTestCase):
+class TestBlueZ4(dbusmock.DBusTestCase):
     '''Test mocking bluetoothd'''
 
     @classmethod

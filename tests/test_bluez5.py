@@ -87,7 +87,7 @@ def _run_bluetoothctl(command):
 
 
 @unittest.skipUnless(have_bluetoothctl, 'bluetoothctl not installed')
-class TestBlueZ(dbusmock.DBusTestCase):
+class TestBlueZ5(dbusmock.DBusTestCase):
     '''Test mocking bluetoothd'''
 
     @classmethod
