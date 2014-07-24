@@ -1,4 +1,4 @@
-0.11 (UNRELEASED)
+0.11 (2014-07-24)
 -----------------
  - ofono: Fix GetOperators() to only apply to its own modem, not all modems.
    Thanks to Jonas Grønås Drange.
