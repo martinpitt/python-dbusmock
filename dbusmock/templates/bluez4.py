@@ -128,6 +128,8 @@ def StartDiscovery(self):
     '''
     adapter = mockobject.objects[self.path]
 
+    adapter.props[ADAPTER_IFACE]['Discovering'] = dbus.Boolean(True,
+                                                               variant_level=1)
     adapter.EmitSignal(ADAPTER_IFACE, 'PropertyChanged', 'sv', [
         'Discovering', dbus.Boolean(True, variant_level=1),
     ])
@@ -140,13 +142,8 @@ def StopDiscovery(self):
     '''
     adapter = mockobject.objects[self.path]
 
-    adapter.EmitSignal(dbus.PROPERTIES_IFACE, 'PropertiesChanged', 'sa{sv}as', [
-        ADAPTER_IFACE,
-        {
-            'Discovering': dbus.Boolean(False, variant_level=1),
-        },
-        [],
-    ])
+    adapter.props[ADAPTER_IFACE]['Discovering'] = dbus.Boolean(True,
+                                                               variant_level=1)
     adapter.EmitSignal(ADAPTER_IFACE, 'PropertyChanged', 'sv', [
         'Discovering', dbus.Boolean(False, variant_level=1),
     ])

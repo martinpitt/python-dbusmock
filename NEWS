@@ -4,6 +4,8 @@
    in the output.
  - logind template: Fix type of IdleSinceHint property, and add
    IdleSinceHintMonotonic and IdleActionUSec properties. (LP: #1348437)
+ - bluez4 template: Fix settings properties in StartDiscovery/StopDiscovery.
+   Thanks to Mathieu Trudel-Lapierre.
 
 0.11 (2014-07-24)
 -----------------
