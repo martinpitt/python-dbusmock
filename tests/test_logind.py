@@ -95,6 +95,13 @@ class TestLogind(dbusmock.DBusTestCase):
         self.assertRegex(out, 'State=active')
         self.assertRegex(out, 'Name=joe')
 
+    def test_properties(self):
+        (self.p_mock, obj_logind) = self.spawn_server_template('logind', {}, stdout=subprocess.PIPE)
+        props = obj_logind.GetAll('org.freedesktop.login1.Manager',
+                                  interface='org.freedesktop.DBus.Properties')
+        self.assertEqual(props['PreparingForSleep'], False)
+        self.assertEqual(props['IdleSinceHint'], 0)
+
 
 if __name__ == '__main__':
     # avoid writing to stderr
