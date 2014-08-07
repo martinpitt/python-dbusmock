@@ -8,6 +8,8 @@
    Thanks to Mathieu Trudel-Lapierre.
  - NetworkManager template: Add "Devices" property of NetworkManager 0.9.10.
    (LP: #1328579)
+ - NetworkManager template: Fix the types of the AccessPoint properties, and
+   add some more properties.
 
 0.11 (2014-07-24)
 -----------------
