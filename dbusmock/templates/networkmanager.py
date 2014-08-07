@@ -66,6 +66,7 @@ def load(mock, parameters):
 
     mock.AddProperties('',
                        {
+                           'Devices': dbus.Array([], signature='o'),
                            'NetworkingEnabled': parameters.get('NetworkingEnabled', True),
                            'State': parameters.get('State', dbus.UInt32(70)),
                            'Version': parameters.get('Version', '0.9.6.0'),
@@ -123,6 +124,11 @@ def AddEthernetDevice(self, device_name, iface_name, state):
 
     obj = dbusmock.get_object(path)
     obj.AddProperties(DEVICE_IFACE, props)
+
+    devices = self.Get(MAIN_IFACE, 'Devices')
+    devices.append(path)
+    self.Set(MAIN_IFACE, 'Devices', devices)
+
     return path
 
 
@@ -168,6 +174,11 @@ def AddWiFiDevice(self, device_name, iface_name, state):
                               'Interface': dbus.String(iface_name, variant_level=1),
                               'IpInterface': dbus.String(iface_name, variant_level=1)
                           })
+
+    devices = self.Get(MAIN_IFACE, 'Devices')
+    devices.append(path)
+    self.Set(MAIN_IFACE, 'Devices', devices)
+
     return path
 
 
