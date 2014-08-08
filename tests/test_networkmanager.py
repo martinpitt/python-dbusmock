@@ -127,9 +127,9 @@ class TestNetworkManager(dbusmock.DBusTestCase):
                                       universal_newlines=True)
         self.assertRegex(out, 'wlan0.*\sconnected')
         self.assertRegex(out, 'wlan1.*\sunavailable')
-        self.assertRegex(aps, 'AP_0.*\sUnknown')
+        self.assertRegex(aps, 'AP_0.*\s(Unknown|N/A)')
         self.assertRegex(aps, 'AP_1.*\sAd-Hoc')
-        self.assertRegex(aps, 'AP_2.*\sInfrastructure')
+        self.assertRegex(aps, 'AP_2.*\sInfra')
 
     def test_wifi_with_connection(self):
         wifi1 = self.dbusmock.AddWiFiDevice('mock_WiFi1', 'wlan0',

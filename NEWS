@@ -10,6 +10,7 @@
    (LP: #1328579)
  - NetworkManager template: Fix the types of the AccessPoint properties, and
    add some more properties.
+ - Adjust NetworkManager template tests for changed strings in NM 0.9.10.
 
 0.11 (2014-07-24)
 -----------------
