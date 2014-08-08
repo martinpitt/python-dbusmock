@@ -158,6 +158,7 @@ def AddWiFiDevice(self, device_name, iface_name, state):
                        'Bitrate': dbus.UInt32(5400),
                        'Mode': dbus.UInt32(2),
                        'WirelessCapabilities': dbus.UInt32(255),
+                       'AccessPoints': dbus.Array([], signature='o'),
                    },
                    [
                        ('GetAccessPoints', '', 'ao',
@@ -225,6 +226,10 @@ def AddAccessPoint(self, dev_path, ap_name, ssid, hw_address,
                    [])
 
     dev_obj.access_points.append(ap_path)
+
+    aps = dev_obj.Get('org.freedesktop.NetworkManager.Device.Wireless', 'AccessPoints')
+    aps.append(ap_path)
+    dev_obj.Set('org.freedesktop.NetworkManager.Device.Wireless', 'AccessPoints', aps)
 
     return ap_path
 

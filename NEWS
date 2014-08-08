@@ -6,8 +6,8 @@
    IdleSinceHintMonotonic and IdleActionUSec properties. (LP: #1348437)
  - bluez4 template: Fix settings properties in StartDiscovery/StopDiscovery.
    Thanks to Mathieu Trudel-Lapierre.
- - NetworkManager template: Add "Devices" property of NetworkManager 0.9.10.
-   (LP: #1328579)
+ - NetworkManager template: Add "Devices" and "AccessPoints" properties of
+   NetworkManager 0.9.10. (LP: #1328579)
  - NetworkManager template: Fix the types of the AccessPoint properties, and
    add some more properties.
  - Adjust NetworkManager template tests for changed strings in NM 0.9.10.
