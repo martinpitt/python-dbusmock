@@ -102,7 +102,7 @@ class TestUPower(dbusmock.DBusTestCase):
         time.sleep(0.3)
         if upower_client_version < '0.99':
             # for 0.9 API
-            self.dbusmock.EmitSignal('', 'DeviceChanged', 's', [path])
+            self.dbusmock.EmitSignal('', 'DeviceChanged', 'o', [path])
         else:
             # for 1.0 API
             ac_obj.EmitSignal(dbus.PROPERTIES_IFACE, 'PropertiesChanged', 'sa{sv}as',

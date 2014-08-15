@@ -113,7 +113,7 @@ def AddAC(self, device_name, model_name):
                        'Online': dbus.Boolean(True, variant_level=1),
                    },
                    [])
-    self.EmitSignal(MAIN_IFACE, 'DeviceAdded', 's', [path])
+    self.EmitSignal(MAIN_IFACE, 'DeviceAdded', 'o', [path])
     return path
 
 
@@ -148,7 +148,7 @@ def AddDischargingBattery(self, device_name, model_name, percentage, seconds_to_
                        'Type': dbus.UInt32(2, variant_level=1),
                    },
                    [])
-    self.EmitSignal(MAIN_IFACE, 'DeviceAdded', 's', [path])
+    self.EmitSignal(MAIN_IFACE, 'DeviceAdded', 'o', [path])
     return path
 
 
@@ -183,7 +183,7 @@ def AddChargingBattery(self, device_name, model_name, percentage, seconds_to_ful
                        'Type': dbus.UInt32(2, variant_level=1),
                    },
                    [])
-    self.EmitSignal(MAIN_IFACE, 'DeviceAdded', 's', [path])
+    self.EmitSignal(MAIN_IFACE, 'DeviceAdded', 'o', [path])
     return path
 
 
