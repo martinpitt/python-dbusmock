@@ -83,10 +83,10 @@ def AddModem(self, name, properties):
                        'Interfaces': ['org.ofono.CallVolume',
                                       'org.ofono.VoiceCallManager',
                                       'org.ofono.NetworkRegistration',
+                                      'org.ofono.SimManager',
                                       # 'org.ofono.MessageManager',
                                       # 'org.ofono.ConnectionManager',
-                                      # 'org.ofono.NetworkTime',
-                                      # 'org.ofono.SimManager'
+                                      # 'org.ofono.NetworkTime'
                                      ],
                        # 'Features': ['sms', 'net', 'gprs', 'sim']
                        'Features': ['gprs', 'net'],
@@ -101,6 +101,7 @@ def AddModem(self, name, properties):
     obj.name = name
     add_voice_call_api(obj)
     add_netreg_api(obj)
+    add_simmanager_api(obj)
     self.modems.append(path)
     props = obj.GetAll('org.ofono.Modem', dbus_interface=dbus.PROPERTIES_IFACE)
     self.EmitSignal(MAIN_IFACE, 'ModemAdded', 'oa{sv}', [path, props])
@@ -267,8 +268,7 @@ def add_netreg_api(mock):
         ('Scan', '', 'a(oa{sv})', get_all_operators(mock)),
     ])
 
-# unimplemented Modem object interfaces:
-#
+
 #  interface org.ofono.SimManager {
 #    methods:
 #      GetProperties(out a{sv} properties);
@@ -292,6 +292,30 @@ def add_netreg_api(mock):
 #      PropertyChanged(s name,
 #                      v value);
 #  };
+
+def add_simmanager_api(mock):
+    '''Add org.ofono.SimManager API to a mock'''
+
+    iface = 'org.ofono.SimManager'
+    mock.AddProperties(iface, {
+        'CardIdentifier': _parameters.get('CardIdentifier', 12345),
+        'Present': _parameters.get('Present', dbus.Boolean(True)),
+        'SubscriberNumbers': _parameters.get('SubscriberNumbers', ['123456789', '234567890']),
+        'SubscriberIdentity': _parameters.get('SubscriberIdentity', 23456),
+    })
+    mock.AddMethods(iface, [
+        ('GetProperties', '', 'a{sv}', 'ret = self.GetAll("%s")' % iface),
+        ('SetProperty', 'sv', '', 'self.Set("%(i)s", args[0], args[1]); '
+         'self.EmitSignal("%(i)s", "PropertyChanged", "sv", [args[0], args[1]])' % {'i': iface}),
+        ('ChangePin', 'sss', '', ''),
+        ('EnterPin', 'ss', '', ''),
+        ('ResetPin', 'sss', '', ''),
+        ('LockPin', 'ss', '', ''),
+        ('UnlockPin', 'ss', '', ''),
+    ])
+
+# unimplemented Modem object interfaces:
+#
 #  interface org.ofono.NetworkTime {
 #    methods:
 #      GetNetworkTime(out a{sv} time);
