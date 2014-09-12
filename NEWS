@@ -4,6 +4,8 @@
    Thanks Iain Lane.
  - ofono template: Add org.ofono.SimManager interface. Thanks Jonas Grønås
    Drange.
+ - bluez5 template: Fix the type of the 'Transferred' property. Thanks Philip
+   Withnall.
 
 0.11.1 (2014-08-08)
 -------------------

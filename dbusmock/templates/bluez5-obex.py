@@ -274,7 +274,7 @@ def UpdateStatus(self, is_complete):
     transferred = os.path.getsize(self.props[TRANSFER_IFACE]['Filename'])
 
     self.props[TRANSFER_IFACE]['Status'] = status
-    self.props[TRANSFER_IFACE]['Transferred'] = transferred
+    self.props[TRANSFER_IFACE]['Transferred'] = dbus.UInt64(transferred, variant_level=1)
 
     self.EmitSignal(dbus.PROPERTIES_IFACE, 'PropertiesChanged', 'sa{sv}as', [
         TRANSFER_IFACE,
