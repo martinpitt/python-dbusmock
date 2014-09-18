@@ -50,7 +50,7 @@ class DeviceState:
     SECONDARIES = 90
     ACTIVATED = 100
     DEACTIVATING = 110
-    FAILED = 12
+    FAILED = 120
 
 
 def load(mock, parameters):
