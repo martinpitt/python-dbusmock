@@ -115,14 +115,12 @@ class TestNetworkManager(dbusmock.DBusTestCase):
                                      '00:23:F8:7E:12:BC',
                                      2, 2425, 5400, 82, 0x400)
         out = subprocess.check_output(['nmcli', '--nocheck', 'dev'],
-                                      env=self.lang_env,
-                                      universal_newlines=True)
+                                      env=self.lang_env)
         aps = subprocess.check_output(['nmcli', '--nocheck', 'dev', 'wifi'],
-                                      env=self.lang_env,
-                                      universal_newlines=True)
-        self.assertRegex(out, 'wlan0.*\sconnected')
-        self.assertRegex(aps, 'AP_1.*\sAd-Hoc')
-        self.assertRegex(aps, 'AP_3.*\sInfra')
+                                      env=self.lang_env)
+        self.assertRegex(out, b'wlan0.*\sconnected')
+        self.assertRegex(aps, b'AP_1.*\sAd-Hoc')
+        self.assertRegex(aps, b'AP_3.*\sInfra')
 
     def test_two_wifi_with_accesspoints(self):
         wifi1 = self.dbusmock.AddWiFiDevice('mock_WiFi1', 'wlan0',
@@ -139,16 +137,14 @@ class TestNetworkManager(dbusmock.DBusTestCase):
                                      '00:23:F8:7E:12:BC',
                                      2, 2425, 5400, 82, 0x400)
         out = subprocess.check_output(['nmcli', '--nocheck', 'dev'],
-                                      env=self.lang_env,
-                                      universal_newlines=True)
+                                      env=self.lang_env)
         aps = subprocess.check_output(['nmcli', '--nocheck', 'dev', 'wifi'],
-                                      env=self.lang_env,
-                                      universal_newlines=True)
-        self.assertRegex(out, 'wlan0.*\sconnected')
-        self.assertRegex(out, 'wlan1.*\sunavailable')
-        self.assertRegex(aps, 'AP_0.*\s(Unknown|N/A)')
-        self.assertRegex(aps, 'AP_1.*\sAd-Hoc')
-        self.assertRegex(aps, 'AP_2.*\sInfra')
+                                      env=self.lang_env)
+        self.assertRegex(out, b'wlan0.*\sconnected')
+        self.assertRegex(out, b'wlan1.*\sunavailable')
+        self.assertRegex(aps, b'AP_0.*\s(Unknown|N/A)')
+        self.assertRegex(aps, b'AP_1.*\sAd-Hoc')
+        self.assertRegex(aps, b'AP_2.*\sInfra')
 
     def test_wifi_with_connection(self):
         wifi1 = self.dbusmock.AddWiFiDevice('mock_WiFi1', 'wlan0',
