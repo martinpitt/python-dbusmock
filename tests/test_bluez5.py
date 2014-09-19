@@ -164,7 +164,7 @@ class TestBlueZ5(dbusmock.DBusTestCase):
         self.assertIn('Device ' + address + ' ' + alias, out)
 
         # Check the device’s properties.
-        out = _run_bluetoothctl('info ' + address)
+        out = '\n'.join(_run_bluetoothctl('info ' + address))
         self.assertIn('Device ' + address, out)
         self.assertIn('Name: ' + alias, out)
         self.assertIn('Alias: ' + alias, out)
@@ -192,7 +192,7 @@ class TestBlueZ5(dbusmock.DBusTestCase):
         self.dbusmock_bluez.PairDevice(adapter_name, address)
 
         # Check the device’s properties.
-        out = _run_bluetoothctl('info ' + address)
+        out = '\n'.join(_run_bluetoothctl('info ' + address))
         self.assertIn('Device ' + address, out)
         self.assertIn('Paired: yes', out)
 

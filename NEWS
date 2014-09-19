@@ -8,6 +8,8 @@
    Withnall.
  - networkmanager template: Fix the "FAILED" state value to be 120, not 12.
    Thanks Jonas Grønås Drange.
+ - bluez5 tests: Accept devices in state "not available" (or other states) as
+   well.
 
 0.11.1 (2014-08-08)
 -------------------
