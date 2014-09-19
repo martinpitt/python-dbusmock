@@ -54,14 +54,14 @@ class TestTimedated(dbusmock.DBusTestCase):
         out = self.run_timedatectl()
         # timedatectl doesn't get the timezone offset information over dbus so
         # we can't mock that.
-        self.assertRegex(out, 'Timezone: Etc/Utc')
+        self.assertRegex(out, 'Time *zone: Etc/Utc')
 
     def test_changing_timezone(self):
         self.obj_timedated.SetTimezone('Africa/Johannesburg', False)
         out = self.run_timedatectl()
         # timedatectl doesn't get the timezone offset information over dbus so
         # we can't mock that.
-        self.assertRegex(out, 'Timezone: Africa/Johannesburg')
+        self.assertRegex(out, 'Time *zone: Africa/Johannesburg')
 
     def test_default_ntp(self):
         out = self.run_timedatectl()
