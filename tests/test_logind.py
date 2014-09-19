@@ -32,9 +32,10 @@ class TestLogind(dbusmock.DBusTestCase):
         klass.start_system_bus()
         klass.dbus_con = klass.get_dbus(True)
 
-        out = subprocess.check_output(['loginctl', '--version'],
-                                      universal_newlines=True)
-        klass.version = out.splitlines()[0].split()[-1]
+        if have_loginctl:
+            out = subprocess.check_output(['loginctl', '--version'],
+                                          universal_newlines=True)
+            klass.version = out.splitlines()[0].split()[-1]
 
     def setUp(self):
         self.p_mock = None
