@@ -32,6 +32,10 @@ class TestLogind(dbusmock.DBusTestCase):
         klass.start_system_bus()
         klass.dbus_con = klass.get_dbus(True)
 
+        out = subprocess.check_output(['loginctl', '--version'],
+                                      universal_newlines=True)
+        klass.version = out.splitlines()[0].split()[-1]
+
     def setUp(self):
         self.p_mock = None
 
@@ -42,15 +46,18 @@ class TestLogind(dbusmock.DBusTestCase):
 
     def test_empty(self):
         (self.p_mock, _) = self.spawn_server_template('logind', {}, stdout=subprocess.PIPE)
-        out = subprocess.check_output(['loginctl', 'list-sessions'],
+        cmd = ['loginctl']
+        if self.version >= '209':
+            cmd.append('--no-legend')
+        out = subprocess.check_output(cmd + ['list-sessions'],
                                       universal_newlines=True)
         self.assertEqual(out, '')
 
-        out = subprocess.check_output(['loginctl', 'list-seats'],
+        out = subprocess.check_output(cmd + ['list-seats'],
                                       universal_newlines=True)
         self.assertEqual(out, '')
 
-        out = subprocess.check_output(['loginctl', 'list-users'],
+        out = subprocess.check_output(cmd + ['list-users'],
                                       universal_newlines=True)
         self.assertEqual(out, '')
 
@@ -61,17 +68,18 @@ class TestLogind(dbusmock.DBusTestCase):
 
         out = subprocess.check_output(['loginctl', 'list-seats'],
                                       universal_newlines=True)
-        self.assertRegex(out, '^seat0 +$')
+        self.assertRegex(out, '(^|\n)seat0\s+')
 
         out = subprocess.check_output(['loginctl', 'show-seat', 'seat0'],
                                       universal_newlines=True)
         self.assertRegex(out, 'Id=seat0')
-        self.assertRegex(out, 'ActiveSession=c1')
-        self.assertRegex(out, 'Sessions=c1')
+        if self.version <= '208':
+            self.assertRegex(out, 'ActiveSession=c1')
+            self.assertRegex(out, 'Sessions=c1')
 
         out = subprocess.check_output(['loginctl', 'list-users'],
                                       universal_newlines=True)
-        self.assertRegex(out, '^ +500 +joe +$')
+        self.assertRegex(out, '(^|\n) +500 +joe +($|\n)')
 
         # note, this does an actual getpwnam() in the client, so we cannot call
         # this with hardcoded user names; get from actual user in the system
