@@ -77,6 +77,8 @@ def load(mock, parameters):
                        [
                            ('Refresh', '', '', ''),
                        ])
+
+        mock.device_sig_type = 'o'
     else:
         props['CanSuspend'] = parameters.get('CanSuspend', True)
         props['CanHibernate'] = parameters.get('CanHibernate', True)
@@ -87,6 +89,7 @@ def load(mock, parameters):
             ('SuspendAllowed', '', 'b', 'ret = %s' % parameters.get('SuspendAllowed', True)),
             ('HibernateAllowed', '', 'b', 'ret = %s' % parameters.get('HibernateAllowed', True)),
         ])
+        mock.device_sig_type = 's'
 
     mock.AddProperties(MAIN_IFACE, props)
 
@@ -113,7 +116,7 @@ def AddAC(self, device_name, model_name):
                        'Online': dbus.Boolean(True, variant_level=1),
                    },
                    [])
-    self.EmitSignal(MAIN_IFACE, 'DeviceAdded', 'o', [path])
+    self.EmitSignal(MAIN_IFACE, 'DeviceAdded', self.device_sig_type, [path])
     return path
 
 
@@ -148,7 +151,7 @@ def AddDischargingBattery(self, device_name, model_name, percentage, seconds_to_
                        'Type': dbus.UInt32(2, variant_level=1),
                    },
                    [])
-    self.EmitSignal(MAIN_IFACE, 'DeviceAdded', 'o', [path])
+    self.EmitSignal(MAIN_IFACE, 'DeviceAdded', self.device_sig_type, [path])
     return path
 
 
@@ -183,7 +186,7 @@ def AddChargingBattery(self, device_name, model_name, percentage, seconds_to_ful
                        'Type': dbus.UInt32(2, variant_level=1),
                    },
                    [])
-    self.EmitSignal(MAIN_IFACE, 'DeviceAdded', 'o', [path])
+    self.EmitSignal(MAIN_IFACE, 'DeviceAdded', self.device_sig_type, [path])
     return path
 
 
