@@ -1,4 +1,4 @@
-0.11.4 (UNRELEASED)
+0.11.4 (2014-09-22)
 -------------------
  - upower template: Go back to using type 's' for Device* signal arguments for
    upower 0.9. The older library does not get along with 'o'. (Regression in
