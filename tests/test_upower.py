@@ -55,7 +55,12 @@ class TestUPower(dbusmock.DBusTestCase):
 
     def setUp(self):
         (self.p_mock, self.obj_upower) = self.spawn_server_template(
-            'upower', {'OnBattery': True, 'HibernateAllowed': False}, stdout=subprocess.PIPE)
+            'upower', {
+                'OnBattery': True,
+                'HibernateAllowed': False,
+                'DaemonVersion': upower_client_version
+            },
+            stdout=subprocess.PIPE)
         # set log to nonblocking
         flags = fcntl.fcntl(self.p_mock.stdout, fcntl.F_GETFL)
         fcntl.fcntl(self.p_mock.stdout, fcntl.F_SETFL, flags | os.O_NONBLOCK)
@@ -80,7 +85,6 @@ class TestUPower(dbusmock.DBusTestCase):
     def test_one_ac(self):
         path = self.dbusmock.AddAC('mock_AC', 'Mock AC')
         self.assertEqual(path, '/org/freedesktop/UPower/devices/mock_AC')
-        ac_obj = self.dbus_con.get_object('org.freedesktop.UPower', path)
 
         self.assertRegex(self.p_mock.stdout.read(),
                          b'emit org.freedesktop.UPower.DeviceAdded '
@@ -100,16 +104,9 @@ class TestUPower(dbusmock.DBusTestCase):
                                universal_newlines=True)
 
         time.sleep(0.3)
-        if upower_client_version < '0.99':
-            # for 0.9 API
-            self.dbusmock.EmitSignal('', 'DeviceChanged', 's', [path])
-        else:
-            # for 1.0 API
-            ac_obj.EmitSignal(dbus.PROPERTIES_IFACE, 'PropertiesChanged', 'sa{sv}as',
-                              dbus.Array(['org.freedesktop.UPower.Device',
-                                          {'PowerSupply': dbus.Boolean(True, variant_level=1)},
-                                          dbus.Array([], signature='s')],
-                                         signature='v'))
+        self.dbusmock.SetDeviceProperties(path, {
+            'PowerSupply': dbus.Boolean(True, variant_level=1)
+        })
         time.sleep(0.2)
 
         mon.terminate()
@@ -157,12 +154,40 @@ class TestUPower(dbusmock.DBusTestCase):
         self.assertRegex(out, ' time to full:\s+20.0 min')
         self.assertRegex(out, ' state:\s+charging')
 
+
+@unittest.skipUnless(have_upower, 'upower not installed')
+@unittest.skipUnless(upower_client_version <= '0.99', 'pre-0.99 client API specific test')
+class TestUPower0(dbusmock.DBusTestCase):
+    '''Test mocking upowerd with 0.x API'''
+
+    @classmethod
+    def setUpClass(klass):
+        klass.start_system_bus()
+        klass.dbus_con = klass.get_dbus(True)
+
+    def setUp(self):
+        (self.p_mock, self.obj_upower) = self.spawn_server_template(
+            'upower', {
+                'OnBattery': True,
+                'HibernateAllowed': False,
+                'DaemonVersion': '0.9'
+            },
+            stdout=subprocess.PIPE)
+        # set log to nonblocking
+        flags = fcntl.fcntl(self.p_mock.stdout, fcntl.F_GETFL)
+        fcntl.fcntl(self.p_mock.stdout, fcntl.F_SETFL, flags | os.O_NONBLOCK)
+        self.dbusmock = dbus.Interface(self.obj_upower, dbusmock.MOCK_IFACE)
+
+    def tearDown(self):
+        self.p_mock.terminate()
+        self.p_mock.wait()
+
     def test_suspend(self):
+        '''0.9 API specific Suspend signal'''
+
         self.obj_upower.Suspend(dbus_interface='org.freedesktop.UPower')
         self.assertRegex(self.p_mock.stdout.readline(), b'^[0-9.]+ Suspend$')
 
-    @unittest.skipUnless(upower_client_version < '0.99',
-                         '0.9 client API specific test')
     def test_09_properties(self):
         '''0.9 API specific properties'''
 
@@ -174,6 +199,8 @@ class TestUPower(dbusmock.DBusTestCase):
         self.assertNotIn('critical-action:', out)
 
     def test_no_display_device(self):
+        '''0.9 API has no display device'''
+
         self.assertRaises(dbus.exceptions.DBusException,
                           self.obj_upower.GetDisplayDevice)
 

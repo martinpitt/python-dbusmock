@@ -24,11 +24,13 @@ __license__ = 'LGPL 3+'
 import dbus
 
 from dbusmock import MOCK_IFACE, mockobject
+import dbusmock
 
 BUS_NAME = 'org.freedesktop.UPower'
 MAIN_OBJ = '/org/freedesktop/UPower'
 MAIN_IFACE = 'org.freedesktop.UPower'
 SYSTEM_BUS = True
+DEVICE_IFACE = 'org.freedesktop.UPower.Device'
 
 
 def load(mock, parameters):
@@ -59,7 +61,7 @@ def load(mock, parameters):
         # add Display device; for defined properties, see
         # http://cgit.freedesktop.org/upower/tree/src/org.freedesktop.UPower.xml
         mock.AddObject(mock.p_display_dev,
-                       'org.freedesktop.UPower.Device',
+                       DEVICE_IFACE,
                        {
                            'Type': dbus.UInt32(0, variant_level=1),
                            'State': dbus.UInt32(0, variant_level=1),
@@ -109,7 +111,7 @@ def AddAC(self, device_name, model_name):
     '''
     path = '/org/freedesktop/UPower/devices/' + device_name
     self.AddObject(path,
-                   'org.freedesktop.UPower.Device',
+                   DEVICE_IFACE,
                    {
                        'PowerSupply': dbus.Boolean(True, variant_level=1),
                        'Model': dbus.String(model_name, variant_level=1),
@@ -136,7 +138,7 @@ def AddDischargingBattery(self, device_name, model_name, percentage, seconds_to_
     '''
     path = '/org/freedesktop/UPower/devices/' + device_name
     self.AddObject(path,
-                   'org.freedesktop.UPower.Device',
+                   DEVICE_IFACE,
                    {
                        'PowerSupply': dbus.Boolean(True, variant_level=1),
                        'IsPresent': dbus.Boolean(True, variant_level=1),
@@ -171,7 +173,7 @@ def AddChargingBattery(self, device_name, model_name, percentage, seconds_to_ful
     '''
     path = '/org/freedesktop/UPower/devices/' + device_name
     self.AddObject(path,
-                   'org.freedesktop.UPower.Device',
+                   DEVICE_IFACE,
                    {
                        'PowerSupply': dbus.Boolean(True, variant_level=1),
                        'IsPresent': dbus.Boolean(True, variant_level=1),
@@ -209,24 +211,55 @@ def SetupDisplayDevice(self, type, state, percentage, energy, energy_full,
             'SetupDisplayDevice() can only be used with the 1.0 API')
 
     display_props = mockobject.objects[self.p_display_dev]
-    display_props.Set('org.freedesktop.UPower.Device', 'Type',
+    display_props.Set(DEVICE_IFACE, 'Type',
                       dbus.UInt32(type))
-    display_props.Set('org.freedesktop.UPower.Device', 'State',
+    display_props.Set(DEVICE_IFACE, 'State',
                       dbus.UInt32(state))
-    display_props.Set('org.freedesktop.UPower.Device', 'Percentage',
+    display_props.Set(DEVICE_IFACE, 'Percentage',
                       percentage)
-    display_props.Set('org.freedesktop.UPower.Device', 'Energy', energy)
-    display_props.Set('org.freedesktop.UPower.Device', 'EnergyFull',
+    display_props.Set(DEVICE_IFACE, 'Energy', energy)
+    display_props.Set(DEVICE_IFACE, 'EnergyFull',
                       energy_full)
-    display_props.Set('org.freedesktop.UPower.Device', 'EnergyRate',
+    display_props.Set(DEVICE_IFACE, 'EnergyRate',
                       energy_rate)
-    display_props.Set('org.freedesktop.UPower.Device', 'TimeToEmpty',
+    display_props.Set(DEVICE_IFACE, 'TimeToEmpty',
                       dbus.Int64(time_to_empty))
-    display_props.Set('org.freedesktop.UPower.Device', 'TimeToFull',
+    display_props.Set(DEVICE_IFACE, 'TimeToFull',
                       dbus.Int64(time_to_full))
-    display_props.Set('org.freedesktop.UPower.Device', 'IsPresent',
+    display_props.Set(DEVICE_IFACE, 'IsPresent',
                       is_present)
-    display_props.Set('org.freedesktop.UPower.Device', 'IconName',
+    display_props.Set(DEVICE_IFACE, 'IconName',
                       icon_name)
-    display_props.Set('org.freedesktop.UPower.Device', 'WarningLevel',
+    display_props.Set(DEVICE_IFACE, 'WarningLevel',
                       dbus.UInt32(warning_level))
+
+
+@dbus.service.method(MOCK_IFACE, in_signature='oa{sv}', out_signature='')
+def SetDeviceProperties(self, object_path, properties):
+    '''Convenience method to Set a device's properties.
+
+    object_path: the device to update
+    properties: dictionary of keys to dbus variants.
+
+    If the 1.0 API is being mocked, changing this property will trigger
+    the device's PropertiesChanged signal; otherwise, the older
+    org.freedesktop.UPower DeviceChanged signal will be emitted.
+    '''
+    device = dbusmock.get_object(object_path)
+
+    # set the properties
+    for key, value in properties.items():
+        device.Set(DEVICE_IFACE, key, value)
+
+    # notify the listeners
+    if self.api1:
+        device.EmitSignal(dbus.PROPERTIES_IFACE,
+                          'PropertiesChanged',
+                          'sa{sv}as',
+                          [
+                              DEVICE_IFACE,
+                              properties,
+                              []
+                          ])
+    else:
+        self.EmitSignal(MAIN_IFACE, 'DeviceChanged', 's', [object_path])

@@ -1,3 +1,8 @@
+0.11.5 (UNRELEASED)
+-------------------
+ - upower template: Add SetDeviceProperties() convenience method for changing
+   upower device properties. Thanks Charles Kerr!
+
 0.11.4 (2014-09-22)
 -------------------
  - upower template: Go back to using type 's' for Device* signal arguments for
