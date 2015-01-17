@@ -1,4 +1,4 @@
-0.12 (UNRELEASED)
+0.12 (2015-01-17)
 -----------------
  - upower template: Add SetDeviceProperties() convenience method for changing
    upower device properties. Thanks Charles Kerr!
