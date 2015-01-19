@@ -301,7 +301,7 @@ def add_simmanager_api(mock):
         'CardIdentifier': _parameters.get('CardIdentifier', 12345),
         'Present': _parameters.get('Present', dbus.Boolean(True)),
         'SubscriberNumbers': _parameters.get('SubscriberNumbers', ['123456789', '234567890']),
-        'SubscriberIdentity': _parameters.get('SubscriberIdentity', 23456),
+        'SubscriberIdentity': _parameters.get('SubscriberIdentity', "23456"),
     })
     mock.AddMethods(iface, [
         ('GetProperties', '', 'a{sv}', 'ret = self.GetAll("%s")' % iface),
