@@ -1,3 +1,7 @@
+0.13 (UNRELEASED)
+-----------------
+ - Add urfkill template. Thanks Jussi Pakkanen!
+
 0.12 (2015-01-17)
 -----------------
  - upower template: Add SetDeviceProperties() convenience method for changing
