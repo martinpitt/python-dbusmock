@@ -5,6 +5,7 @@
    urfkill does. Thanks Jonas Grønås Drange!
  - Correctly instantiate DBusExceptions so that they get a proper name and
    message (issue #3)
+ - ofono template: Fix SubscriberIdentity property type
 
 0.13 (2015-02-27)
 -----------------
