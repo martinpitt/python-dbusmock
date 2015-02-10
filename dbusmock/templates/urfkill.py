@@ -79,6 +79,13 @@ def block(self, index, should_block):
         self.internal_states[objname] = new_block_state
         obj.Set('org.freedesktop.URfkill.Killswitch', 'state', new_block_state)
         obj.EmitSignal('org.freedesktop.URfkill.Killswitch', 'StateChanged', '', [])
+        obj.EmitSignal('org.freedesktop.DBus.Properties',
+                       'PropertiesChanged',
+                       'sa{sv}as',
+                       ['org.freedesktop.URfkill.Killswitch',
+                        dbus.Dictionary({'state': new_block_state}, signature='sv'),
+                        dbus.Array([], signature='s')
+                       ])
 
 
 def load(mock, parameters):
@@ -105,3 +112,33 @@ def load(mock, parameters):
     for i in individual_objects:
         path = '/org/freedesktop/URfkill/' + i
         mock.AddObject(path, 'org.freedesktop.URfkill.Killswitch', {'state': mock.internal_states[i]}, [])
+
+
+@dbus.service.method(MOCK_IFACE,
+                     in_signature='ui', out_signature='')
+def SetKillswitchState(self, type, state):
+
+    if type not in type2objectname:
+        raise dbus.exceptions.DBusException(
+            'org.freedesktop.DBus.Error.InvalidArgs',
+            'Invalid Killswitch type')
+
+    if state not in range(-1, 3):
+        raise dbus.exceptions.DBusException(
+            'org.freedesktop.DBus.Error.InvalidArgs',
+            'Invalid Killswitch state')
+
+    objname = type2objectname[type]
+    if self.internal_states[objname] != state:
+        path = '/org/freedesktop/URfkill/' + objname
+        obj = dbusmock.get_object(path)
+        self.internal_states[objname] = state
+        obj.Set('org.freedesktop.URfkill.Killswitch', 'state', state)
+        obj.EmitSignal('org.freedesktop.URfkill.Killswitch', 'StateChanged', '', [])
+        obj.EmitSignal('org.freedesktop.DBus.Properties',
+                       'PropertiesChanged',
+                       'sa{sv}as',
+                       ['org.freedesktop.URfkill.Killswitch',
+                        dbus.Dictionary({'state': state}, signature='sv'),
+                        dbus.Array([], signature='s')
+                       ])

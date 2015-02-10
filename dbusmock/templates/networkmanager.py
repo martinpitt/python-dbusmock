@@ -186,6 +186,8 @@ def AddWiFiDevice(self, device_name, iface_name, state):
     devices.append(path)
     self.Set(MAIN_IFACE, 'Devices', devices)
 
+    self.EmitSignal('org.freedesktop.NetworkManager', 'DeviceAdded', 'o', [path])
+
     return path
 
 
