@@ -6,6 +6,7 @@
  - Correctly instantiate DBusExceptions so that they get a proper name and
    message (issue #3)
  - ofono template: Fix SubscriberIdentity property type
+ - Emit PropertiesChanged signal when Set()ing properties.
 
 0.13 (2015-02-27)
 -----------------

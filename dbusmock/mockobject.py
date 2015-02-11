@@ -184,6 +184,14 @@ class DBusMockObject(dbus.service.Object):
 
         iface_props[property_name] = value
 
+        self.EmitSignal('org.freedesktop.DBus.Properties',
+                        'PropertiesChanged',
+                        'sa{sv}as',
+                        [interface_name,
+                         dbus.Dictionary({property_name: value}, signature='sv'),
+                         dbus.Array([], signature='s')
+                        ])
+
     @dbus.service.method(MOCK_IFACE,
                          in_signature='ssa{sv}a(ssss)',
                          out_signature='')
