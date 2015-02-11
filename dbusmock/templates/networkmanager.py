@@ -18,6 +18,7 @@ __copyright__ = '(c) 2012 Canonical Ltd.'
 __license__ = 'LGPL 3+'
 
 import dbus
+import uuid
 
 from dbusmock import MOCK_IFACE
 import dbusmock
@@ -30,6 +31,7 @@ SETTINGS_IFACE = 'org.freedesktop.NetworkManager.Settings'
 DEVICE_IFACE = 'org.freedesktop.NetworkManager.Device'
 ACCESS_POINT_IFACE = 'org.freedesktop.NetworkManager.AccessPoint'
 CSETTINGS_IFACE = 'org.freedesktop.NetworkManager.Settings.Connection'
+ACTIVE_CONNECTION_IFACE = 'org.freedesktop.NetworkManager.Connection.Active'
 SYSTEM_BUS = True
 
 
@@ -93,6 +95,24 @@ def load(mock, parameters):
 
 
 @dbus.service.method(MOCK_IFACE,
+                     in_signature='u', out_signature='')
+def SetGlobalConnectionState(self, state):
+    self.Set(MAIN_IFACE, 'State', state)
+    self.EmitSignal(MAIN_IFACE, 'StateChanged', 'u', [state])
+
+
+@dbus.service.method(MOCK_IFACE,
+                     in_signature='ss', out_signature='')
+def SetDeviceActive(self, device_path, active_connection_path):
+    dev_obj = dbusmock.get_object(device_path)
+    dev_obj.Set(DEVICE_IFACE, 'ActiveConnection', dbus.ObjectPath(active_connection_path))
+    old_state = dev_obj.Get(DEVICE_IFACE, 'State')
+    dev_obj.Set(DEVICE_IFACE, 'State', dbus.UInt32(100))
+
+    dev_obj.EmitSignal(DEVICE_IFACE, 'StateChanged', 'uuu', [dbus.UInt32(100), old_state, dbus.UInt32(1)])
+
+
+@dbus.service.method(MOCK_IFACE,
                      in_signature='ssi', out_signature='s')
 def AddEthernetDevice(self, device_name, iface_name, state):
     '''Add an ethernet device.
@@ -129,6 +149,8 @@ def AddEthernetDevice(self, device_name, iface_name, state):
     devices = self.Get(MAIN_IFACE, 'Devices')
     devices.append(path)
     self.Set(MAIN_IFACE, 'Devices', devices)
+
+    self.EmitSignal('org.freedesktop.NetworkManager', 'DeviceAdded', 'o', [path])
 
     return path
 
@@ -172,6 +194,7 @@ def AddWiFiDevice(self, device_name, iface_name, state):
     dev_obj.access_points = []
     dev_obj.AddProperties(DEVICE_IFACE,
                           {
+                              'ActiveConnection': dbus.ObjectPath('/'),
                               'AvailableConnections': dbus.Array([], signature='o'),
                               'AutoConnect': False,
                               'Managed': True,
@@ -233,6 +256,8 @@ def AddAccessPoint(self, dev_path, ap_name, ssid, hw_address,
     aps.append(ap_path)
     dev_obj.Set('org.freedesktop.NetworkManager.Device.Wireless', 'AccessPoints', aps)
 
+    dev_obj.EmitSignal('org.freedesktop.NetworkManager.Device.Wireless', 'AccessPointAdded', 'o', [ap_path])
+
     return ap_path
 
 
@@ -290,3 +315,27 @@ def AddWiFiConnection(self, dev_path, connection_name, ssid_name, key_mgmt):
     main_connections.append(connection_path)
     settings_obj.Set(SETTINGS_IFACE, 'Connections', main_connections)
     return connection_path
+
+@dbus.service.method(MOCK_IFACE,
+                     in_signature='assssu', out_signature='s')
+def AddActiveConnection(self, devices, connection_device, specific_object, name, state):
+    active_connection_path = '/org/freedesktop/NetworkManager/ActiveConnection/' + name
+    self.AddObject(active_connection_path,
+                   ACTIVE_CONNECTION_IFACE,
+                   {
+                       'Devices': devices,
+                       'Default6': False,
+                       'Default': True,
+                       'Vpn': False,
+                       'Connection': dbus.ObjectPath(connection_device),
+                       'Master': dbus.ObjectPath('/'),
+                       'SpecificObject': dbus.ObjectPath(specific_object),
+                       'Uuid': uuid.uuid4().bytes,
+                       'State': state,
+                   },
+                   [])
+
+    for dev_path in devices:
+        self.SetDeviceActive(dev_path, active_connection_path)
+
+    return active_connection_path
