@@ -79,13 +79,6 @@ def block(self, index, should_block):
         self.internal_states[objname] = new_block_state
         obj.Set('org.freedesktop.URfkill.Killswitch', 'state', new_block_state)
         obj.EmitSignal('org.freedesktop.URfkill.Killswitch', 'StateChanged', '', [])
-        obj.EmitSignal('org.freedesktop.DBus.Properties',
-                       'PropertiesChanged',
-                       'sa{sv}as',
-                       ['org.freedesktop.URfkill.Killswitch',
-                        dbus.Dictionary({'state': new_block_state}, signature='sv'),
-                        dbus.Array([], signature='s')
-                       ])
 
 
 def load(mock, parameters):
@@ -135,10 +128,3 @@ def SetKillswitchState(self, type, state):
         self.internal_states[objname] = state
         obj.Set('org.freedesktop.URfkill.Killswitch', 'state', state)
         obj.EmitSignal('org.freedesktop.URfkill.Killswitch', 'StateChanged', '', [])
-        obj.EmitSignal('org.freedesktop.DBus.Properties',
-                       'PropertiesChanged',
-                       'sa{sv}as',
-                       ['org.freedesktop.URfkill.Killswitch',
-                        dbus.Dictionary({'state': state}, signature='sv'),
-                        dbus.Array([], signature='s')
-                       ])
