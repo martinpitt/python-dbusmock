@@ -300,6 +300,7 @@ def add_simmanager_api(mock):
     mock.AddProperties(iface, {
         'CardIdentifier': _parameters.get('CardIdentifier', 12345),
         'Present': _parameters.get('Present', dbus.Boolean(True)),
+        'PinRequired': _parameters.get('PinRequired', "none"),
         'SubscriberNumbers': _parameters.get('SubscriberNumbers', ['123456789', '234567890']),
         'SubscriberIdentity': _parameters.get('SubscriberIdentity', "23456"),
     })
