@@ -29,10 +29,26 @@ MAIN_IFACE = 'org.freedesktop.NetworkManager'
 SETTINGS_OBJ = '/org/freedesktop/NetworkManager/Settings'
 SETTINGS_IFACE = 'org.freedesktop.NetworkManager.Settings'
 DEVICE_IFACE = 'org.freedesktop.NetworkManager.Device'
+WIRELESS_DEVICE_IFACE = 'org.freedesktop.NetworkManager.Device.Wireless'
 ACCESS_POINT_IFACE = 'org.freedesktop.NetworkManager.AccessPoint'
 CSETTINGS_IFACE = 'org.freedesktop.NetworkManager.Settings.Connection'
 ACTIVE_CONNECTION_IFACE = 'org.freedesktop.NetworkManager.Connection.Active'
 SYSTEM_BUS = True
+
+
+class InfrastructureMode:
+
+    NM_802_11_MODE_UNKNOWN = 0
+    NM_802_11_MODE_ADHOC = 1
+    NM_802_11_MODE_INFRA = 2
+    NM_802_11_MODE_AP = 3
+    
+    NAME_MAP = {
+        NM_802_11_MODE_UNKNOWN: 'unknown',
+        NM_802_11_MODE_ADHOC: 'adhoc',
+        NM_802_11_MODE_INFRA: 'infrastructure',
+        NM_802_11_MODE_AP: 'access-point',
+    }
 
 
 class DeviceState:
@@ -53,6 +69,28 @@ class DeviceState:
     ACTIVATED = 100
     DEACTIVATING = 110
     FAILED = 120
+
+
+class NM80211ApSecurityFlags:
+
+    NM_802_11_AP_SEC_NONE            = 0
+    NM_802_11_AP_SEC_PAIR_WEP40      = 1
+    NM_802_11_AP_SEC_PAIR_WEP104     = 2
+    NM_802_11_AP_SEC_PAIR_TKIP       = 4
+    NM_802_11_AP_SEC_PAIR_CCMP       = 8
+    NM_802_11_AP_SEC_GROUP_WEP40     = 16
+    NM_802_11_AP_SEC_GROUP_WEP104    = 32
+    NM_802_11_AP_SEC_GROUP_TKIP      = 64
+    NM_802_11_AP_SEC_GROUP_CCMP      = 128
+    NM_802_11_AP_SEC_KEY_MGMT_PSK    = 256
+    NM_802_11_AP_SEC_KEY_MGMT_802_1X = 512
+    
+    NAME_MAP = {
+        NM_802_11_AP_SEC_KEY_MGMT_PSK: {
+            'key-mgmt': 'wpa-psk',
+            'auth-alg': 'open'
+        },
+    }
 
 
 def load(mock, parameters):
@@ -173,7 +211,7 @@ def AddWiFiDevice(self, device_name, iface_name, state):
 
     path = '/org/freedesktop/NetworkManager/Devices/' + device_name
     self.AddObject(path,
-                   'org.freedesktop.NetworkManager.Device.Wireless',
+                   WIRELESS_DEVICE_IFACE,
                    {
                        'HwAddress': '11:22:33:44:55:66',
                        'PermHwAddress': '11:22:33:44:55:66',
@@ -252,11 +290,11 @@ def AddAccessPoint(self, dev_path, ap_name, ssid, hw_address,
 
     dev_obj.access_points.append(ap_path)
 
-    aps = dev_obj.Get('org.freedesktop.NetworkManager.Device.Wireless', 'AccessPoints')
+    aps = dev_obj.Get(WIRELESS_DEVICE_IFACE, 'AccessPoints')
     aps.append(ap_path)
-    dev_obj.Set('org.freedesktop.NetworkManager.Device.Wireless', 'AccessPoints', aps)
+    dev_obj.Set(WIRELESS_DEVICE_IFACE, 'AccessPoints', aps)
 
-    dev_obj.EmitSignal('org.freedesktop.NetworkManager.Device.Wireless', 'AccessPointAdded', 'o', [ap_path])
+    dev_obj.EmitSignal(WIRELESS_DEVICE_IFACE, 'AccessPointAdded', 'o', [ap_path])
 
     return ap_path
 
@@ -270,36 +308,55 @@ def AddWiFiConnection(self, dev_path, connection_name, ssid_name, key_mgmt):
 
     settings_obj = dbusmock.get_object(SETTINGS_OBJ)
     main_connections = settings_obj.ListConnections()
+    
+    ssid = ssid_name.encode('UTF-8')
+    
+    # Find the access point by ssid
+    access_point = None
+    access_points = dev_obj.access_points
+    for ap_path in access_points:
+        ap = dbusmock.get_object(ap_path)
+        if ap.Get(ACCESS_POINT_IFACE, 'Ssid') == ssid:
+            access_point = ap
+            break
+
+    if not access_point:
+        raise dbus.exceptions.DBusException(
+            MAIN_IFACE + '.DoesNotExist',
+            'Access point with SSID [%s] could not be found' % (ssid_name))
+
+    hw_address = access_point.Get(ACCESS_POINT_IFACE, 'HwAddress');
+    mode = access_point.Get(ACCESS_POINT_IFACE, 'Mode');
+    security = access_point.Get(ACCESS_POINT_IFACE, 'WpaFlags');
 
     if connection_path in connections or connection_path in main_connections:
         raise dbus.exceptions.DBusException(
             MAIN_IFACE + '.AlreadyExists',
             'Connection %s on device %s already exists' % (connection_name, dev_path))
 
-    settings = dbus.Dictionary({
+    settings = {
         '802-11-wireless': {
-            'security': '802-11-wireless-security',
-            'seen-bssids': ['11:22:33:44:55:66'],
-            'ssid': dbus.ByteArray(ssid_name.encode()),
-            'mac-address': dbus.ByteArray(b'\x11\x22\x33\x44\x55\x66'),
-            'mode': 'infrastructure'
+            'seen-bssids': [hw_address],
+            'ssid': dbus.ByteArray(ssid),
+            'mac-address': dbus.ByteArray(hw_address.encode('UTF-8')),
+            'mode': InfrastructureMode.NAME_MAP[mode]
         },
         'connection': {
             'timestamp': dbus.UInt64(1374828522),
             'type': '802-11-wireless',
             'id': ssid_name,
-            'uuid': '68bdc83e-035c-491c-9fb9-b6c65e823689'
+            'uuid': uuid.uuid4().bytes
         },
-        '802-11-wireless-security': {
-            'key-mgmt': key_mgmt,
-            'auth-alg': 'open'
-        }
-    }, signature='sa{sv}')
+    }
 
+    if security != NM80211ApSecurityFlags.NM_802_11_AP_SEC_NONE:
+        settings['802-11-wireless']['security'] = '802-11-wireless-security'
+        settings['802-11-wireless-security'] = NM80211ApSecurityFlags.NAME_MAP[security]
+        
     self.AddObject(connection_path,
                    CSETTINGS_IFACE,
                    {
-                       'Settings': settings,
+                       'Settings': dbus.Dictionary(settings, signature='sa{sv}'),
                        'Secrets': dbus.Dictionary({}, signature='sa{sv}'),
                    },
                    [
@@ -314,7 +371,11 @@ def AddWiFiConnection(self, dev_path, connection_name, ssid_name, key_mgmt):
 
     main_connections.append(connection_path)
     settings_obj.Set(SETTINGS_IFACE, 'Connections', main_connections)
+
+    settings_obj.EmitSignal(SETTINGS_IFACE, 'NewConnection', 'o', [ap_path])
+
     return connection_path
+
 
 @dbus.service.method(MOCK_IFACE,
                      in_signature='assssu', out_signature='s')
@@ -339,3 +400,37 @@ def AddActiveConnection(self, devices, connection_device, specific_object, name,
         self.SetDeviceActive(dev_path, active_connection_path)
 
     return active_connection_path
+
+
+@dbus.service.method(MOCK_IFACE,
+                     in_signature='ss', out_signature='')
+def RemoveAccessPoint(self, dev_path, ap_path):
+    dev_obj = dbusmock.get_object(dev_path)
+
+    aps = dev_obj.Get(WIRELESS_DEVICE_IFACE, 'AccessPoints')
+    aps.remove(ap_path)
+    dev_obj.Set(WIRELESS_DEVICE_IFACE, 'AccessPoints', aps)
+
+    dev_obj.EmitSignal(WIRELESS_DEVICE_IFACE, 'AccessPointRemoved', 'o', [ap_path])
+
+    self.RemoveObject(ap_path)
+
+
+@dbus.service.method(MOCK_IFACE,
+                     in_signature='ss', out_signature='')
+def RemoveWifiConnection(self, dev_path, connection_path):
+    dev_obj = dbusmock.get_object(dev_path)
+    settings_obj = dbusmock.get_object(SETTINGS_OBJ)
+
+    connections = dev_obj.Get(DEVICE_IFACE, 'AvailableConnections')
+    connections.remove(dbus.ObjectPath(connection_path))
+    dev_obj.Set(DEVICE_IFACE, 'AvailableConnections', connections)
+
+    main_connections = settings_obj.ListConnections()
+    main_connections.remove(connection_path)
+    settings_obj.Set(SETTINGS_IFACE, 'Connections', main_connections)
+
+    settings_obj.EmitSignal(SETTINGS_IFACE, 'ConnectionRemoved', 'o', [ap_path])
+
+    self.RemoveObject(connection_path)
+
