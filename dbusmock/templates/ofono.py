@@ -204,6 +204,8 @@ def HangupAll(self):
 #  interface org.ofono.NetworkRegistration {
 #    methods:
 #      GetProperties(out a{sv} properties);
+#      SetProperty(in  s property,
+#                  in  v value);
 #      Register();
 #      GetOperators(out a(oa{sv}) operators_with_properties);
 #      Scan(out a(oa{sv}) operators_with_properties);
@@ -263,6 +265,8 @@ def add_netreg_api(mock):
 
     mock.AddMethods('org.ofono.NetworkRegistration', [
         ('GetProperties', '', 'a{sv}', 'ret = self.GetAll("org.ofono.NetworkRegistration")'),
+        ('SetProperty', 'sv', '', 'self.Set("%(i)s", args[0], args[1]); '
+         'self.EmitSignal("%(i)s", "PropertyChanged", "sv", [args[0], args[1]])' % {'i': 'org.ofono.NetworkRegistration'}),
         ('Register', '', '', ''),
         ('GetOperators', '', 'a(oa{sv})', get_all_operators(mock)),
         ('Scan', '', 'a(oa{sv})', get_all_operators(mock)),
