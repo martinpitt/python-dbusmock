@@ -136,6 +136,7 @@ def load(mock, parameters):
                      in_signature='u', out_signature='')
 def SetGlobalConnectionState(self, state):
     self.Set(MAIN_IFACE, 'State', state)
+    self.EmitSignal(MAIN_IFACE, 'PropertiesChanged', 'a{sv}', [{'State': dbus.UInt32(state, variant_level=1)}])
     self.EmitSignal(MAIN_IFACE, 'StateChanged', 'u', [state])
 
 
