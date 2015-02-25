@@ -254,9 +254,9 @@ def AddWiFiDevice(self, device_name, iface_name, state):
 
 
 @dbus.service.method(MOCK_IFACE,
-                     in_signature='ssssuuuyu', out_signature='s')
+                     in_signature='ssssuuuyuu', out_signature='s')
 def AddAccessPoint(self, dev_path, ap_name, ssid, hw_address,
-                   mode, frequency, rate, strength, security):
+                   mode, frequency, rate, strength, security, flags):
     '''Add an access point to an existing WiFi device.
 
     You have to specify WiFi Device path, Access Point object name,
@@ -279,7 +279,7 @@ def AddAccessPoint(self, dev_path, ap_name, ssid, hw_address,
                    ACCESS_POINT_IFACE,
                    {'Ssid': dbus.ByteArray(ssid.encode('UTF-8')),
                     'HwAddress': dbus.String(hw_address),
-                    'Flags': dbus.UInt32(1),
+                    'Flags': dbus.UInt32(flags),
                     'LastSeen': dbus.Int32(1),
                     'Frequency': dbus.UInt32(frequency),
                     'MaxBitrate': dbus.UInt32(rate),
