@@ -133,10 +133,17 @@ def load(mock, parameters):
 
 
 @dbus.service.method(MOCK_IFACE,
+                     in_signature='sssv', out_signature='')
+def SetProperty(self, path, iface, name, value):
+    obj = dbusmock.get_object(path)
+    obj.Set(iface, name, value)
+    obj.EmitSignal(iface, 'PropertiesChanged', 'a{sv}', [{name: value}])
+
+
+@dbus.service.method(MOCK_IFACE,
                      in_signature='u', out_signature='')
 def SetGlobalConnectionState(self, state):
-    self.Set(MAIN_IFACE, 'State', state)
-    self.EmitSignal(MAIN_IFACE, 'PropertiesChanged', 'a{sv}', [{'State': dbus.UInt32(state, variant_level=1)}])
+    self.SetProperty(MAIN_OBJ, MAIN_IFACE, 'State', dbus.UInt32(state, variant_level=1))
     self.EmitSignal(MAIN_IFACE, 'StateChanged', 'u', [state])
 
 
