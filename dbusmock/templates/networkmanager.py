@@ -435,3 +435,17 @@ def RemoveWifiConnection(self, dev_path, connection_path):
 
     self.RemoveObject(connection_path)
 
+
+@dbus.service.method(MOCK_IFACE,
+                     in_signature='ss', out_signature='')
+def RemoveActiveConnection(self, dev_path, active_connection_path):
+    dev_obj = dbusmock.get_object(dev_path)
+    dev_obj.Set(DEVICE_IFACE, 'ActiveConnection', dbus.ObjectPath('/'))
+
+    old_state = dev_obj.Get(DEVICE_IFACE, 'State')
+    dev_obj.Set(DEVICE_IFACE, 'State', old_state)
+
+    dev_obj.EmitSignal(DEVICE_IFACE, 'StateChanged', 'uuu', [old_state, old_state, dbus.UInt32(1)])
+
+    self.RemoveObject(active_connection_path)
+
