@@ -412,6 +412,8 @@ def RemoveAccessPoint(self, dev_path, ap_path):
     aps.remove(ap_path)
     dev_obj.Set(WIRELESS_DEVICE_IFACE, 'AccessPoints', aps)
 
+    dev_obj.access_points.remove(ap_path)
+
     dev_obj.EmitSignal(WIRELESS_DEVICE_IFACE, 'AccessPointRemoved', 'o', [ap_path])
 
     self.RemoveObject(ap_path)
