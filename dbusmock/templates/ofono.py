@@ -85,7 +85,7 @@ def AddModem(self, name, properties):
                                       'org.ofono.NetworkRegistration',
                                       'org.ofono.SimManager',
                                       # 'org.ofono.MessageManager',
-                                      # 'org.ofono.ConnectionManager',
+                                      'org.ofono.ConnectionManager',
                                       # 'org.ofono.NetworkTime'
                                      ],
                        # 'Features': ['sms', 'net', 'gprs', 'sim']
@@ -102,6 +102,7 @@ def AddModem(self, name, properties):
     add_voice_call_api(obj)
     add_netreg_api(obj)
     add_simmanager_api(obj)
+    add_connectionmanager_api(obj)
     self.modems.append(path)
     props = obj.GetAll('org.ofono.Modem', dbus_interface=dbus.PROPERTIES_IFACE)
     self.EmitSignal(MAIN_IFACE, 'ModemAdded', 'oa{sv}', [path, props])
@@ -319,15 +320,7 @@ def add_simmanager_api(mock):
         ('UnlockPin', 'ss', '', ''),
     ])
 
-# unimplemented Modem object interfaces:
-#
-#  interface org.ofono.NetworkTime {
-#    methods:
-#      GetNetworkTime(out a{sv} time);
-#    signals:
-#      NetworkTimeChanged(a{sv} time);
-#    properties:
-#  };
+
 #  interface org.ofono.ConnectionManager {
 #    methods:
 #      GetProperties(out a{sv} properties);
@@ -344,6 +337,32 @@ def add_simmanager_api(mock):
 #      ContextAdded(o path,
 #                   v properties);
 #      ContextRemoved(o path);
+#  };
+def add_connectionmanager_api(mock):
+    '''Add org.ofono.ConnectionManager API to a mock'''
+
+    iface = 'org.ofono.ConnectionManager'
+    mock.AddProperties(iface, {
+        'Powered': _parameters.get('ConnectionPowered', True),
+    })
+    mock.AddMethods(iface, [
+        ('GetProperties', '', 'a{sv}', 'ret = self.GetAll("%s")' % iface),
+        ('SetProperty', 'sv', '', 'self.Set("%(i)s", args[0], args[1]); '
+         'self.EmitSignal("%(i)s", "PropertyChanged", "sv", [args[0], args[1]])' % {'i': iface}),
+        ('AddContext', 's', 'o', ''),
+        ('RemoveContext', 'o', '', ''),
+        ('DeactivateAll', '', '', ''),
+        ('GetContexts', '', 'a(oa{sv}', ''),
+    ])
+
+# unimplemented Modem object interfaces:
+#
+#  interface org.ofono.NetworkTime {
+#    methods:
+#      GetNetworkTime(out a{sv} time);
+#    signals:
+#      NetworkTimeChanged(a{sv} time);
+#    properties:
 #  };
 #  interface org.ofono.MessageManager {
 #    methods:
