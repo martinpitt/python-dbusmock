@@ -276,13 +276,9 @@ mock server as a program.
 
 Development
 -----------
-python-dbusmock is hosted on gitorious:
+python-dbusmock is hosted on github:
 
-  https://gitorious.org/python-dbusmock/python-dbusmock
-
-For getting the latest code, you can check out the branch:
-
-  git clone git://gitorious.org/python-dbusmock/python-dbusmock.git
+  https://github.com/martinpitt/python-dbusmock
 
 Feedback
 --------

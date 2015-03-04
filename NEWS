@@ -1,3 +1,7 @@
+0.13.1 (UNRELEASED)
+-------------------
+ - Move project hosting to github, update README.rst.
+
 0.13 (2015-02-27)
 -----------------
  - Add urfkill template. Thanks Jussi Pakkanen!
