@@ -1,3 +1,10 @@
+0.14 (UNRELEASED)
+-----------------
+ - Emit DBus PropertiesChanged signals.
+ - NetworkManager: Much more complete support for mocking APs and
+   connections.
+ - Ofono: Add ConnectionManager interface.
+
 0.13.1 (UNRELEASED)
 -------------------
  - Move project hosting to github, update README.rst.
