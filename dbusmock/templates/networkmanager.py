@@ -38,7 +38,10 @@ SYSTEM_BUS = True
 
 
 class InfrastructureMode:
+    '''Infrastructure mode
 
+    As per https://developer.gnome.org/NetworkManager/unstable/spec.html#type-NM_802_11_MODE
+    '''
     NM_802_11_MODE_UNKNOWN = 0
     NM_802_11_MODE_ADHOC = 1
     NM_802_11_MODE_INFRA = 2
@@ -55,7 +58,7 @@ class InfrastructureMode:
 class DeviceState:
     '''Device states
 
-    As per http://projects.gnome.org/NetworkManager/developers/api/09/spec.html#type-NM_DEVICE_STATE
+    As per https://developer.gnome.org/NetworkManager/unstable/spec.html#type-NM_DEVICE_STATE
     '''
     UNKNOWN = 0
     UNMANAGED = 10
@@ -73,7 +76,10 @@ class DeviceState:
 
 
 class NM80211ApSecurityFlags:
+    '''Security flags
 
+    As per https://developer.gnome.org/NetworkManager/unstable/spec.html#type-NM_802_11_AP_SEC
+    '''
     NM_802_11_AP_SEC_NONE            = 0x00000000
     NM_802_11_AP_SEC_PAIR_WEP40      = 0x00000001
     NM_802_11_AP_SEC_PAIR_WEP104     = 0x00000002
@@ -95,7 +101,10 @@ class NM80211ApSecurityFlags:
 
 
 class NM80211ApFlags:
+    '''Device flags
 
+    As per https://developer.gnome.org/NetworkManager/unstable/spec.html#type-NM_802_11_AP_FLAGS
+    '''
     NM_802_11_AP_FLAGS_NONE    = 0x00000000
     NM_802_11_AP_FLAGS_PRIVACY = 0x00000001
 
@@ -321,6 +330,18 @@ def AddAccessPoint(self, dev_path, ap_name, ssid, hw_address,
 @dbus.service.method(MOCK_IFACE,
                      in_signature='ssss', out_signature='s')
 def AddWiFiConnection(self, dev_path, connection_name, ssid_name, key_mgmt):
+    '''Add an available connection to an existing WiFi device and access point.
+
+    You have to specify WiFi Device path, Connection object name,
+    SSID and key management.
+
+    The SSID must match one of the previously created access points.
+
+    Please note that this does not set any global properties.
+
+    Returns the new object path.
+    '''
+
     dev_obj = dbusmock.get_object(dev_path)
     connection_path = '/org/freedesktop/NetworkManager/Settings/' + connection_name
     connections = dev_obj.Get(DEVICE_IFACE, 'AvailableConnections')
@@ -402,6 +423,17 @@ def AddWiFiConnection(self, dev_path, connection_name, ssid_name, key_mgmt):
 @dbus.service.method(MOCK_IFACE,
                      in_signature='assssu', out_signature='s')
 def AddActiveConnection(self, devices, connection_device, specific_object, name, state):
+    '''Add an active connection to an existing WiFi device.
+
+    You have to a list of the involved WiFi devices, the connection path,
+    the access point path, ActiveConnection object name and connection
+    state.
+
+    Please note that this does not set any global properties.
+
+    Returns the new object path.
+    '''
+
     active_connection_path = '/org/freedesktop/NetworkManager/ActiveConnection/' + name
     self.AddObject(active_connection_path,
                    ACTIVE_CONNECTION_IFACE,
@@ -427,6 +459,14 @@ def AddActiveConnection(self, devices, connection_device, specific_object, name,
 @dbus.service.method(MOCK_IFACE,
                      in_signature='ss', out_signature='')
 def RemoveAccessPoint(self, dev_path, ap_path):
+    '''Remove the specified access point.
+
+    You have to specify the device to remove the access point from, and the
+    path of the access point.
+
+    Please note that this does not set any global properties.
+    '''
+
     dev_obj = dbusmock.get_object(dev_path)
 
     aps = dev_obj.Get(WIRELESS_DEVICE_IFACE, 'AccessPoints')
@@ -443,6 +483,14 @@ def RemoveAccessPoint(self, dev_path, ap_path):
 @dbus.service.method(MOCK_IFACE,
                      in_signature='ss', out_signature='')
 def RemoveWifiConnection(self, dev_path, connection_path):
+    '''Remove the specified WiFi connection.
+
+    You have to specify the device to remove the connection from, and the
+    path of the Connection.
+
+    Please note that this does not set any global properties.
+    '''
+
     dev_obj = dbusmock.get_object(dev_path)
     settings_obj = dbusmock.get_object(SETTINGS_OBJ)
 
@@ -462,6 +510,14 @@ def RemoveWifiConnection(self, dev_path, connection_path):
 @dbus.service.method(MOCK_IFACE,
                      in_signature='ss', out_signature='')
 def RemoveActiveConnection(self, dev_path, active_connection_path):
+    '''Remove the specified ActiveConnection.
+
+    You have to specify the device to remove the connection from, and the
+    path of the ActiveConnection.
+
+    Please note that this does not set any global properties.
+    '''
+
     dev_obj = dbusmock.get_object(dev_path)
     dev_obj.Set(DEVICE_IFACE, 'ActiveConnection', dbus.ObjectPath('/'))
 
