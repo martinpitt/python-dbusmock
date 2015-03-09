@@ -149,13 +149,17 @@ class TestNetworkManager(dbusmock.DBusTestCase):
     def test_wifi_with_connection(self):
         wifi1 = self.dbusmock.AddWiFiDevice('mock_WiFi1', 'wlan0',
                                             DeviceState.ACTIVATED)
+        ap1 = self.dbusmock.AddAccessPoint(wifi1, 'Mock_AP1', 'The_SSID',
+                                     '00:23:F8:7E:12:BB',
+                                     1, 2425, 5400, 82, 0x100)
         con1 = self.dbusmock.AddWiFiConnection(wifi1, 'Mock_Con1', 'The_SSID',
-                                               'wpa-psk')
+                                               '')
 
         out = subprocess.check_output(['nmcli', '--nocheck', 'connection'],
                                       env=self.lang_env,
                                       universal_newlines=True)
         self.assertRegex(out, 'The_SSID.*\s802-11-wireless')
+        self.assertEqual(ap1, '/org/freedesktop/NetworkManager/AccessPoint/Mock_AP1')
         self.assertEqual(con1, '/org/freedesktop/NetworkManager/Settings/Mock_Con1')
 
 if __name__ == '__main__':
