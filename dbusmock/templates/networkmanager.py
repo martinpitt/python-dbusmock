@@ -19,6 +19,7 @@ __license__ = 'LGPL 3+'
 
 import dbus
 import uuid
+import binascii
 
 from dbusmock import MOCK_IFACE
 import dbusmock
@@ -181,8 +182,8 @@ def AddEthernetDevice(self, device_name, iface_name, state):
     '''
     path = '/org/freedesktop/NetworkManager/Devices/' + device_name
     wired_props = {'Carrier': False,
-                   'HwAddress': '78:DD:08:D2:3D:43',
-                   'PermHwAddress': '78:DD:08:D2:3D:43',
+                   'HwAddress': dbus.String('78:DD:08:D2:3D:43'),
+                   'PermHwAddress': dbus.String('78:DD:08:D2:3D:43'),
                    'Speed': dbus.UInt32(0)}
     self.AddObject(path,
                    'org.freedesktop.NetworkManager.Device.Wired',
@@ -227,8 +228,8 @@ def AddWiFiDevice(self, device_name, iface_name, state):
     self.AddObject(path,
                    WIRELESS_DEVICE_IFACE,
                    {
-                       'HwAddress': '11:22:33:44:55:66',
-                       'PermHwAddress': '11:22:33:44:55:66',
+                       'HwAddress': dbus.String('11:22:33:44:55:66'),
+                       'PermHwAddress': dbus.String('11:22:33:44:55:66'),
                        'Bitrate': dbus.UInt32(5400),
                        'Mode': dbus.UInt32(2),
                        'WirelessCapabilities': dbus.UInt32(255),
@@ -353,7 +354,7 @@ def AddWiFiConnection(self, dev_path, connection_name, ssid_name, key_mgmt):
             'Connection %s on device %s already exists' % (connection_name, dev_path))
 
     # Parse mac address string into byte array
-    mac_bytes = hw_address.decode("utf-8").replace(':', '').decode('hex')
+    mac_bytes = binascii.unhexlify(hw_address.replace(':', ''))
 
     settings = {
         '802-11-wireless': {
