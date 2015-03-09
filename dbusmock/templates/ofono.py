@@ -343,16 +343,18 @@ def add_connectionmanager_api(mock):
 
     iface = 'org.ofono.ConnectionManager'
     mock.AddProperties(iface, {
+        'Attached': _parameters.get('Attached', True),
+        'RoamingAllowed': _parameters.get('RoamingAllowed', False),
         'Powered': _parameters.get('ConnectionPowered', True),
     })
     mock.AddMethods(iface, [
         ('GetProperties', '', 'a{sv}', 'ret = self.GetAll("%s")' % iface),
         ('SetProperty', 'sv', '', 'self.Set("%(i)s", args[0], args[1]); '
          'self.EmitSignal("%(i)s", "PropertyChanged", "sv", [args[0], args[1]])' % {'i': iface}),
-        ('AddContext', 's', 'o', ''),
+        ('AddContext', 's', 'o', 'ret = "/"'),
         ('RemoveContext', 'o', '', ''),
         ('DeactivateAll', '', '', ''),
-        ('GetContexts', '', 'a(oa{sv}', ''),
+        ('GetContexts', '', 'a{oa{sv}}', 'ret = dbus.Array([], signature="oa{sv}")'),
     ])
 
 # unimplemented Modem object interfaces:
