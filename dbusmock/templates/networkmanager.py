@@ -352,18 +352,21 @@ def AddWiFiConnection(self, dev_path, connection_name, ssid_name, key_mgmt):
             MAIN_IFACE + '.AlreadyExists',
             'Connection %s on device %s already exists' % (connection_name, dev_path))
 
+    # Parse mac address string into byte array
+    mac_bytes = hw_address.decode("utf-8").replace(':', '').decode('hex')
+
     settings = {
         '802-11-wireless': {
             'seen-bssids': [hw_address],
             'ssid': dbus.ByteArray(ssid),
-            'mac-address': dbus.ByteArray(hw_address.encode('UTF-8')),
+            'mac-address': dbus.ByteArray(mac_bytes),
             'mode': InfrastructureMode.NAME_MAP[mode]
         },
         'connection': {
             'timestamp': dbus.UInt64(1374828522),
             'type': '802-11-wireless',
             'id': ssid_name,
-            'uuid': uuid.uuid4().bytes
+            'uuid': str(uuid.uuid4())
         },
     }
 
@@ -409,7 +412,7 @@ def AddActiveConnection(self, devices, connection_device, specific_object, name,
                        'Connection': dbus.ObjectPath(connection_device),
                        'Master': dbus.ObjectPath('/'),
                        'SpecificObject': dbus.ObjectPath(specific_object),
-                       'Uuid': uuid.uuid4().bytes,
+                       'Uuid': str(uuid.uuid4()),
                        'State': state,
                    },
                    [])
