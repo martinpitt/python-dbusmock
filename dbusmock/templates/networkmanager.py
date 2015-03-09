@@ -93,6 +93,27 @@ class NM80211ApSecurityFlags:
     }
 
 
+class NM80211ApFlags:
+
+    NM_802_11_AP_FLAGS_NONE    = 0x00000000
+    NM_802_11_AP_FLAGS_PRIVACY = 0x00000001
+
+
+class NM80211ApSecurityFlags:
+
+    NM_802_11_AP_SEC_NONE            = 0x00000000
+    NM_802_11_AP_SEC_PAIR_WEP40      = 0x00000001
+    NM_802_11_AP_SEC_PAIR_WEP104     = 0x00000002
+    NM_802_11_AP_SEC_PAIR_TKIP       = 0x00000004
+    NM_802_11_AP_SEC_PAIR_CCMP       = 0x00000008
+    NM_802_11_AP_SEC_GROUP_WEP40     = 0x00000010
+    NM_802_11_AP_SEC_GROUP_WEP104    = 0x00000020
+    NM_802_11_AP_SEC_GROUP_TKIP      = 0x00000040
+    NM_802_11_AP_SEC_GROUP_CCMP      = 0x00000080
+    NM_802_11_AP_SEC_KEY_MGMT_PSK    = 0x00000100
+    NM_802_11_AP_SEC_KEY_MGMT_802_1X = 0x00000200
+
+
 def load(mock, parameters):
     mock.AddMethods(MAIN_IFACE, [
         ('GetDevices', '', 'ao',
@@ -261,9 +282,9 @@ def AddWiFiDevice(self, device_name, iface_name, state):
 
 
 @dbus.service.method(MOCK_IFACE,
-                     in_signature='ssssuuuyuu', out_signature='s')
+                     in_signature='ssssuuuyu', out_signature='s')
 def AddAccessPoint(self, dev_path, ap_name, ssid, hw_address,
-                   mode, frequency, rate, strength, security, flags = 1):
+                   mode, frequency, rate, strength, security):
     '''Add an access point to an existing WiFi device.
 
     You have to specify WiFi Device path, Access Point object name,
@@ -281,6 +302,10 @@ def AddAccessPoint(self, dev_path, ap_name, ssid, hw_address,
         raise dbus.exceptions.DBusException(
             MAIN_IFACE + '.AlreadyExists',
             'Access point %s on device %s already exists' % (ap_name, dev_path))
+
+    flags = NM80211ApFlags.NM_802_11_AP_FLAGS_PRIVACY
+    if security == NM80211ApSecurityFlags.NM_802_11_AP_SEC_NONE:
+        flags = NM80211ApFlags.NM_802_11_AP_FLAGS_NONE
 
     self.AddObject(ap_path,
                    ACCESS_POINT_IFACE,
