@@ -153,7 +153,7 @@ class TestNetworkManager(dbusmock.DBusTestCase):
                                      '00:23:F8:7E:12:BB',
                                      1, 2425, 5400, 82, 0x100)
         con1 = self.dbusmock.AddWiFiConnection(wifi1, 'Mock_Con1', 'The_SSID',
-                                               '')
+                                               'wpa-psk')
 
         out = subprocess.check_output(['nmcli', '--nocheck', 'connection'],
                                       env=self.lang_env,

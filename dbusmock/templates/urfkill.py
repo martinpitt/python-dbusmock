@@ -105,4 +105,3 @@ def load(mock, parameters):
     for i in individual_objects:
         path = '/org/freedesktop/URfkill/' + i
         mock.AddObject(path, 'org.freedesktop.URfkill.Killswitch', {'state': mock.internal_states[i]}, [])
-
