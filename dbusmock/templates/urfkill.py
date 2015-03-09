@@ -106,25 +106,3 @@ def load(mock, parameters):
         path = '/org/freedesktop/URfkill/' + i
         mock.AddObject(path, 'org.freedesktop.URfkill.Killswitch', {'state': mock.internal_states[i]}, [])
 
-
-@dbus.service.method(MOCK_IFACE,
-                     in_signature='ui', out_signature='')
-def SetKillswitchState(self, type, state):
-
-    if type not in type2objectname:
-        raise dbus.exceptions.DBusException(
-            'org.freedesktop.DBus.Error.InvalidArgs',
-            'Invalid Killswitch type')
-
-    if state not in range(-1, 3):
-        raise dbus.exceptions.DBusException(
-            'org.freedesktop.DBus.Error.InvalidArgs',
-            'Invalid Killswitch state')
-
-    objname = type2objectname[type]
-    if self.internal_states[objname] != state:
-        path = '/org/freedesktop/URfkill/' + objname
-        obj = dbusmock.get_object(path)
-        self.internal_states[objname] = state
-        obj.Set('org.freedesktop.URfkill.Killswitch', 'state', state)
-        obj.EmitSignal('org.freedesktop.URfkill.Killswitch', 'StateChanged', '', [])
