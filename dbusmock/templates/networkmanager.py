@@ -37,6 +37,45 @@ ACTIVE_CONNECTION_IFACE = 'org.freedesktop.NetworkManager.Connection.Active'
 SYSTEM_BUS = True
 
 
+class NMState:
+    '''Global state
+
+    As per https://developer.gnome.org/NetworkManager/unstable/spec.html#type-NM_STATE
+    '''
+    NM_STATE_UNKNOWN          = 0
+    NM_STATE_ASLEEP           = 10
+    NM_STATE_DISCONNECTED     = 20
+    NM_STATE_DISCONNECTING    = 30
+    NM_STATE_CONNECTING       = 40
+    NM_STATE_CONNECTED_LOCAL  = 50
+    NM_STATE_CONNECTED_SITE   = 60
+    NM_STATE_CONNECTED_GLOBAL = 70
+
+
+class NMConnectivityState:
+    '''Connectvity state
+
+    As per https://developer.gnome.org/NetworkManager/unstable/spec.html#type-NM_CONNECTIVITY
+    '''
+    NM_CONNECTIVITY_UNKNOWN = 0
+    NM_CONNECTIVITY_NONE = 1
+    NM_CONNECTIVITY_PORTAL = 2
+    NM_CONNECTIVITY_LIMITED = 3
+    NM_CONNECTIVITY_FULL = 4
+
+
+class NMActiveConnectionState:
+    '''Active connection state
+
+    As per https://developer.gnome.org/NetworkManager/unstable/spec.html#type-NM_ACTIVE_CONNECTION_STATE
+    '''
+    NM_ACTIVE_CONNECTION_STATE_UNKNOWN = 0
+    NM_ACTIVE_CONNECTION_STATE_ACTIVATING = 1
+    NM_ACTIVE_CONNECTION_STATE_ACTIVATED = 2
+    NM_ACTIVE_CONNECTION_STATE_DEACTIVATING = 3
+    NM_ACTIVE_CONNECTION_STATE_DEACTIVATED = 4
+
+
 class InfrastructureMode:
     '''Infrastructure mode
 
@@ -115,6 +154,7 @@ def load(mock, parameters):
          'ret = [k for k in objects.keys() if "/Devices" in k]'),
         ('GetPermissions', '', 'a{ss}', 'ret = {}'),
         ('state', '', 'u', "ret = self.Get('%s', 'State')" % MAIN_IFACE),
+        ('CheckConnectivity', '', 'u', "ret = self.Get('%s', 'Connectivity')" % MAIN_IFACE),
         ('ActivateConnection', 'ooo', 'o', "ret = args[0]"),
         ('AddAndActivateConnection', 'a{sa{sv}}oo', 'oo',
          "ret = (dbus.ObjectPath('/org/freedesktop/NetworkManager/Settings/new'), dbus.ObjectPath('/org/freedesktop/NetworkManager/Settings/new'))"),
@@ -124,7 +164,8 @@ def load(mock, parameters):
                        {
                            'Devices': dbus.Array([], signature='o'),
                            'NetworkingEnabled': parameters.get('NetworkingEnabled', True),
-                           'State': parameters.get('State', dbus.UInt32(70)),
+                           'Connectivity': parameters.get('Connectivity', dbus.UInt32(NMConnectivityState.NM_CONNECTIVITY_FULL)),
+                           'State': parameters.get('State', dbus.UInt32(NMState.NM_STATE_CONNECTED_GLOBAL)),
                            'Startup': False,
                            'Version': parameters.get('Version', '0.9.6.0'),
                            'WimaxEnabled': parameters.get('WimaxEnabled', True),
@@ -161,6 +202,12 @@ def SetProperty(self, path, iface, name, value):
 def SetGlobalConnectionState(self, state):
     self.SetProperty(MAIN_OBJ, MAIN_IFACE, 'State', dbus.UInt32(state, variant_level=1))
     self.EmitSignal(MAIN_IFACE, 'StateChanged', 'u', [state])
+
+
+@dbus.service.method(MOCK_IFACE,
+                     in_signature='u', out_signature='')
+def SetConnectivity(self, connectivity):
+    self.SetProperty(MAIN_OBJ, MAIN_IFACE, 'Connectivity', dbus.UInt32(connectivity, variant_level=1))
 
 
 @dbus.service.method(MOCK_IFACE,
@@ -434,18 +481,24 @@ def AddActiveConnection(self, devices, connection_device, specific_object, name,
     Returns the new object path.
     '''
 
+    conn_obj = dbusmock.get_object(connection_device)
+    settings = conn_obj.Get(CSETTINGS_IFACE, 'Settings');
+    conn_uuid = settings['connection']['uuid']
+
+    device_objects = [dbus.ObjectPath(dev) for dev in devices]
+
     active_connection_path = '/org/freedesktop/NetworkManager/ActiveConnection/' + name
     self.AddObject(active_connection_path,
                    ACTIVE_CONNECTION_IFACE,
                    {
-                       'Devices': devices,
+                       'Devices': device_objects,
                        'Default6': False,
                        'Default': True,
                        'Vpn': False,
                        'Connection': dbus.ObjectPath(connection_device),
                        'Master': dbus.ObjectPath('/'),
                        'SpecificObject': dbus.ObjectPath(specific_object),
-                       'Uuid': str(uuid.uuid4()),
+                       'Uuid': conn_uuid,
                        'State': state,
                    },
                    [])
