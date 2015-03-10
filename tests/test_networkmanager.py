@@ -172,56 +172,44 @@ class TestNetworkManager(dbusmock.DBusTestCase):
         con1 = self.dbusmock.AddWiFiConnection(wifi1, 'Mock_Con1', 'The_SSID',
                                                'wpa-psk')
 
-        out = self.read_connection()
-        self.assertRegex(out, 'The_SSID.*\s802-11-wireless')
+        self.assertRegex(self.read_connection(), 'The_SSID.*\s802-11-wireless')
         self.assertEqual(ap1, '/org/freedesktop/NetworkManager/AccessPoint/Mock_AP1')
         self.assertEqual(con1, '/org/freedesktop/NetworkManager/Settings/Mock_Con1')
 
     def test_global_state(self):
         self.dbusmock.SetGlobalConnectionState(NMState.NM_STATE_CONNECTED_GLOBAL)
-        out = self.read_general()
-        self.assertRegex(out, 'connected.*\sfull')
+        self.assertRegex(self.read_general(), 'connected.*\sfull')
 
         self.dbusmock.SetGlobalConnectionState(NMState.NM_STATE_CONNECTED_SITE)
-        out = self.read_general()
-        self.assertRegex(out, 'connected \(site only\).*\sfull')
+        self.assertRegex(self.read_general(), 'connected \(site only\).*\sfull')
 
         self.dbusmock.SetGlobalConnectionState(NMState.NM_STATE_CONNECTED_LOCAL)
-        out = self.read_general()
-        self.assertRegex(out, 'connected \(local only\).*\sfull')
+        self.assertRegex(self.read_general(), 'connected \(local only\).*\sfull')
 
         self.dbusmock.SetGlobalConnectionState(NMState.NM_STATE_CONNECTING)
-        out = self.read_general()
-        self.assertRegex(out, 'connecting.*\sfull')
+        self.assertRegex(self.read_general(), 'connecting.*\sfull')
 
         self.dbusmock.SetGlobalConnectionState(NMState.NM_STATE_DISCONNECTING)
-        out = self.read_general()
-        self.assertRegex(out, 'disconnecting.*\sfull')
+        self.assertRegex(self.read_general(), 'disconnecting.*\sfull')
 
         self.dbusmock.SetGlobalConnectionState(NMState.NM_STATE_DISCONNECTED)
-        out = self.read_general()
-        self.assertRegex(out, 'disconnected.*\sfull')
+        self.assertRegex(self.read_general(), 'disconnected.*\sfull')
 
         self.dbusmock.SetGlobalConnectionState(NMState.NM_STATE_ASLEEP)
-        out = self.read_general()
-        self.assertRegex(out, 'asleep.*\sfull')
+        self.assertRegex(self.read_general(), 'asleep.*\sfull')
 
     def test_connectivity_state(self):
         self.dbusmock.SetConnectivity(NMConnectivityState.NM_CONNECTIVITY_FULL)
-        out = self.read_general()
-        self.assertRegex(out, 'connected.*\sfull')
+        self.assertRegex(self.read_general(), 'connected.*\sfull')
 
         self.dbusmock.SetConnectivity(NMConnectivityState.NM_CONNECTIVITY_LIMITED)
-        out = self.read_general()
-        self.assertRegex(out, 'connected.*\slimited')
+        self.assertRegex(self.read_general(), 'connected.*\slimited')
 
         self.dbusmock.SetConnectivity(NMConnectivityState.NM_CONNECTIVITY_PORTAL)
-        out = self.read_general()
-        self.assertRegex(out, 'connected.*\sportal')
+        self.assertRegex(self.read_general(), 'connected.*\sportal')
 
         self.dbusmock.SetConnectivity(NMConnectivityState.NM_CONNECTIVITY_NONE)
-        out = self.read_general()
-        self.assertRegex(out, 'connected.*\snone')
+        self.assertRegex(self.read_general(), 'connected.*\snone')
 
     def test_wifi_with_active_connection(self):
         wifi1 = self.dbusmock.AddWiFiDevice('mock_WiFi1', 'wlan0',
