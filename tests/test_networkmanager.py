@@ -232,19 +232,32 @@ class TestNetworkManager(dbusmock.DBusTestCase):
                                      2425, 5400, 82,
                                      NM80211ApSecurityFlags.NM_802_11_AP_SEC_KEY_MGMT_PSK)
         con1 = self.dbusmock.AddWiFiConnection(wifi1, 'Mock_Con1', 'The_SSID', '')
-        activeCon1 = self.dbusmock.AddActiveConnection([wifi1], con1, ap1,
+        active_con1 = self.dbusmock.AddActiveConnection([wifi1], con1, ap1,
                                      'Mock_Active1',
                                      NMActiveConnectionState.NM_ACTIVE_CONNECTION_STATE_ACTIVATED)
 
-        out = self.read_connection()
-        self.assertRegex(out, 'The_SSID.*\s802-11-wireless')
-
-        out = self.read_general()
-        self.assertRegex(out, 'connected.*\sfull')
-
         self.assertEqual(ap1, '/org/freedesktop/NetworkManager/AccessPoint/Mock_AP1')
         self.assertEqual(con1, '/org/freedesktop/NetworkManager/Settings/Mock_Con1')
-        self.assertEqual(activeCon1, '/org/freedesktop/NetworkManager/ActiveConnection/Mock_Active1')
+        self.assertEqual(active_con1, '/org/freedesktop/NetworkManager/ActiveConnection/Mock_Active1')
+
+        self.assertRegex(self.read_general(), 'connected.*\sfull')
+        self.assertRegex(self.read_connection(), 'The_SSID.*\s802-11-wireless')
+        self.assertRegex(self.read_active_connection(), 'The_SSID.*\s802-11-wireless')
+        self.assertRegex(self.read_device_wifi(), 'The_SSID')
+
+        self.dbusmock.RemoveActiveConnection(wifi1, active_con1)
+
+        self.assertRegex(self.read_connection(), 'The_SSID.*\s802-11-wireless')
+        self.assertNotRegex(self.read_active_connection(), 'The_SSID.*\s802-11-wireless')
+        self.assertRegex(self.read_device_wifi(), 'The_SSID')
+
+        self.dbusmock.RemoveWifiConnection(wifi1, con1)
+
+        self.assertNotRegex(self.read_connection(), 'The_SSID.*\s802-11-wireless')
+        self.assertRegex(self.read_device_wifi(), 'The_SSID')
+
+        self.dbusmock.RemoveAccessPoint(wifi1, ap1)
+        self.assertNotRegex(self.read_device_wifi(), 'The_SSID')
 
 
 if __name__ == '__main__':

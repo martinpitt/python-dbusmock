@@ -162,6 +162,7 @@ def load(mock, parameters):
 
     mock.AddProperties('',
                        {
+                           'ActiveConnections': dbus.Array([], signature='o'),
                            'Devices': dbus.Array([], signature='o'),
                            'NetworkingEnabled': parameters.get('NetworkingEnabled', True),
                            'Connectivity': parameters.get('Connectivity', dbus.UInt32(NMConnectivityState.NM_CONNECTIVITY_FULL)),
@@ -506,6 +507,10 @@ def AddActiveConnection(self, devices, connection_device, specific_object, name,
     for dev_path in devices:
         self.SetDeviceActive(dev_path, active_connection_path)
 
+    active_connections = self.Get(MAIN_IFACE, 'ActiveConnections')
+    active_connections.append(dbus.ObjectPath(active_connection_path))
+    self.SetProperty(MAIN_OBJ, MAIN_IFACE, 'ActiveConnections', active_connections)
+
     return active_connection_path
 
 
@@ -555,7 +560,7 @@ def RemoveWifiConnection(self, dev_path, connection_path):
     main_connections.remove(connection_path)
     settings_obj.Set(SETTINGS_IFACE, 'Connections', main_connections)
 
-    settings_obj.EmitSignal(SETTINGS_IFACE, 'ConnectionRemoved', 'o', [ap_path])
+    settings_obj.EmitSignal(SETTINGS_IFACE, 'ConnectionRemoved', 'o', [connection_path])
 
     self.RemoveObject(connection_path)
 
@@ -578,6 +583,10 @@ def RemoveActiveConnection(self, dev_path, active_connection_path):
     dev_obj.Set(DEVICE_IFACE, 'State', old_state)
 
     dev_obj.EmitSignal(DEVICE_IFACE, 'StateChanged', 'uuu', [old_state, old_state, dbus.UInt32(1)])
+
+    active_connections = self.Get(MAIN_IFACE, 'ActiveConnections')
+    active_connections.remove(dbus.ObjectPath(active_connection_path))
+    self.SetProperty(MAIN_OBJ, MAIN_IFACE, 'ActiveConnections', active_connections)
 
     self.RemoveObject(active_connection_path)
 
