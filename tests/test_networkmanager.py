@@ -17,6 +17,7 @@ import subprocess
 import dbus
 import dbusmock
 import os
+import re
 
 from dbusmock.templates.networkmanager import DeviceState
 from dbusmock.templates.networkmanager import NM80211ApSecurityFlags
@@ -236,16 +237,16 @@ class TestNetworkManager(dbusmock.DBusTestCase):
         self.dbusmock.RemoveActiveConnection(wifi1, active_con1)
 
         self.assertRegex(self.read_connection(), 'The_SSID.*\s802-11-wireless')
-        self.assertNotRegex(self.read_active_connection(), 'The_SSID.*\s802-11-wireless')
+        self.assertFalse(re.compile('The_SSID.*\s802-11-wireless').search(self.read_active_connection()))
         self.assertRegex(self.read_device_wifi(), 'The_SSID')
 
         self.dbusmock.RemoveWifiConnection(wifi1, con1)
 
-        self.assertNotRegex(self.read_connection(), 'The_SSID.*\s802-11-wireless')
+        self.assertFalse(re.compile('The_SSID.*\s802-11-wireless').search(self.read_connection()))
         self.assertRegex(self.read_device_wifi(), 'The_SSID')
 
         self.dbusmock.RemoveAccessPoint(wifi1, ap1)
-        self.assertNotRegex(self.read_device_wifi(), 'The_SSID')
+        self.assertFalse(re.compile('The_SSID').search(self.read_device_wifi()))
 
 
 if __name__ == '__main__':
