@@ -73,10 +73,18 @@ class TestURfkill(dbusmock.DBusTestCase):
         property_object = bus.get_object('org.freedesktop.URfkill', '/org/freedesktop/URfkill/WLAN')
         propiface = dbus.Interface(property_object, 'org.freedesktop.DBus.Properties')
         self.assertEqual(propiface.Get('org.freedesktop.URfkill.Killswitch', 'state'), 0)
-        iface.Block(1, True)
+
+        ret_block = iface.Block(1, True)
+        self.assertTrue(ret_block)
         self.assertEqual(propiface.Get('org.freedesktop.URfkill.Killswitch', 'state'), 1)
-        iface.Block(1, False)
+
+        ret_unblock = iface.Block(1, False)
+        self.assertTrue(ret_unblock)
         self.assertEqual(propiface.Get('org.freedesktop.URfkill.Killswitch', 'state'), 0)
+
+        # 99 is an unknown type to the mock, so it should return false.
+        ret_failed_block = iface.Block(99, False)
+        self.assertFalse(ret_failed_block)
 
     def test_flightmode(self):
         bus = dbus.SystemBus()

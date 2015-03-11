@@ -75,10 +75,14 @@ def block(self, index, should_block):
         new_block_state = 0
     if self.internal_states[objname] != new_block_state:
         path = '/org/freedesktop/URfkill/' + objname
-        obj = dbusmock.get_object(path)
-        self.internal_states[objname] = new_block_state
-        obj.Set('org.freedesktop.URfkill.Killswitch', 'state', new_block_state)
-        obj.EmitSignal('org.freedesktop.URfkill.Killswitch', 'StateChanged', '', [])
+        try:
+            obj = dbusmock.get_object(path)
+            self.internal_states[objname] = new_block_state
+            obj.Set('org.freedesktop.URfkill.Killswitch', 'state', new_block_state)
+            obj.EmitSignal('org.freedesktop.URfkill.Killswitch', 'StateChanged', '', [])
+        except:
+            return False
+    return True
 
 
 def load(mock, parameters):
