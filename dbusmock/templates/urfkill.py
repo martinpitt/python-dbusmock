@@ -79,6 +79,7 @@ def block(self, index, should_block):
         self.internal_states[objname] = new_block_state
         obj.Set('org.freedesktop.URfkill.Killswitch', 'state', new_block_state)
         obj.EmitSignal('org.freedesktop.URfkill.Killswitch', 'StateChanged', '', [])
+    return True
 
 
 def load(mock, parameters):

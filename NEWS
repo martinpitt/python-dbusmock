@@ -1,6 +1,8 @@
 0.13.1 (UNRELEASED)
 -------------------
  - Move project hosting to github, update README.rst.
+ - urfkill template: Return boolean from block() method, as the original
+   urfkill does. Thanks Jonas Grønås Drange!
 
 0.13 (2015-02-27)
 -----------------
