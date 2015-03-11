@@ -132,10 +132,13 @@ class TestNetworkManager(dbusmock.DBusTestCase):
                                            DeviceState.ACTIVATED)
         self.dbusmock.AddAccessPoint(wifi, 'Mock_AP1', 'AP_1',
                                      '00:23:F8:7E:12:BB',
-                                     1, 2425, 5400, 82, 0x100)
+                                     InfrastructureMode.NM_802_11_MODE_ADHOC,
+                                     2425, 5400, 82,
+                                     NM80211ApSecurityFlags.NM_802_11_AP_SEC_KEY_MGMT_PSK)
         self.dbusmock.AddAccessPoint(wifi, 'Mock_AP3', 'AP_3',
                                      '00:23:F8:7E:12:BC',
-                                     2, 2425, 5400, 82, 0x400)
+                                     InfrastructureMode.NM_802_11_MODE_INFRA,
+                                     2425, 5400, 82, 0x400)
         out = self.read_device()
         aps = self.read_device_wifi()
         self.assertRegex(out, 'wlan0.*\sconnected')
@@ -149,13 +152,17 @@ class TestNetworkManager(dbusmock.DBusTestCase):
                                             DeviceState.UNAVAILABLE)
         self.dbusmock.AddAccessPoint(wifi1, 'Mock_AP0',
                                      'AP_0', '00:23:F8:7E:12:BA',
-                                     0, 2425, 5400, 82, 0x400)
+                                     InfrastructureMode.NM_802_11_MODE_UNKNOWN,
+                                     2425, 5400, 82, 0x400)
         self.dbusmock.AddAccessPoint(wifi2, 'Mock_AP1', 'AP_1',
                                      '00:23:F8:7E:12:BB',
-                                     1, 2425, 5400, 82, 0x100)
+                                     InfrastructureMode.NM_802_11_MODE_ADHOC,
+                                     2425, 5400, 82,
+                                     NM80211ApSecurityFlags.NM_802_11_AP_SEC_KEY_MGMT_PSK)
         self.dbusmock.AddAccessPoint(wifi2, 'Mock_AP3', 'AP_2',
                                      '00:23:F8:7E:12:BC',
-                                     2, 2425, 5400, 82, 0x400)
+                                     InfrastructureMode.NM_802_11_MODE_INFRA,
+                                     2425, 5400, 82, 0x400)
         out = self.read_device()
         aps = self.read_device_wifi()
         self.assertRegex(out, 'wlan0.*\sconnected')
@@ -169,7 +176,9 @@ class TestNetworkManager(dbusmock.DBusTestCase):
                                             DeviceState.ACTIVATED)
         ap1 = self.dbusmock.AddAccessPoint(wifi1, 'Mock_AP1', 'The_SSID',
                                      '00:23:F8:7E:12:BB',
-                                     1, 2425, 5400, 82, 0x100)
+                                     InfrastructureMode.NM_802_11_MODE_ADHOC,
+                                     2425, 5400, 82,
+                                     NM80211ApSecurityFlags.NM_802_11_AP_SEC_KEY_MGMT_PSK)
         con1 = self.dbusmock.AddWiFiConnection(wifi1, 'Mock_Con1', 'The_SSID',
                                                'wpa-psk')
 
