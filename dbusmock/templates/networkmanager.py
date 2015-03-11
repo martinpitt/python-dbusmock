@@ -573,6 +573,9 @@ def RemoveWifiConnection(self, dev_path, connection_path):
 
     settings_obj.EmitSignal(SETTINGS_IFACE, 'ConnectionRemoved', 'o', [connection_path])
 
+    connection_obj = dbusmock.get_object(connection_path)
+    connection_obj.EmitSignal(CSETTINGS_IFACE, 'Removed', '', [])
+
     self.RemoveObject(connection_path)
 
 
