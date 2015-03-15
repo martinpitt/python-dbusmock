@@ -354,7 +354,7 @@ def add_connectionmanager_api(mock):
         ('AddContext', 's', 'o', 'ret = "/"'),
         ('RemoveContext', 'o', '', ''),
         ('DeactivateAll', '', '', ''),
-        ('GetContexts', '', 'a{oa{sv}}', 'ret = dbus.Array([])'),
+        ('GetContexts', '', 'a(oa{sv})', 'ret = dbus.Array([])'),
     ])
 
 # unimplemented Modem object interfaces:
