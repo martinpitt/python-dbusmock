@@ -319,7 +319,7 @@ def add_simmanager_api(mock):
          'newRetries = self.Get("%(i)s", "Retries")\n'
          'if args[0] == "pin" and args[1] != "1234":\n'
          '    newRetries["pin"] = dbus.Byte(newRetries["pin"] - 1)\n'
-         'else:\n'
+         'elif args[0] == "pin":\n'
          '    newRetries["pin"] = dbus.Byte(3)\n'
 
          'self.Set("%(i)s", "Retries", newRetries)\n'
@@ -333,7 +333,8 @@ def add_simmanager_api(mock):
          'newRetries = self.Get("%(i)s", "Retries")\n'
          'if args[0] == "puk" and args[1] != "12345678":\n'
          '    newRetries["puk"] = dbus.Byte(newRetries["puk"] - 1)\n'
-         'else:\n'
+         'elif args[0] == "puk":\n'
+         '    newRetries["pin"] = dbus.Byte(3)\n'
          '    newRetries["puk"] = dbus.Byte(10)\n'
 
          'self.Set("%(i)s", "Retries", newRetries)\n'
