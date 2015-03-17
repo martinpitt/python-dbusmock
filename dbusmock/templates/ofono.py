@@ -315,9 +315,11 @@ def add_simmanager_api(mock):
         ('SetProperty', 'sv', '', 'self.Set("%(i)s", args[0], args[1]); '
          'self.EmitSignal("%(i)s", "PropertyChanged", "sv", [args[0], args[1]])' % {'i': iface}),
         ('ChangePin', 'sss', '', ''),
+
         ('EnterPin', 'ss', '',
+         'correctPin = "1234"\n'
          'newRetries = self.Get("%(i)s", "Retries")\n'
-         'if args[0] == "pin" and args[1] != "1234":\n'
+         'if args[0] == "pin" and args[1] != correctPin:\n'
          '    newRetries["pin"] = dbus.Byte(newRetries["pin"] - 1)\n'
          'elif args[0] == "pin":\n'
          '    newRetries["pin"] = dbus.Byte(3)\n'
@@ -325,13 +327,15 @@ def add_simmanager_api(mock):
          'self.Set("%(i)s", "Retries", newRetries)\n'
          'self.EmitSignal("%(i)s", "PropertyChanged", "sv", ["Retries", newRetries])\n'
 
-         'if args[0] == "pin" and args[1] != "1234":\n'
+         'if args[0] == "pin" and args[1] != correctPin:\n'
          '    class Failed(dbus.exceptions.DBusException):\n'
          '        _dbus_error_name = "org.ofono.Error.Failed"\n'
          '    raise Failed("Operation failed")' % {'i': iface}),
+
         ('ResetPin', 'sss', '',
+         'correctPuk = "12345678"\n'
          'newRetries = self.Get("%(i)s", "Retries")\n'
-         'if args[0] == "puk" and args[1] != "12345678":\n'
+         'if args[0] == "puk" and args[1] != correctPuk:\n'
          '    newRetries["puk"] = dbus.Byte(newRetries["puk"] - 1)\n'
          'elif args[0] == "puk":\n'
          '    newRetries["pin"] = dbus.Byte(3)\n'
@@ -340,10 +344,11 @@ def add_simmanager_api(mock):
          'self.Set("%(i)s", "Retries", newRetries)\n'
          'self.EmitSignal("%(i)s", "PropertyChanged", "sv", ["Retries", newRetries])\n'
 
-         'if args[0] == "puk" and args[1] != "12345678":\n'
+         'if args[0] == "puk" and args[1] != correctPuk:\n'
          '    class Failed(dbus.exceptions.DBusException):\n'
          '        _dbus_error_name = "org.ofono.Error.Failed"\n'
          '    raise Failed("Operation failed")' % {'i': iface}),
+
         ('LockPin', 'ss', '', ''),
         ('UnlockPin', 'ss', '', ''),
     ])
