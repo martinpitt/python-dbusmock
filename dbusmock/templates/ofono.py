@@ -314,12 +314,11 @@ def add_simmanager_api(mock):
         ('SetProperty', 'sv', '', 'self.Set("%(i)s", args[0], args[1]); '
          'self.EmitSignal("%(i)s", "PropertyChanged", "sv", [args[0], args[1]])' % {'i': iface}),
         ('ChangePin', 'sss', '', ''),
-        ('EnterPin', 'ss', '', '\
-class Failed(dbus.exceptions.DBusException):\n\
-    _dbus_error_name = "org.ofono.Error.Failed"\n\
-if (args[0] == "pin" and args[1] != "1234") or (args[0] == "puk" and args[1] != "12345678"):\n\
-    raise Failed("Operation failed")\n\
-'),
+        ('EnterPin', 'ss', '',
+         'class Failed(dbus.exceptions.DBusException):\n'
+         '    _dbus_error_name = "org.ofono.Error.Failed"\n'
+         'if (args[0] == "pin" and args[1] != "1234") or (args[0] == "puk" and args[1] != "12345678"):\n'
+         '    raise Failed("Operation failed")'),
         ('ResetPin', 'sss', '', ''),
         ('LockPin', 'ss', '', ''),
         ('UnlockPin', 'ss', '', ''),
