@@ -316,25 +316,33 @@ def add_simmanager_api(mock):
          'self.EmitSignal("%(i)s", "PropertyChanged", "sv", [args[0], args[1]])' % {'i': iface}),
         ('ChangePin', 'sss', '', ''),
         ('EnterPin', 'ss', '',
-         'class Failed(dbus.exceptions.DBusException):\n'
-         '    _dbus_error_name = "org.ofono.Error.Failed"\n'
-
          'newRetries = self.Get("%(i)s", "Retries")\n'
-
          'if args[0] == "pin" and args[1] != "1234":\n'
          '    newRetries["pin"] = dbus.Byte(newRetries["pin"] - 1)\n'
-         'elif args[0] == "puk" and args[1] != "12345678":\n'
-         '    newRetries["puk"] = dbus.Byte(newRetries["puk"] - 1)\n'
          'else:\n'
          '    newRetries["pin"] = dbus.Byte(3)\n'
+
+         'self.Set("%(i)s", "Retries", newRetries)\n'
+         'self.EmitSignal("%(i)s", "PropertyChanged", "sv", ["Retries", newRetries])\n'
+
+         'if args[0] == "pin" and args[1] != "1234":\n'
+         '    class Failed(dbus.exceptions.DBusException):\n'
+         '        _dbus_error_name = "org.ofono.Error.Failed"\n'
+         '    raise Failed("Operation failed")' % {'i': iface}),
+        ('ResetPin', 'sss', '',
+         'newRetries = self.Get("%(i)s", "Retries")\n'
+         'if args[0] == "puk" and args[1] != "12345678":\n'
+         '    newRetries["puk"] = dbus.Byte(newRetries["puk"] - 1)\n'
+         'else:\n'
          '    newRetries["puk"] = dbus.Byte(10)\n'
 
          'self.Set("%(i)s", "Retries", newRetries)\n'
          'self.EmitSignal("%(i)s", "PropertyChanged", "sv", ["Retries", newRetries])\n'
 
-         'if (args[0] == "pin" and args[1] != "1234") or (args[0] == "puk" and args[1] != "12345678"):\n'
+         'if args[0] == "puk" and args[1] != "12345678":\n'
+         '    class Failed(dbus.exceptions.DBusException):\n'
+         '        _dbus_error_name = "org.ofono.Error.Failed"\n'
          '    raise Failed("Operation failed")' % {'i': iface}),
-        ('ResetPin', 'sss', '', ''),
         ('LockPin', 'ss', '', ''),
         ('UnlockPin', 'ss', '', ''),
     ])
