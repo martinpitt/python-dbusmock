@@ -46,7 +46,7 @@ KS_HARDBLOCKED = 2
 def toggle_flight_mode(self, new_block_state):
     new_block_state = bool(new_block_state)
     if self.flight_mode == new_block_state:
-        return self.flight_mode
+        return True
     self.flight_mode = new_block_state
     for i in individual_objects:
         old_value = self.internal_states[i]
@@ -61,7 +61,7 @@ def toggle_flight_mode(self, new_block_state):
             obj.Set('org.freedesktop.URfkill.Killswitch', 'state', 0)
             obj.EmitSignal('org.freedesktop.URfkill.Killswitch', 'StateChanged', '', [])
     self.EmitSignal(MAIN_IFACE, 'FlightModeChanged', 'b', [self.flight_mode])
-    return self.flight_mode
+    return True
 
 
 def block(self, index, should_block):
@@ -79,6 +79,7 @@ def block(self, index, should_block):
         self.internal_states[objname] = new_block_state
         obj.Set('org.freedesktop.URfkill.Killswitch', 'state', new_block_state)
         obj.EmitSignal('org.freedesktop.URfkill.Killswitch', 'StateChanged', '', [])
+    return True
 
 
 def load(mock, parameters):
