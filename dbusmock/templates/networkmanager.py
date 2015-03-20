@@ -149,6 +149,10 @@ class NM80211ApFlags:
 
 
 def activate_connection(self, conn, dev, ap):
+    active_connections = self.Get(MAIN_IFACE, 'ActiveConnections')
+    for connection in active_connections:
+        RemoveActiveConnection(self, dev, connection)
+
     name = ap.rsplit('/',1)[1]
     state = dbus.UInt32(NMActiveConnectionState.NM_ACTIVE_CONNECTION_STATE_ACTIVATED)
     active_conn = dbus.ObjectPath(AddActiveConnection(self, [dev], conn, ap, name, state))
