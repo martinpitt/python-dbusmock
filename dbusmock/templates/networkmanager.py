@@ -149,11 +149,9 @@ class NM80211ApFlags:
 
 
 def activate_connection(self, conn, dev, ap):
-    active_connections = self.Get(MAIN_IFACE, 'ActiveConnections')
-    for connection in active_connections:
-        RemoveActiveConnection(self, dev, connection)
-
     name = ap.rsplit('/',1)[1]
+    RemoveActiveConnection(self, dev, '/org/freedesktop/NetworkManager/ActiveConnection/' + name)
+
     state = dbus.UInt32(NMActiveConnectionState.NM_ACTIVE_CONNECTION_STATE_ACTIVATED)
     active_conn = dbus.ObjectPath(AddActiveConnection(self, [dev], conn, ap, name, state))
 
@@ -162,6 +160,8 @@ def activate_connection(self, conn, dev, ap):
 
 def add_and_activate_connection(self, conn_conf, dev, ap):
     name = ap.rsplit('/',1)[1]
+    RemoveWifiConnection(self, dev, '/org/freedesktop/NetworkManager/Settings/' + name)
+
     raw_ssid = ''.join([chr(byte) for byte in conn_conf["802-11-wireless"]["ssid"]])
     wifi_conn = dbus.ObjectPath(AddWiFiConnection(self, dev, name, raw_ssid, ""))
 
@@ -587,10 +587,14 @@ def RemoveWifiConnection(self, dev_path, connection_path):
     settings_obj = dbusmock.get_object(SETTINGS_OBJ)
 
     connections = dev_obj.Get(DEVICE_IFACE, 'AvailableConnections')
+    main_connections = settings_obj.ListConnections()
+
+    if not connection_path in connections and not connection_path in main_connections:
+        return
+
     connections.remove(dbus.ObjectPath(connection_path))
     dev_obj.Set(DEVICE_IFACE, 'AvailableConnections', connections)
 
-    main_connections = settings_obj.ListConnections()
     main_connections.remove(connection_path)
     settings_obj.Set(SETTINGS_IFACE, 'Connections', main_connections)
 
@@ -617,6 +621,10 @@ def RemoveActiveConnection(self, dev_path, active_connection_path):
     self.SetDeviceDisconnected(dev_path)
 
     active_connections = self.Get(MAIN_IFACE, 'ActiveConnections')
+
+    if not active_connection_path in active_connections:
+        return
+
     active_connections.remove(dbus.ObjectPath(active_connection_path))
     self.SetProperty(MAIN_OBJ, MAIN_IFACE, 'ActiveConnections', active_connections)
 
