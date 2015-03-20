@@ -148,16 +148,35 @@ class NM80211ApFlags:
     NM_802_11_AP_FLAGS_PRIVACY = 0x00000001
 
 
+def activate_connection(self, conn, dev, ap):
+    name = ap.rsplit('/',1)[1]
+    state = dbus.UInt32(NMActiveConnectionState.NM_ACTIVE_CONNECTION_STATE_ACTIVATED)
+    active_conn = dbus.ObjectPath(AddActiveConnection(self, [dev], conn, ap, name, state))
+
+    return active_conn
+
+
+def add_and_activate_connection(self, conn_conf, dev, ap):
+    name = ap.rsplit('/',1)[1]
+    raw_ssid = ''.join([chr(byte) for byte in conn_conf["802-11-wireless"]["ssid"]])
+    wifi_conn = dbus.ObjectPath(AddWiFiConnection(self, dev, name, raw_ssid, ""))
+
+    active_conn = activate_connection(self, wifi_conn, dev, ap)
+
+    return (wifi_conn, active_conn)
+
+
 def load(mock, parameters):
+    mock.activate_connection = activate_connection
+    mock.add_and_activate_connection = add_and_activate_connection
     mock.AddMethods(MAIN_IFACE, [
         ('GetDevices', '', 'ao',
          'ret = [k for k in objects.keys() if "/Devices" in k]'),
         ('GetPermissions', '', 'a{ss}', 'ret = {}'),
         ('state', '', 'u', "ret = self.Get('%s', 'State')" % MAIN_IFACE),
         ('CheckConnectivity', '', 'u', "ret = self.Get('%s', 'Connectivity')" % MAIN_IFACE),
-        ('ActivateConnection', 'ooo', 'o', "ret = args[0]"),
-        ('AddAndActivateConnection', 'a{sa{sv}}oo', 'oo',
-         "ret = (dbus.ObjectPath('/org/freedesktop/NetworkManager/Settings/new'), dbus.ObjectPath('/org/freedesktop/NetworkManager/Settings/new'))"),
+        ('ActivateConnection', 'ooo', 'o', "ret = self.activate_connection(self, args[0], args[1], args[2])"),
+        ('AddAndActivateConnection', 'a{sa{sv}}oo', 'oo', "ret = self.add_and_activate_connection(self, args[0], args[1], args[2])"),
     ])
 
     mock.AddProperties('',
