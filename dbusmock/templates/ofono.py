@@ -377,6 +377,7 @@ def add_connectionmanager_api(mock):
     iface = 'org.ofono.ConnectionManager'
     mock.AddProperties(iface, {
         'Attached': _parameters.get('Attached', True),
+        'Bearer': _parameters.get('Bearer', 'gprs'),
         'RoamingAllowed': _parameters.get('RoamingAllowed', False),
         'Powered': _parameters.get('ConnectionPowered', True),
     })
