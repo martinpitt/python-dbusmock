@@ -1,5 +1,5 @@
-0.13.1 (UNRELEASED)
--------------------
+0.14 (UNRELEASED)
+-----------------
  - Move project hosting to github, update README.rst.
  - urfkill template: Return boolean from block() method, as the original
    urfkill does. Thanks Jonas Grønås Drange!
@@ -8,6 +8,7 @@
  - ofono template: Fix SubscriberIdentity property type
  - Emit PropertiesChanged signal when Set()ing properties.
  - urfkill template: Return boolean from Block() and FlightMode() methods
+ - ofono template: Add ConnectionManager interface.
 
 0.13 (2015-02-27)
 -----------------
