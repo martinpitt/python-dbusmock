@@ -85,7 +85,7 @@ def AddModem(self, name, properties):
                                       'org.ofono.NetworkRegistration',
                                       'org.ofono.SimManager',
                                       # 'org.ofono.MessageManager',
-                                      # 'org.ofono.ConnectionManager',
+                                      'org.ofono.ConnectionManager',
                                       # 'org.ofono.NetworkTime'
                                      ],
                        # 'Features': ['sms', 'net', 'gprs', 'sim']
@@ -102,6 +102,7 @@ def AddModem(self, name, properties):
     add_voice_call_api(obj)
     add_netreg_api(obj)
     add_simmanager_api(obj)
+    add_connectionmanager_api(obj)
     self.modems.append(path)
     props = obj.GetAll('org.ofono.Modem', dbus_interface=dbus.PROPERTIES_IFACE)
     self.EmitSignal(MAIN_IFACE, 'ModemAdded', 'oa{sv}', [path, props])
@@ -204,6 +205,8 @@ def HangupAll(self):
 #  interface org.ofono.NetworkRegistration {
 #    methods:
 #      GetProperties(out a{sv} properties);
+#      SetProperty(in  s property,
+#                  in  v value);
 #      Register();
 #      GetOperators(out a(oa{sv}) operators_with_properties);
 #      Scan(out a(oa{sv}) operators_with_properties);
@@ -263,6 +266,8 @@ def add_netreg_api(mock):
 
     mock.AddMethods('org.ofono.NetworkRegistration', [
         ('GetProperties', '', 'a{sv}', 'ret = self.GetAll("org.ofono.NetworkRegistration")'),
+        ('SetProperty', 'sv', '', 'self.Set("%(i)s", args[0], args[1]); '
+         'self.EmitSignal("%(i)s", "PropertyChanged", "sv", [args[0], args[1]])' % {'i': 'org.ofono.NetworkRegistration'}),
         ('Register', '', '', ''),
         ('GetOperators', '', 'a(oa{sv})', get_all_operators(mock)),
         ('Scan', '', 'a(oa{sv})', get_all_operators(mock)),
@@ -300,29 +305,55 @@ def add_simmanager_api(mock):
     mock.AddProperties(iface, {
         'CardIdentifier': _parameters.get('CardIdentifier', 12345),
         'Present': _parameters.get('Present', dbus.Boolean(True)),
+        'Retries': _parameters.get('Retries', dbus.Dictionary([["pin", dbus.Byte(3)], ["puk", dbus.Byte(10)]])),
+        'PinRequired': _parameters.get('PinRequired', "none"),
         'SubscriberNumbers': _parameters.get('SubscriberNumbers', ['123456789', '234567890']),
-        'SubscriberIdentity': _parameters.get('SubscriberIdentity', 23456),
+        'SubscriberIdentity': _parameters.get('SubscriberIdentity', "23456"),
     })
     mock.AddMethods(iface, [
         ('GetProperties', '', 'a{sv}', 'ret = self.GetAll("%s")' % iface),
         ('SetProperty', 'sv', '', 'self.Set("%(i)s", args[0], args[1]); '
          'self.EmitSignal("%(i)s", "PropertyChanged", "sv", [args[0], args[1]])' % {'i': iface}),
         ('ChangePin', 'sss', '', ''),
-        ('EnterPin', 'ss', '', ''),
-        ('ResetPin', 'sss', '', ''),
+
+        ('EnterPin', 'ss', '',
+         'correctPin = "1234"\n'
+         'newRetries = self.Get("%(i)s", "Retries")\n'
+         'if args[0] == "pin" and args[1] != correctPin:\n'
+         '    newRetries["pin"] = dbus.Byte(newRetries["pin"] - 1)\n'
+         'elif args[0] == "pin":\n'
+         '    newRetries["pin"] = dbus.Byte(3)\n'
+
+         'self.Set("%(i)s", "Retries", newRetries)\n'
+         'self.EmitSignal("%(i)s", "PropertyChanged", "sv", ["Retries", newRetries])\n'
+
+         'if args[0] == "pin" and args[1] != correctPin:\n'
+         '    class Failed(dbus.exceptions.DBusException):\n'
+         '        _dbus_error_name = "org.ofono.Error.Failed"\n'
+         '    raise Failed("Operation failed")' % {'i': iface}),
+
+        ('ResetPin', 'sss', '',
+         'correctPuk = "12345678"\n'
+         'newRetries = self.Get("%(i)s", "Retries")\n'
+         'if args[0] == "puk" and args[1] != correctPuk:\n'
+         '    newRetries["puk"] = dbus.Byte(newRetries["puk"] - 1)\n'
+         'elif args[0] == "puk":\n'
+         '    newRetries["pin"] = dbus.Byte(3)\n'
+         '    newRetries["puk"] = dbus.Byte(10)\n'
+
+         'self.Set("%(i)s", "Retries", newRetries)\n'
+         'self.EmitSignal("%(i)s", "PropertyChanged", "sv", ["Retries", newRetries])\n'
+
+         'if args[0] == "puk" and args[1] != correctPuk:\n'
+         '    class Failed(dbus.exceptions.DBusException):\n'
+         '        _dbus_error_name = "org.ofono.Error.Failed"\n'
+         '    raise Failed("Operation failed")' % {'i': iface}),
+
         ('LockPin', 'ss', '', ''),
         ('UnlockPin', 'ss', '', ''),
     ])
 
-# unimplemented Modem object interfaces:
-#
-#  interface org.ofono.NetworkTime {
-#    methods:
-#      GetNetworkTime(out a{sv} time);
-#    signals:
-#      NetworkTimeChanged(a{sv} time);
-#    properties:
-#  };
+
 #  interface org.ofono.ConnectionManager {
 #    methods:
 #      GetProperties(out a{sv} properties);
@@ -339,6 +370,35 @@ def add_simmanager_api(mock):
 #      ContextAdded(o path,
 #                   v properties);
 #      ContextRemoved(o path);
+#  };
+def add_connectionmanager_api(mock):
+    '''Add org.ofono.ConnectionManager API to a mock'''
+
+    iface = 'org.ofono.ConnectionManager'
+    mock.AddProperties(iface, {
+        'Attached': _parameters.get('Attached', True),
+        'Bearer': _parameters.get('Bearer', 'gprs'),
+        'RoamingAllowed': _parameters.get('RoamingAllowed', False),
+        'Powered': _parameters.get('ConnectionPowered', True),
+    })
+    mock.AddMethods(iface, [
+        ('GetProperties', '', 'a{sv}', 'ret = self.GetAll("%s")' % iface),
+        ('SetProperty', 'sv', '', 'self.Set("%(i)s", args[0], args[1]); '
+         'self.EmitSignal("%(i)s", "PropertyChanged", "sv", [args[0], args[1]])' % {'i': iface}),
+        ('AddContext', 's', 'o', 'ret = "/"'),
+        ('RemoveContext', 'o', '', ''),
+        ('DeactivateAll', '', '', ''),
+        ('GetContexts', '', 'a(oa{sv})', 'ret = dbus.Array([])'),
+    ])
+
+# unimplemented Modem object interfaces:
+#
+#  interface org.ofono.NetworkTime {
+#    methods:
+#      GetNetworkTime(out a{sv} time);
+#    signals:
+#      NetworkTimeChanged(a{sv} time);
+#    properties:
 #  };
 #  interface org.ofono.MessageManager {
 #    methods:
