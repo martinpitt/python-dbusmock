@@ -252,14 +252,5 @@ def SetDeviceProperties(self, object_path, properties):
         device.Set(DEVICE_IFACE, key, value)
 
     # notify the listeners
-    if self.api1:
-        device.EmitSignal(dbus.PROPERTIES_IFACE,
-                          'PropertiesChanged',
-                          'sa{sv}as',
-                          [
-                              DEVICE_IFACE,
-                              properties,
-                              []
-                          ])
-    else:
+    if not self.api1:
         self.EmitSignal(MAIN_IFACE, 'DeviceChanged', 's', [object_path])
