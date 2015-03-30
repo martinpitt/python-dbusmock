@@ -120,8 +120,8 @@ def AddSeat(self, seat):
     '''
     seat_path = '/org/freedesktop/login1/seat/' + seat
     if seat_path in mockobject.objects:
-        raise dbus.exceptions.DBusException(MOCK_IFACE + '.SeatExists',
-                                            'Seat %s already exists' % seat)
+        raise dbus.exceptions.DBusException('Seat %s already exists' % seat,
+                                            name=MOCK_IFACE + '.SeatExists')
 
     self.AddObject(seat_path,
                    'org.freedesktop.login1.Seat',
@@ -153,8 +153,8 @@ def AddUser(self, uid, username, active):
     '''
     user_path = '/org/freedesktop/login1/user/%i' % uid
     if user_path in mockobject.objects:
-        raise dbus.exceptions.DBusException(MOCK_IFACE + '.UserExists',
-                                            'User %i already exists' % uid)
+        raise dbus.exceptions.DBusException('User %i already exists' % uid,
+                                            name=MOCK_IFACE + '.UserExists')
 
     self.AddObject(user_path,
                    'org.freedesktop.login1.User',
@@ -201,8 +201,8 @@ def AddSession(self, session_id, seat, uid, username, active):
 
     session_path = dbus.ObjectPath('/org/freedesktop/login1/session/' + session_id)
     if session_path in mockobject.objects:
-        raise dbus.exceptions.DBusException(MOCK_IFACE + '.SessionExists',
-                                            'Session %s already exists' % session_id)
+        raise dbus.exceptions.DBusException('Session %s already exists' % session_id,
+                                            name=MOCK_IFACE + '.SessionExists')
 
     self.AddObject(session_path,
                    'org.freedesktop.login1.Session',

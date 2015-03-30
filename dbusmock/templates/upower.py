@@ -207,8 +207,8 @@ def SetupDisplayDevice(self, type, state, percentage, energy, energy_full,
     '''
     if not self.api1:
         raise dbus.exceptions.DBusException(
-            MOCK_IFACE + '.APIVersion',
-            'SetupDisplayDevice() can only be used with the 1.0 API')
+            'SetupDisplayDevice() can only be used with the 1.0 API',
+            name=MOCK_IFACE + '.APIVersion')
 
     display_props = mockobject.objects[self.p_display_dev]
     display_props.Set(DEVICE_IFACE, 'Type',

@@ -144,10 +144,9 @@ def AddDevice(self, adapter_device_name, device_address, alias):
     path = adapter_path + '/' + device_name
 
     if adapter_path not in mockobject.objects:
-        ex = BLUEZ_MOCK_IFACE + '.NoSuchAdapter'
-        raise dbus.exceptions.DBusException(ex,
-                                            'Adapter %s does not exist.' %
-                                            adapter_device_name)
+        raise dbus.exceptions.DBusException(
+            'Adapter %s does not exist.' % adapter_device_name,
+            name=BLUEZ_MOCK_IFACE + '.NoSuchAdapter')
 
     properties = {
         'UUIDs': dbus.Array([], signature='s', variant_level=1),
@@ -208,14 +207,13 @@ def PairDevice(self, adapter_device_name, device_address):
     device_path = adapter_path + '/' + device_name
 
     if adapter_path not in mockobject.objects:
-        ex = BLUEZ_MOCK_IFACE + '.NoSuchAdapter'
-        raise dbus.exceptions.DBusException(ex,
-                                            'Adapter %s does not exist.' %
-                                            adapter_device_name)
+        raise dbus.exceptions.DBusException(
+            'Adapter %s does not exist.' % adapter_device_name,
+            name=BLUEZ_MOCK_IFACE + '.NoSuchAdapter')
     if device_path not in mockobject.objects:
-        raise dbus.exceptions.DBusException(BLUEZ_MOCK_IFACE + '.NoSuchDevice',
-                                            'Device %s does not exist.' %
-                                            device_name)
+        raise dbus.exceptions.DBusException(
+            'Device %s does not exist.' % device_name,
+            name=BLUEZ_MOCK_IFACE + '.NoSuchDevice')
 
     device = mockobject.objects[device_path]
 
@@ -286,14 +284,13 @@ def BlockDevice(self, adapter_device_name, device_address):
     device_path = adapter_path + '/' + device_name
 
     if adapter_path not in mockobject.objects:
-        ex = BLUEZ_MOCK_IFACE + '.NoSuchAdapter'
-        raise dbus.exceptions.DBusException(ex,
-                                            'Adapter %s does not exist.' %
-                                            adapter_device_name)
+        raise dbus.exceptions.DBusException(
+            'Adapter %s does not exist.' % adapter_device_name,
+            name=BLUEZ_MOCK_IFACE + '.NoSuchAdapter')
     if device_path not in mockobject.objects:
-        raise dbus.exceptions.DBusException(BLUEZ_MOCK_IFACE + '.NoSuchDevice',
-                                            'Device %s does not exist.' %
-                                            device_name)
+        raise dbus.exceptions.DBusException(
+            'Device %s does not exist.' % device_name,
+            name=BLUEZ_MOCK_IFACE + '.NoSuchDevice')
 
     device = mockobject.objects[device_path]
 
@@ -332,14 +329,13 @@ def ConnectDevice(self, adapter_device_name, device_address):
     device_path = adapter_path + '/' + device_name
 
     if adapter_path not in mockobject.objects:
-        ex = BLUEZ_MOCK_IFACE + '.NoSuchAdapter'
-        raise dbus.exceptions.DBusException(ex,
-                                            'Adapter %s does not exist.' %
-                                            adapter_device_name)
+        raise dbus.exceptions.DBusException(
+            'Adapter %s does not exist.' % adapter_device_name,
+            name=BLUEZ_MOCK_IFACE + '.NoSuchAdapter')
     if device_path not in mockobject.objects:
-        raise dbus.exceptions.DBusException(BLUEZ_MOCK_IFACE + '.NoSuchDevice',
-                                            'Device %s does not exist.' %
-                                            device_name)
+        raise dbus.exceptions.DBusException(
+            'Device %s does not exist.' % device_name,
+            name=BLUEZ_MOCK_IFACE + '.NoSuchDevice')
 
     device = mockobject.objects[device_path]
 
@@ -379,14 +375,13 @@ def DisconnectDevice(self, adapter_device_name, device_address):
     device_path = adapter_path + '/' + device_name
 
     if adapter_path not in mockobject.objects:
-        ex = BLUEZ_MOCK_IFACE + '.NoSuchAdapter'
-        raise dbus.exceptions.DBusException(ex,
-                                            'Adapter %s does not exist.' %
-                                            adapter_device_name)
+        raise dbus.exceptions.DBusException(
+            'Adapter %s does not exist.' % adapter_device_name,
+            name=BLUEZ_MOCK_IFACE + '.NoSuchAdapter')
     if device_path not in mockobject.objects:
-        raise dbus.exceptions.DBusException(BLUEZ_MOCK_IFACE + '.NoSuchDevice',
-                                            'Device %s does not exist.' %
-                                            device_name)
+        raise dbus.exceptions.DBusException(
+            'Device %s does not exist.' % device_name,
+            name=BLUEZ_MOCK_IFACE + '.NoSuchDevice')
 
     device = mockobject.objects[device_path]
 

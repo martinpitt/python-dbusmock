@@ -21,7 +21,7 @@ MAIN_OBJ = '/'
 MAIN_IFACE = 'org.ofono.Manager'
 SYSTEM_BUS = True
 
-NOT_IMPLEMENTED = 'raise dbus.exceptions.DBusException("org.ofono.Error.NotImplemented")'
+NOT_IMPLEMENTED = 'raise dbus.exceptions.DBusException("not implemented", name="org.ofono.Error.NotImplemented")'
 
 
 #  interface org.ofono.Manager {

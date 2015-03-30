@@ -163,8 +163,8 @@ def DefaultAdapter(self):
     if default_adapter:
         return dbus.ObjectPath(default_adapter, variant_level=1)
     else:
-        raise dbus.exceptions.DBusException('org.bluez.Error.NoSuchAdapter',
-                                            'No such adapter.')
+        raise dbus.exceptions.DBusException(
+            'No such adapter.', name='org.bluez.Error.NoSuchAdapter')
 
 
 @dbus.service.method(MANAGER_IFACE,
@@ -190,9 +190,9 @@ def CreateDevice(self, device_address):
     path = adapter_path + '/' + device_name
 
     if path not in mockobject.objects:
-        raise dbus.exceptions.DBusException('org.bluez.Error.Failed',
-                                            'Could not create device for %s.' %
-                                            device_address)
+        raise dbus.exceptions.DBusException(
+            'Could not create device for %s.' % device_address,
+            name='org.bluez.Error.Failed')
 
     adapter = mockobject.objects[self.path]
     adapter.EmitSignal(ADAPTER_IFACE, 'DeviceCreated',
@@ -220,8 +220,8 @@ def AddDevice(self, adapter_device_name, device_address, alias):
     path = adapter_path + '/' + device_name
 
     if adapter_path not in mockobject.objects:
-        raise dbus.exceptions.DBusException('org.bluez.Error.NoSuchAdapter',
-                                            'No such adapter.')
+        raise dbus.exceptions.DBusException(
+            'No such adapter.', name='org.bluez.Error.NoSuchAdapter')
 
     properties = {
         'UUIDs': dbus.Array([], signature='s', variant_level=1),
@@ -293,8 +293,8 @@ def FindDevice(self, address):
                     == dbus.String(address, variant_level=1):
                 return obj
 
-    raise dbus.exceptions.DBusException('org.bluez.Error.NoSuchDevice',
-                                        'No such device.')
+    raise dbus.exceptions.DBusException('No such device.',
+                                        name='org.bluez.Error.NoSuchDevice')
 
 
 @dbus.service.method(ADAPTER_IFACE,
@@ -306,8 +306,8 @@ def CreatePairedDevice(self, device_address, agent, capability):
     device_path = DefaultAdapter(self) + '/' + device_name
 
     if device_path not in mockobject.objects:
-        raise dbus.exceptions.DBusException('org.bluez.Error.NoSuchDevice',
-                                            'No such device.')
+        raise dbus.exceptions.DBusException('No such device.',
+                                            name='org.bluez.Error.NoSuchDevice')
 
     device = mockobject.objects[device_path]
 
@@ -376,8 +376,8 @@ def Connect(self):
     device_path = self.path
 
     if device_path not in mockobject.objects:
-        raise dbus.exceptions.DBusException('org.bluez.Error.NoSuchDevice',
-                                            'No such device.')
+        raise dbus.exceptions.DBusException('No such device.',
+                                            name='org.bluez.Error.NoSuchDevice')
 
     device = mockobject.objects[device_path]
 
@@ -401,8 +401,8 @@ def Disconnect(self):
     device_path = self.path
 
     if device_path not in mockobject.objects:
-        raise dbus.exceptions.DBusException('org.bluez.Error.NoSuchDevice',
-                                            'No such device.')
+        raise dbus.exceptions.DBusException('No such device.',
+                                            name='org.bluez.Error.NoSuchDevice')
 
     device = mockobject.objects[device_path]
 

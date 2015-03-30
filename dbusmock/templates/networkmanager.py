@@ -208,8 +208,8 @@ def AddAccessPoint(self, dev_path, ap_name, ssid, hw_address,
     ap_path = '/org/freedesktop/NetworkManager/AccessPoint/' + ap_name
     if ap_path in dev_obj.access_points:
         raise dbus.exceptions.DBusException(
-            MAIN_IFACE + '.AlreadyExists',
-            'Access point %s on device %s already exists' % (ap_name, dev_path))
+            'Access point %s on device %s already exists' % (ap_name, dev_path),
+            name=MAIN_IFACE + '.AlreadyExists')
 
     self.AddObject(ap_path,
                    ACCESS_POINT_IFACE,
@@ -246,8 +246,8 @@ def AddWiFiConnection(self, dev_path, connection_name, ssid_name, key_mgmt):
 
     if connection_path in connections or connection_path in main_connections:
         raise dbus.exceptions.DBusException(
-            MAIN_IFACE + '.AlreadyExists',
-            'Connection %s on device %s already exists' % (connection_name, dev_path))
+            'Connection %s on device %s already exists' % (connection_name, dev_path),
+            name=MAIN_IFACE + '.AlreadyExists')
 
     settings = dbus.Dictionary({
         '802-11-wireless': {

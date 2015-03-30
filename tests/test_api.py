@@ -265,10 +265,13 @@ assert args[2] == 5
         self.assertEqual(self.dbus_props.GetAll('org.freedesktop.Test.Main'), {})
 
         # no such property
-        self.assertRaises(dbus.exceptions.DBusException,
-                          self.dbus_props.Get,
-                          'org.freedesktop.Test.Main',
-                          'version')
+        with self.assertRaises(dbus.exceptions.DBusException) as ctx:
+            self.dbus_props.Get('org.freedesktop.Test.Main', 'version')
+        self.assertEqual(ctx.exception.get_dbus_name(),
+                         'org.freedesktop.Test.Main.UnknownProperty')
+        self.assertEqual(ctx.exception.get_dbus_message(),
+                         'no such property version')
+
         self.assertRaises(dbus.exceptions.DBusException,
                           self.dbus_props.Set,
                           'org.freedesktop.Test.Main',
@@ -288,6 +291,13 @@ assert args[2] == 5
 
         self.assertEqual(self.dbus_props.GetAll('org.freedesktop.Test.Main'),
                          {'version': 2, 'connected': True})
+
+        with self.assertRaises(dbus.exceptions.DBusException) as ctx:
+            self.dbus_props.GetAll('org.freedesktop.Test.Bogus')
+        self.assertEqual(ctx.exception.get_dbus_name(),
+                         'org.freedesktop.Test.Main.UnknownInterface')
+        self.assertEqual(ctx.exception.get_dbus_message(),
+                         'no such interface org.freedesktop.Test.Bogus')
 
         # change property
         self.dbus_props.Set('org.freedesktop.Test.Main', 'version',

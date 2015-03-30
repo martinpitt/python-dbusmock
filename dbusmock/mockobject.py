@@ -142,8 +142,8 @@ class DBusMockObject(dbus.service.Object):
             return self.GetAll(interface_name)[property_name]
         except KeyError:
             raise dbus.exceptions.DBusException(
-                self.interface + '.UnknownProperty',
-                'no such property ' + property_name)
+                'no such property ' + property_name,
+                name=self.interface + '.UnknownProperty')
 
     @dbus.service.method(dbus.PROPERTIES_IFACE,
                          in_signature='s', out_signature='a{sv}')
@@ -158,8 +158,8 @@ class DBusMockObject(dbus.service.Object):
             return self.props[interface_name]
         except KeyError:
             raise dbus.exceptions.DBusException(
-                self.interface + '.UnknownInterface',
-                'no such interface ' + interface_name)
+                'no such interface ' + interface_name,
+                name=self.interface + '.UnknownInterface')
 
     @dbus.service.method(dbus.PROPERTIES_IFACE,
                          in_signature='ssv', out_signature='')
@@ -174,13 +174,13 @@ class DBusMockObject(dbus.service.Object):
             iface_props = self.props[interface_name]
         except KeyError:
             raise dbus.exceptions.DBusException(
-                self.interface + '.UnknownInterface',
-                'no such interface ' + interface_name)
+                'no such interface ' + interface_name,
+                name=self.interface + '.UnknownInterface')
 
         if property_name not in iface_props:
             raise dbus.exceptions.DBusException(
-                self.interface + '.UnknownProperty',
-                'no such property ' + property_name)
+                'no such property ' + property_name,
+                name=self.interface + '.UnknownProperty')
 
         iface_props[property_name] = value
 
@@ -218,8 +218,8 @@ class DBusMockObject(dbus.service.Object):
         '''
         if path in objects:
             raise dbus.exceptions.DBusException(
-                'org.freedesktop.DBus.Mock.NameError',
-                'object %s already exists' % path)
+                'object %s already exists' % path,
+                name='org.freedesktop.DBus.Mock.NameError')
 
         obj = DBusMockObject(self.bus_name,
                              path,
@@ -246,8 +246,8 @@ class DBusMockObject(dbus.service.Object):
             del objects[path]
         except KeyError:
             raise dbus.exceptions.DBusException(
-                'org.freedesktop.DBus.Mock.NameError',
-                'object %s does not exist' % path)
+                'object %s does not exist' % path,
+                name='org.freedesktop.DBus.Mock.NameError')
 
     @dbus.service.method(MOCK_IFACE,
                          in_signature='', out_signature='')
@@ -371,8 +371,8 @@ class DBusMockObject(dbus.service.Object):
         try:
             self.props[interface][name]
             raise dbus.exceptions.DBusException(
-                self.interface + '.PropertyExists',
-                'property %s already exists' % name)
+                'property %s already exists' % name,
+                name=self.interface + '.PropertyExists')
         except KeyError:
             # this is what we expect
             pass
@@ -424,7 +424,8 @@ class DBusMockObject(dbus.service.Object):
         try:
             module = load_module(template)
         except ImportError as e:
-            raise dbus.exceptions.DBusException('Cannot add template %s: %s' % (template, str(e)))
+            raise dbus.exceptions.DBusException('Cannot add template %s: %s' % (template, str(e)),
+                                                name='org.freedesktop.DBus.Mock.TemplateError')
 
         # If the template specifies this is an ObjectManager, set that up
         if hasattr(module, 'IS_OBJECT_MANAGER') and module.IS_OBJECT_MANAGER:

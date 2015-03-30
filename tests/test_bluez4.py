@@ -87,8 +87,7 @@ class TestBlueZ4(dbusmock.DBusTestCase):
         # Check for adapters.
         out, err = _run_test_command('bluez-test-adapter', 'list')
         expected = "dbus.exceptions.DBusException: " \
-            + "org.freedesktop.DBus.Python.dbus.exceptions.DBusException: " \
-            + "('org.bluez.Error.NoSuchAdapter', 'No such adapter.')"
+            + "org.bluez.Error.NoSuchAdapter: No such adapter."
         self.assertIn(expected, err)
 
     def test_one_adapter(self):
