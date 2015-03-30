@@ -9,6 +9,8 @@
  - Emit PropertiesChanged signal when Set()ing properties.
  - urfkill template: Return boolean from Block() and FlightMode() methods
  - ofono template: Add ConnectionManager interface.
+ - NetworkManager template: Much more complete support for mocking access
+   points and connections.
 
 0.13 (2015-02-27)
 -----------------
