@@ -25,6 +25,8 @@ from dbusmock.templates.networkmanager import InfrastructureMode
 from dbusmock.templates.networkmanager import NMActiveConnectionState
 from dbusmock.templates.networkmanager import NMState
 from dbusmock.templates.networkmanager import NMConnectivityState
+from dbusmock.templates.networkmanager import (CSETTINGS_IFACE, MAIN_IFACE,
+                                               SETTINGS_OBJ, SETTINGS_IFACE)
 
 
 p = subprocess.Popen(['which', 'nmcli'], stdout=subprocess.PIPE)
@@ -60,6 +62,9 @@ class TestNetworkManager(dbusmock.DBusTestCase):
             stdout=subprocess.PIPE)
         self.dbusmock = dbus.Interface(self.obj_networkmanager,
                                        dbusmock.MOCK_IFACE)
+        self.settings = dbus.Interface(
+            self.dbus_con.get_object(MAIN_IFACE, SETTINGS_OBJ),
+            SETTINGS_IFACE)
 
     def tearDown(self):
         self.p_mock.terminate()
@@ -254,6 +259,88 @@ class TestNetworkManager(dbusmock.DBusTestCase):
 
         self.dbusmock.RemoveAccessPoint(wifi1, ap1)
         self.assertFalse(re.compile('The_SSID').search(self.read_device_wifi()))
+
+    def test_add_connection(self):
+        self.dbusmock.AddWiFiDevice('mock_WiFi1', 'wlan0', DeviceState.ACTIVATED)
+        uuid = '11111111-1111-1111-1111-111111111111'
+        settings = dbus.Dictionary({
+            'connection': dbus.Dictionary({
+                'id': 'test connection',
+                'uuid': uuid,
+                'type': '802-11-wireless'}, signature='sv'),
+            '802-11-wireless': dbus.Dictionary({
+                'ssid': dbus.ByteArray('The_SSID'.encode('UTF-8'))}, signature='sv')
+        }, signature='sa{sv}')
+        con1 = self.settings.AddConnection(settings)
+
+        self.assertEqual(con1, '/org/freedesktop/NetworkManager/Settings/0')
+        self.assertRegex(self.read_connection(),
+                         '%s.*\s802-11-wireless' % uuid)
+
+        # Use the same settings, but this one will autoconnect.
+        uuid2 = '22222222-2222-2222-2222-222222222222'
+        settings['connection']['autoconnect'] = dbus.Boolean(
+            True, variant_level=1)
+        settings['connection']['uuid'] = uuid2
+
+        con2 = self.settings.AddConnection(settings)
+        self.assertEqual(con2, '/org/freedesktop/NetworkManager/Settings/1')
+
+        self.assertRegex(self.read_general(), 'connected.*\sfull')
+        self.assertRegex(self.read_connection(),
+                         '%s.*\s802-11-wireless' % uuid2)
+        self.assertRegex(self.read_active_connection(),
+                         '%s.*\s802-11-wireless' % uuid2)
+
+    def test_update_connection(self):
+        uuid = '133d8eb9-6de6-444f-8b37-f40bf9e33226'
+        settings = dbus.Dictionary({
+            'connection': dbus.Dictionary({
+                'id': 'test wireless',
+                'uuid': uuid,
+                'type': '802-11-wireless'}, signature='sv'),
+            '802-11-wireless': dbus.Dictionary({
+                'ssid': dbus.ByteArray('The_SSID'.encode('UTF-8'))}, signature='sv')
+        }, signature='sa{sv}')
+
+        con1 = self.settings.AddConnection(settings)
+        con1_iface = dbus.Interface(
+            self.dbus_con.get_object(MAIN_IFACE, con1),
+            CSETTINGS_IFACE)
+
+        self.assertEqual(con1, '/org/freedesktop/NetworkManager/Settings/0')
+        self.assertRegex(self.read_connection(), '%s.*\s802-11-wireless' % uuid)
+
+        new_settings = dbus.Dictionary({
+            'connection': dbus.Dictionary({
+                'id': 'test wired',
+                'type': '802-3-ethernet'}, signature='sv'),
+            '802-3-ethernet': dbus.Dictionary({
+                'name': '802-3-ethernet'
+            }, signature='sv')}, signature='sa{sv}')
+
+        con1_iface.Update(new_settings)
+        self.assertRegex(self.read_connection(), '%s.*\s802-3-ethernet' % uuid)
+
+    def test_remove_connection(self):
+        wifi1 = self.dbusmock.AddWiFiDevice('mock_WiFi1', 'wlan0',
+                                            DeviceState.ACTIVATED)
+        ap1 = self.dbusmock.AddAccessPoint(
+            wifi1, 'Mock_AP1', 'The_SSID', '00:23:F8:7E:12:BB',
+            InfrastructureMode.NM_802_11_MODE_INFRA, 2425, 5400, 82,
+            NM80211ApSecurityFlags.NM_802_11_AP_SEC_KEY_MGMT_PSK)
+        con1 = self.dbusmock.AddWiFiConnection(wifi1, 'Mock_Con1', 'The_SSID', '')
+        self.dbusmock.AddActiveConnection(
+            [wifi1], con1, ap1, 'Mock_Active1',
+            NMActiveConnectionState.NM_ACTIVE_CONNECTION_STATE_ACTIVATED)
+
+        con1_i = dbus.Interface(
+            self.dbus_con.get_object(MAIN_IFACE, con1), CSETTINGS_IFACE)
+        con1_i.Delete()
+
+        self.assertRegex(self.read_general(), 'disconnected.*\sfull')
+        self.assertFalse(re.compile('The_SSID.*\s802-11-wireless').search(self.read_active_connection()))
+        self.assertRegex(self.read_device(), 'wlan0.*\sdisconnected')
 
 
 if __name__ == '__main__':

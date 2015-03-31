@@ -1,6 +1,12 @@
-0.14.1 (UNRELEASED)
+0.15 (UNRELEASED)
 -------------------
  - NetworkManager template: Restore nm-specific PropertiesChanged signal
+ - NetworkManager template: Add DeactivateConnection(),
+   Settings.AddConnection(), Settings.Connection.Update(), and
+   Settings.Connection.Delete() methods. Also allow Connections with
+   autoconnect, added using AddConnection, to be automatically connected by the
+   first found device, roughly like NetworkManager itself does. Thanks Jonas
+   Grønås Drange!
 
 0.14 (2015-03-30)
 -----------------
