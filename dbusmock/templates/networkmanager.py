@@ -454,8 +454,8 @@ def AddWiFiConnection(self, dev_path, connection_name, ssid_name, key_mgmt):
 
     if not access_point:
         raise dbus.exceptions.DBusException(
-            MAIN_IFACE + '.DoesNotExist',
-            'Access point with SSID [%s] could not be found' % (ssid_name))
+            'Access point with SSID [%s] could not be found' % (ssid_name),
+            name=MAIN_IFACE + '.DoesNotExist')
 
     hw_address = access_point.Get(ACCESS_POINT_IFACE, 'HwAddress')
     mode = access_point.Get(ACCESS_POINT_IFACE, 'Mode')
