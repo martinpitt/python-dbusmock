@@ -218,6 +218,7 @@ def load(mock, parameters):
 def SetProperty(self, path, iface, name, value):
     obj = dbusmock.get_object(path)
     obj.Set(iface, name, value)
+    obj.EmitSignal(iface, 'PropertiesChanged', 'a{sv}', [{name: value}])
 
 
 @dbus.service.method(MOCK_IFACE,
