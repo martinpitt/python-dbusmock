@@ -270,7 +270,7 @@ class TestNetworkManager(dbusmock.DBusTestCase):
                 'uuid': uuid,
                 'type': '802-11-wireless',}, signature='sv'),
             '802-11-wireless': dbus.Dictionary({
-                'ssid': dbus.ByteArray('The_SSID'),}, signature='sv')
+                'ssid': dbus.ByteArray('The_SSID'.encode('UTF-8')),}, signature='sv')
             }, signature='sa{sv}')
         con1 = self.settings.AddConnection(settings)
 
@@ -301,7 +301,7 @@ class TestNetworkManager(dbusmock.DBusTestCase):
                 'uuid': uuid,
                 'type': '802-11-wireless',}, signature='sv'),
             '802-11-wireless': dbus.Dictionary({
-                'ssid': dbus.ByteArray('The_SSID'),}, signature='sv')
+                'ssid': dbus.ByteArray('The_SSID'.encode('UTF-8')),}, signature='sv')
             }, signature='sa{sv}')
 
         con1 = self.settings.AddConnection(settings)
