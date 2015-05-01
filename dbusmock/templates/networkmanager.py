@@ -393,7 +393,7 @@ def AddAccessPoint(self, dev_path, ap_name, ssid, hw_address,
                     'Frequency': dbus.UInt32(frequency),
                     'MaxBitrate': dbus.UInt32(rate),
                     'Mode': dbus.UInt32(mode),
-                    'RsnFlags': dbus.UInt32(324),
+                    'RsnFlags': dbus.UInt32(security),
                     'WpaFlags': dbus.UInt32(security),
                     'Strength': dbus.Byte(strength)},
                    [])
