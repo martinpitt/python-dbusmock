@@ -8,6 +8,8 @@
    first found device, roughly like NetworkManager itself does. Thanks Jonas
    Grønås Drange!
  - NetworkManager template: Fix broken exception in AddWiFiConnection.
+ - NetworkManager template: Set RsnFlags to have the same value as WpaFlags.
+   Thanks Pete Woods!
 
 0.14 (2015-03-30)
 -----------------
