@@ -1,4 +1,4 @@
-0.15 (UNRELEASED)
+0.15 (2015-05-08)
 -------------------
  - NetworkManager template: Restore nm-specific PropertiesChanged signal
  - NetworkManager template: Add DeactivateConnection(),
