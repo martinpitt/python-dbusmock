@@ -17,6 +17,7 @@ import time
 import sys
 import types
 import importlib
+import imp
 from xml.etree import ElementTree
 
 # we do not use this ourselves, but mock methods often want to use this
@@ -40,14 +41,10 @@ if sys.version_info[0] >= 3:
 
 def load_module(name):
     if os.path.exists(name) and os.path.splitext(name)[1] == '.py':
-        sys.path.insert(0, os.path.dirname(os.path.abspath(name)))
-        try:
-            m = os.path.splitext(os.path.basename(name))[0]
-            module = importlib.import_module(m)
-        finally:
-            sys.path.pop(0)
-
-        return module
+        mod = imp.new_module(os.path.splitext(os.path.basename(name))[0])
+        with open(name) as f:
+            exec(f.read(), mod.__dict__, mod.__dict__)
+        return mod
 
     return importlib.import_module('dbusmock.templates.' + name)
 

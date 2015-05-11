@@ -592,6 +592,16 @@ def load(mock, parameters):
             self.addCleanup(p_mock.terminate)
             self.addCleanup(p_mock.stdout.close)
 
+            # ensure that we don't use/write any .pyc files, they are dangerous
+            # in a world-writable directory like /tmp
+            self.assertFalse(os.path.exists(my_template.name + 'c'))
+            try:
+                from importlib.util import cache_from_source
+                self.assertFalse(os.path.exists(cache_from_source(my_template.name)))
+            except ImportError:
+                # python < 3.4
+                pass
+
         self.assertEqual(dbus_ultimate.Answer(), 42)
 
         # should appear in introspection
