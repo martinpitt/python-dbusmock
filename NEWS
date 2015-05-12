@@ -1,4 +1,4 @@
-0.15.1 (UNRELEASED)
+0.15.1 (2015-05-12)
 -------------------
  - SECURITY FIX: When loading a template from an arbitrary file through the
    AddTemplate() D-Bus method call or DBusTestCase.spawn_server_template()
