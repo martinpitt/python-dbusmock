@@ -50,9 +50,9 @@ class TestOfono(dbusmock.DBusTestCase):
         self.assertIn(b'[ org.ofono.NetworkRegistration ]', out)
         self.assertIn(b'Status = registered', out)
         self.assertIn(b'Name = fake.tel', out)
-        self.assertIn(b'LocationAreaCode = 987', out)
-        self.assertIn(b'CellId = 10203', out)
+        self.assertIn(b'Technology = gsm', out)
         self.assertIn(b'[ org.ofono.SimManager ]', out)
+        self.assertIn(b'PinRequired = none', out)
         self.assertIn(b'Present = 1', out)
 
     def test_outgoing_call(self):
