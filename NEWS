@@ -2,6 +2,8 @@
 -------------------
  - test_ofono: Test fields which don't get obfuscated with Ubuntu's latest
    ofono (See LP #1459983). Thanks Iain Lane.
+ - timedated template: Add NTPSynchronized property and set it in SetNTP(), to
+   also work with systemd 220.
 
 0.15.1 (2015-05-12)
 -------------------

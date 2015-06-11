@@ -34,7 +34,7 @@ def load(mock, parameters):
         ('SetTime', 'xbb', '', ''),
         ('SetTimezone', 'sb', '', setProperty('Timezone')),
         ('SetLocalRTC', 'bbb', '', setProperty('LocalRTC')),
-        ('SetNTP', 'bb', '', setProperty('NTP'))
+        ('SetNTP', 'bb', '', setProperty('NTP') + '; ' + setProperty('NTPSynchronized'))
     ])
 
     mock.AddProperties(MAIN_IFACE,
@@ -42,5 +42,6 @@ def load(mock, parameters):
                            'Timezone': parameters.get('Timezone', 'Etc/Utc'),
                            'LocalRTC': parameters.get('LocalRTC', False),
                            'NTP': parameters.get('NTP', True),
+                           'NTPSynchronized': parameters.get('NTP', True),
                            'CanNTP': parameters.get('CanNTP', True)
                        }, signature='sv'))
