@@ -1,4 +1,4 @@
-0.15.2 (UNRELEASED)
+0.15.2 (2015-06-11)
 -------------------
  - test_ofono: Test fields which don't get obfuscated with Ubuntu's latest
    ofono (See LP #1459983). Thanks Iain Lane.
