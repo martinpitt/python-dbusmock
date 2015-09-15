@@ -294,7 +294,11 @@ def AddEthernetDevice(self, device_name, iface_name, state):
     props = {'DeviceType': dbus.UInt32(1),
              'State': dbus.UInt32(state),
              'Interface': iface_name,
+             'ActiveConnection': dbus.ObjectPath('/'),
              'AvailableConnections': dbus.Array([], signature='o'),
+             'AutoConnect': False,
+             'Managed': True,
+             'Driver': 'dbusmock',
              'IpInterface': ''}
 
     obj = dbusmock.get_object(path)
@@ -531,6 +535,7 @@ def AddActiveConnection(self, devices, connection_device, specific_object, name,
     conn_obj = dbusmock.get_object(connection_device)
     settings = conn_obj.Get(CSETTINGS_IFACE, 'Settings')
     conn_uuid = settings['connection']['uuid']
+    conn_type = settings['connection']['type']
 
     device_objects = [dbus.ObjectPath(dev) for dev in devices]
 
@@ -541,7 +546,8 @@ def AddActiveConnection(self, devices, connection_device, specific_object, name,
                        'Devices': device_objects,
                        'Default6': False,
                        'Default': True,
-                       'Vpn': False,
+                       'Type': conn_type,
+                       'Vpn': (conn_type == 'vpn'),
                        'Connection': dbus.ObjectPath(connection_device),
                        'Master': dbus.ObjectPath('/'),
                        'SpecificObject': dbus.ObjectPath(specific_object),
