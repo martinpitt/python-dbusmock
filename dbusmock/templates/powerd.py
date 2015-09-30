@@ -38,6 +38,7 @@ import threading
 import uuid
 
 from dbusmock import MOCK_IFACE
+from syslog import syslog
 
 
 __author__ = 'Jonas G. Drange'
@@ -59,7 +60,15 @@ class SysPowerStates:
     POWERD_SYS_STATE_SUSPEND = 0,
     POWERD_SYS_STATE_ACTIVE = 1
     POWERD_SYS_STATE_ACTIVE_BLANK_ON_PROXIMITY = 2
-    POWERD_NUM_POWER_STATES = 3
+
+    @staticmethod
+    def state_to_string(state):
+        if state == SysPowerStates.POWERD_SYS_STATE_SUSPEND:
+            return 'POWERD_SYS_STATE_SUSPEND'
+        elif state == SysPowerStates.POWERD_SYS_STATE_ACTIVE:
+            return 'POWERD_SYS_STATE_ACTIVE'
+        else:
+            return 'POWERD_SYS_STATE_ACTIVE_BLANK_ON_PROXIMITY'
 
 
 def load(mock, parameters):
@@ -72,41 +81,57 @@ def load(mock, parameters):
             'brightness': _parameters.get('brightness', -1),
         }, signature='sv'))
 
+    mock._state = SysPowerStates.POWERD_SYS_STATE_ACTIVE
     mock._state_requests = {}
     mock._wakeup_requests = {}
 
 
-def wakeup(cookie, time):
-    from syslog import syslog
-    syslog("powerd: %s requesting wakeup at %d, now is %d." % (
-        cookie, time, int(timelib.time()))
+def wakeup(name, cookie, time):
+    syslog("mock powerd: %s (%s) requesting wakeup at %d, now is %d." % (
+        name, cookie, time, int(timelib.time()))
     )
-    while int(timelib.time()) < time:
-        syslog("powerd: %s not ready." % cookie)
-        timelib.sleep(1)
-    syslog("powerd: %s cleared, calling Wakeup." % cookie)
     obj = dbusmock.get_object(MAIN_OBJ)
     obj.EmitSignal(MAIN_IFACE, 'Wakeup', '', [])
 
 
 @dbus.service.method(MAIN_IFACE, in_signature='si', out_signature='s')
 def requestSysState(self, name, state):
-    cookie = str(uuid.uuid4())
+    cookie = str(uuid.uuid4()).split('-')[0]
     self._state_requests[cookie] = (name, state)
+    self._state = state
+    syslog("mock powerd: %s (%s) setting sysState to %s." % (
+        name, cookie, SysPowerStates.state_to_string(state)
+    ))
+    self.EmitSignal(MAIN_IFACE, 'SysPowerStateChange', 'i', [state])
     return cookie
 
 
 @dbus.service.method(MAIN_IFACE, in_signature='s', out_signature='')
 def clearSysState(self, cookie):
+    syslog("mock powerd: %s (%s) cleared %s." % (
+        self._state_requests[cookie][0],
+        cookie,
+        SysPowerStates.state_to_string(self._state_requests[cookie][1])
+    ))
     del self._state_requests[cookie]
 
 
 @dbus.service.method(MAIN_IFACE, in_signature='st', out_signature='s')
 def requestWakeup(self, name, time):
-    cookie = str(uuid.uuid4())
+    cookie = str(uuid.uuid4()).split('-')[0]
+    syslog("mock powerd: %s (%s) requested wakeup at %d." % (
+        name, cookie, time
+    ))
     self._wakeup_requests[cookie] = (name, time)
-    thr = threading.Thread(target=wakeup, args=(cookie, time), kwargs={})
-    thr.start()
+    t = threading.Timer(
+        time - int(timelib.time()), wakeup, args=(name, cookie, time)
+    )
+    try:
+        t.start()
+    except (KeyboardInterrupt, SystemExit):
+        print("Cancelling foo")
+        t.cancel()
+
     return cookie
 
 
