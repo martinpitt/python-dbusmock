@@ -149,9 +149,22 @@ class NM80211ApFlags:
     NM_802_11_AP_FLAGS_PRIVACY = 0x00000001
 
 
+def new_active_connection_name():
+    nm = dbusmock.get_object(MAIN_OBJ)
+    active_connections = nm.Get(MAIN_IFACE, 'ActiveConnections')
+
+    count = 0
+    path = dbus.ObjectPath('/org/freedesktop/NetworkManager/ActiveConnection/' + str(count))
+
+    while path in active_connections:
+        count += 1
+        path = dbus.ObjectPath('/org/freedesktop/NetworkManager/ActiveConnection/' + str(count))
+
+    return str(count)
+
+
 def activate_connection(self, conn, dev, ap):
-    name = ap.rsplit('/', 1)[1]
-    RemoveActiveConnection(self, dev, '/org/freedesktop/NetworkManager/ActiveConnection/' + name)
+    name = new_active_connection_name()
 
     state = dbus.UInt32(NMActiveConnectionState.NM_ACTIVE_CONNECTION_STATE_ACTIVATED)
     active_conn = dbus.ObjectPath(AddActiveConnection(self, [dev], conn, ap, name, state))
