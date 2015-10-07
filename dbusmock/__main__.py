@@ -19,6 +19,9 @@ import dbus.service
 import dbusmock.mockobject
 import dbusmock.testcase
 
+import json
+import sys
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description='mock D-BUS object')
@@ -36,6 +39,8 @@ def parse_args():
                         help='main D-BUS interface name for initial object (if not using -t)')
     parser.add_argument('-m', '--is-object-manager', action='store_true',
                         help='automatically implement the org.freedesktop.DBus.ObjectManager interface')
+    parser.add_argument('-p', '--parameters',
+                        help='JSON dictionary of parameters to pass to the template')
 
     args = parser.parse_args()
 
@@ -91,8 +96,20 @@ if __name__ == '__main__':
                                                      args.logfile,
                                                      args.is_object_manager)
 
+    parameters = None
+    if args.parameters:
+        try:
+            parameters = json.loads(args.parameters)
+        except ValueError as detail:
+            sys.stderr.write('Malformed JSON given for parameters: %s\n' % detail)
+            sys.exit(2)
+
+        if not isinstance(parameters, dict):
+            sys.stderr.write('JSON parameters must be a dictionary\n')
+            sys.exit(2)
+
     if args.template:
-        main_object.AddTemplate(args.template, None)
+        main_object.AddTemplate(args.template, parameters)
 
     dbusmock.mockobject.objects[args.path] = main_object
     main_loop.run()

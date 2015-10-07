@@ -1,8 +1,10 @@
-0.15.4 (UNRELEASED)
--------------------
+0.16 (UNRELEASED)
+-----------------
  - NetworkManager template: Generate a new unused name in connection activation
    instead of just using the access point name. Thanks Pete Woods for the
    original patch!
+ - Allow the passing of template parameters via the command-line as JSON
+   strings. Thanks Pete Woods.
 
 0.15.3 (2015-09-16)
 -------------------
