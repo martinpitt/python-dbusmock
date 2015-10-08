@@ -94,7 +94,8 @@ def AddModem(self, name, properties):
                    [
                        ('GetProperties', '', 'a{sv}', 'ret = self.GetAll("org.ofono.Modem")'),
                        ('SetProperty', 'sv', '', 'self.Set("org.ofono.Modem", args[0], args[1]); '
-                                                 'self.EmitSignal("org.ofono.Modem", "PropertyChanged", "sv", [args[0], args[1]])'),
+                                                 'self.EmitSignal("org.ofono.Modem", "PropertyChanged",'
+                                                 ' "sv", [args[0], args[1]])'),
                    ]
                   )
     obj = dbusmock.mockobject.objects[path]

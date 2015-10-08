@@ -97,7 +97,8 @@ def AddAdapter(self, device_name, system_name):
                    [
                        ('GetProperties', '', 'a{sv}', 'ret = self.GetAll("org.bluez.Adapter")'),
                        ('SetProperty', 'sv', '', 'self.Set("org.bluez.Adapter", args[0], args[1]); '
-                                                 'self.EmitSignal("org.bluez.Adapter", "PropertyChanged", "sv", [args[0], args[1]])'),
+                                                 'self.EmitSignal("org.bluez.Adapter", "PropertyChanged",'
+                                                 ' "sv", [args[0], args[1]])'),
                    ])
 
     manager = mockobject.objects['/']
@@ -247,7 +248,8 @@ def AddDevice(self, adapter_device_name, device_address, alias):
                    [
                        ('GetProperties', '', 'a{sv}', 'ret = self.GetAll("org.bluez.Device")'),
                        ('SetProperty', 'sv', '', 'self.Set("org.bluez.Device", args[0], args[1]); '
-                                                 'self.EmitSignal("org.bluez.Device", "PropertyChanged", "sv", [args[0], args[1]])'),
+                                                 'self.EmitSignal("org.bluez.Device", "PropertyChanged",'
+                                                 ' "sv", [args[0], args[1]])'),
                    ])
 
     manager = mockobject.objects['/']

@@ -196,7 +196,8 @@ def load(mock, parameters):
         ('CheckConnectivity', '', 'u', "ret = self.Get('%s', 'Connectivity')" % MAIN_IFACE),
         ('ActivateConnection', 'ooo', 'o', "ret = self.activate_connection(self, args[0], args[1], args[2])"),
         ('DeactivateConnection', 'o', '', "self.deactivate_connection(self, args[0])"),
-        ('AddAndActivateConnection', 'a{sa{sv}}oo', 'oo', "ret = self.add_and_activate_connection(self, args[0], args[1], args[2])"),
+        ('AddAndActivateConnection', 'a{sa{sv}}oo', 'oo', "ret = self.add_and_activate_connection("
+                                     "self, args[0], args[1], args[2])"),
     ])
 
     mock.AddProperties('',
