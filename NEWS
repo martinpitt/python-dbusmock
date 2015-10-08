@@ -1,4 +1,4 @@
-0.16 (UNRELEASED)
+0.16 (2015-10-08)
 -----------------
  - NetworkManager template: Generate a new unused name in connection activation
    instead of just using the access point name. Thanks Pete Woods for the
