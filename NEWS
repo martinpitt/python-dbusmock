@@ -1,3 +1,8 @@
+0.16.1 (UNRELEASED)
+-------------------
+ - NetworkManager template: Fix indexing bug in SettingsAddConnection. Thanks
+   Pete Woods.
+
 0.16 (2015-10-08)
 -----------------
  - NetworkManager template: Generate a new unused name in connection activation
