@@ -674,14 +674,13 @@ def SettingsAddConnection(self, connection_settings):
     main_connections = settings_obj.ListConnections()
 
     # Mimic how NM names connections
-    connection_name = str(len(main_connections))
-
-    connection_path = SETTINGS_OBJ + '/' + connection_name
-
-    if connection_path in main_connections:
-        raise dbus.exceptions.DBusException(
-            'Connection %s already exists' % connection_path,
-            name=MAIN_IFACE + '.AlreadyExists',)
+    count = 0
+    while True:
+        connection_obj_path = dbus.ObjectPath(SETTINGS_OBJ + '/' + str(count))
+        if connection_obj_path not in main_connections:
+            break
+        count += 1
+    connection_path = str(connection_obj_path)
 
     self.AddObject(connection_path,
                    CSETTINGS_IFACE,

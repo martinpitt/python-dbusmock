@@ -342,6 +342,53 @@ class TestNetworkManager(dbusmock.DBusTestCase):
         self.assertFalse(re.compile('The_SSID.*\s802-11-wireless').search(self.read_active_connection()))
         self.assertRegex(self.read_device(), 'wlan0.*\sdisconnected')
 
+    def test_add_remove_settings(self):
+        connection = {
+            'connection': {
+                'timestamp': 1441979296,
+                'type': 'vpn',
+                'id': 'a',
+                'uuid': '11111111-1111-1111-1111-111111111111'
+            },
+            'vpn': {
+                'service-type': 'org.freedesktop.NetworkManager.openvpn',
+                'data': {
+                    'connection-type': 'tls'
+                }
+            },
+            'ipv4': {
+                'routes': dbus.Array([], signature='o'),
+                'never-default': True,
+                'addresses': dbus.Array([], signature='o'),
+                'dns': dbus.Array([], signature='o'),
+                'method': 'auto'
+            },
+            'ipv6': {
+                'addresses': dbus.Array([], signature='o'),
+                'ip6-privacy': 0,
+                'dns': dbus.Array([], signature='o'),
+                'never-default': True,
+                'routes': dbus.Array([], signature='o'),
+                'method': 'auto'
+            }
+        }
+
+        connectionA = self.settings.AddConnection(connection)
+        connection['connection']['id'] = 'b'
+        connection['connection']['uuid'] = '11111111-1111-1111-1111-111111111112'
+        connectionB = self.settings.AddConnection(connection)
+        self.assertEqual(self.settings.ListConnections(), [connectionA, connectionB])
+
+        connectionA_i = dbus.Interface(
+            self.dbus_con.get_object(MAIN_IFACE, connectionA), CSETTINGS_IFACE)
+        connectionA_i.Delete()
+        self.assertEqual(self.settings.ListConnections(), [connectionB])
+
+        connection['connection']['id'] = 'c'
+        connection['connection']['uuid'] = '11111111-1111-1111-1111-111111111113'
+        connectionC = self.settings.AddConnection(connection)
+        self.assertEqual(self.settings.ListConnections(), [connectionB, connectionC])
+
 
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(stream=sys.stdout, verbosity=2))
