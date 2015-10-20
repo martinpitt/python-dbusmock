@@ -757,8 +757,8 @@ def ConnectionUpdate(self, connection_path, settings):
 
     conn_obj.Set(CSETTINGS_IFACE, 'Settings', conn_settings)
 
-    settings_obj.EmitSignal(CSETTINGS_IFACE, 'PropertiesChanged', 'a{sv}', [changed_settings])
-    settings_obj.EmitSignal(CSETTINGS_IFACE, 'Updated', '', [])
+    conn_obj.EmitSignal(CSETTINGS_IFACE, 'PropertiesChanged', 'a{sv}', [changed_settings])
+    conn_obj.EmitSignal(CSETTINGS_IFACE, 'Updated', '', [])
 
     auto_connect = False
     if 'autoconnect' in settings['connection']:
