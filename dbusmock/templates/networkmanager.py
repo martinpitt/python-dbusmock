@@ -160,7 +160,10 @@ def activate_connection(self, conn, dev, ap):
         count += 1
 
     state = dbus.UInt32(NMActiveConnectionState.NM_ACTIVE_CONNECTION_STATE_ACTIVATED)
-    active_conn = dbus.ObjectPath(AddActiveConnection(self, [dev], conn, ap, str(count), state))
+    devices = []
+    if str(dev) != '/':
+        devices.append(dev)
+    active_conn = dbus.ObjectPath(AddActiveConnection(self, devices, conn, ap, str(count), state))
 
     return active_conn
 

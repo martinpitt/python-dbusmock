@@ -2,6 +2,7 @@
 -------------------
  - NetworkManager template: Fix connection settings Updated signal emitted by
    wrong object.
+ - NetworkManager template: Handle empty device at connection activation.
 
 0.16.1 (2015-10-22)
 -------------------
