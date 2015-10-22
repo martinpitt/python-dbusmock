@@ -1,4 +1,4 @@
-0.16.1 (UNRELEASED)
+0.16.1 (2015-10-22)
 -------------------
  - NetworkManager template: Fix indexing bug in SettingsAddConnection. Thanks
    Pete Woods.
