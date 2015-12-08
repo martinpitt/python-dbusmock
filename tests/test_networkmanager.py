@@ -401,9 +401,9 @@ class TestNetworkManager(dbusmock.DBusTestCase):
             },
             'vpn': {
                 'service-type': 'org.freedesktop.NetworkManager.openvpn',
-                'data': {
+                'data': dbus.Dictionary({
                     'connection-type': 'tls'
-                }
+                }, signature='ss')
             },
             'ipv4': {
                 'routes': dbus.Array([], signature='o'),
@@ -454,6 +454,61 @@ class TestNetworkManager(dbusmock.DBusTestCase):
         self.assertEqual(connectionA_i.GetSettings(), connection)
         self.assertEqual(caught, [connectionA])
 
+    def test_settings_secrets(self):
+        secrets = dbus.Dictionary({
+            'cert-pass': 'certificate password',
+            'password': 'the password',
+        }, signature='ss')
+
+        connection = {
+            'connection': {
+                'timestamp': 1441979296,
+                'type': 'vpn',
+                'id': 'a',
+                'uuid': '11111111-1111-1111-1111-111111111111'
+            },
+            'vpn': {
+                'service-type': 'org.freedesktop.NetworkManager.openvpn',
+                'data': dbus.Dictionary({
+                    'connection-type': 'password-tls',
+                    'remote': 'remotey',
+                    'ca': '/my/ca.crt',
+                    'cert': '/my/cert.crt',
+                    'cert-pass-flags': '1',
+                    'key': '/my/key.key',
+                    'password-flags': "1",
+                }, signature='ss'),
+                'secrets': secrets
+            },
+            'ipv4': {
+                'routes': dbus.Array([], signature='o'),
+                'never-default': True,
+                'addresses': dbus.Array([], signature='o'),
+                'dns': dbus.Array([], signature='o'),
+                'method': 'auto'
+            },
+            'ipv6': {
+                'addresses': dbus.Array([], signature='o'),
+                'ip6-privacy': 0,
+                'dns': dbus.Array([], signature='o'),
+                'never-default': True,
+                'routes': dbus.Array([], signature='o'),
+                'method': 'auto'
+            }
+        }
+
+        connectionPath = self.settings.AddConnection(connection)
+        self.assertEqual(self.settings.ListConnections(), [connectionPath])
+
+        connection_i = dbus.Interface(
+            self.dbus_con.get_object(MAIN_IFACE, connectionPath), CSETTINGS_IFACE)
+
+        # We expect there to be no secrets in the normal settings dict
+        del connection['vpn']['secrets']
+        self.assertEqual(connection_i.GetSettings(), connection)
+
+        # Secrets request should contain just vpn section with the secrets in
+        self.assertEqual(connection_i.GetSecrets('vpn'), {'vpn': {'secrets': secrets}})
 
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(stream=sys.stdout, verbosity=2))
