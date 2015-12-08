@@ -505,17 +505,22 @@ def AddWiFiConnection(self, dev_path, connection_name, ssid_name, key_mgmt):
     self.AddObject(connection_path,
                    CSETTINGS_IFACE,
                    {
-                       'Settings': dbus.Dictionary(settings, signature='sa{sv}'),
-                       'Secrets': dbus.Dictionary({}, signature='sa{sv}'),
+                       'Unsaved': False
                    },
                    [
-                       ('Delete', '', '', 'self.ConnectionDelete("%s")' % connection_path),
-                       ('GetSettings', '', 'a{sa{sv}}', "ret = self.Get('%s', 'Settings')" % CSETTINGS_IFACE),
-                       ('GetSecrets', 's', 'a{sa{sv}}', "ret = self.Get('%s', 'Secrets')" % CSETTINGS_IFACE),
-                       (
-                           'Update', 'a{sa{sv}}', '',
-                           'self.ConnectionUpdate("%s", args[0])' % connection_path),
+                       ('Delete', '', '', 'self.ConnectionDelete(self)'),
+                       ('GetSettings', '', 'a{sa{sv}}', 'ret = self.ConnectionGetSettings(self)'),
+                       ('GetSecrets', 's', 'a{sa{sv}}', 'ret = self.ConnectionGetSecrets(self, args[0])'),
+                       ('Update', 'a{sa{sv}}', '', 'self.ConnectionUpdate(self, args[0])'),
                    ])
+
+    connection_obj = dbusmock.get_object(connection_path)
+    connection_obj.settings = settings
+    connection_obj.connection_path = connection_path
+    connection_obj.ConnectionDelete = ConnectionDelete
+    connection_obj.ConnectionGetSettings = ConnectionGetSettings
+    connection_obj.ConnectionGetSecrets = ConnectionGetSecrets
+    connection_obj.ConnectionUpdate = ConnectionUpdate
 
     connections.append(dbus.ObjectPath(connection_path))
     dev_obj.Set(DEVICE_IFACE, 'AvailableConnections', connections)
@@ -543,7 +548,7 @@ def AddActiveConnection(self, devices, connection_device, specific_object, name,
     '''
 
     conn_obj = dbusmock.get_object(connection_device)
-    settings = conn_obj.Get(CSETTINGS_IFACE, 'Settings')
+    settings = conn_obj.settings
     conn_uuid = settings['connection']['uuid']
     conn_type = settings['connection']['type']
 
@@ -688,21 +693,22 @@ def SettingsAddConnection(self, connection_settings):
     self.AddObject(connection_path,
                    CSETTINGS_IFACE,
                    {
-                       'Settings': dbus.Dictionary(connection_settings, signature='sa{sv}'),
-                       'Secrets': dbus.Dictionary({}, signature='sa{sv}'),
+                       'Unsaved': False
                    },
                    [
-                       ('Delete', '', '', 'self.ConnectionDelete("%s")' % connection_path),
-                       (
-                           'GetSettings', '', 'a{sa{sv}}',
-                           "ret = self.Get('%s', 'Settings')" % CSETTINGS_IFACE),
-                       (
-                           'GetSecrets', 's', 'a{sa{sv}}',
-                           "ret = self.Get('%s', 'Secrets')" % CSETTINGS_IFACE),
-                       (
-                           'Update', 'a{sa{sv}}', '',
-                           'self.ConnectionUpdate("%s", args[0])' % connection_path),
+                       ('Delete', '', '', 'self.ConnectionDelete(self)'),
+                       ('GetSettings', '', 'a{sa{sv}}', 'ret = self.ConnectionGetSettings(self)'),
+                       ('GetSecrets', 's', 'a{sa{sv}}', 'ret = self.ConnectionGetSecrets(self, args[0])'),
+                       ('Update', 'a{sa{sv}}', '', 'self.ConnectionUpdate(self, args[0])'),
                    ])
+
+    connection_obj = dbusmock.get_object(connection_path)
+    connection_obj.settings = connection_settings
+    connection_obj.connection_path = connection_path
+    connection_obj.ConnectionDelete = ConnectionDelete
+    connection_obj.ConnectionGetSettings = ConnectionGetSettings
+    connection_obj.ConnectionGetSecrets = ConnectionGetSecrets
+    connection_obj.ConnectionUpdate = ConnectionUpdate
 
     main_connections.append(connection_path)
     settings_obj.Set(SETTINGS_IFACE, 'Connections', main_connections)
@@ -727,18 +733,17 @@ def SettingsAddConnection(self, connection_settings):
     return connection_path
 
 
-@dbus.service.method(CSETTINGS_IFACE,
-                     in_signature='oa{sa{sv}}', out_signature='')
-def ConnectionUpdate(self, connection_path, settings):
+def ConnectionUpdate(self, settings):
     '''Update settings on a connection.
 
     settings is a String String Variant Map Map. See
     https://developer.gnome.org/NetworkManager/0.9/spec.html
         #type-String_String_Variant_Map_Map
     '''
+    connection_path = self.connection_path
+
     NM = dbusmock.get_object(MAIN_OBJ)
     settings_obj = dbusmock.get_object(SETTINGS_OBJ)
-    conn_obj = dbusmock.get_object(connection_path)
 
     main_connections = settings_obj.ListConnections()
 
@@ -747,21 +752,15 @@ def ConnectionUpdate(self, connection_path, settings):
             'Connection %s does not exist' % connection_path,
             name=MAIN_IFACE + '.DoesNotExist',)
 
-    conn_settings = conn_obj.Get(CSETTINGS_IFACE, 'Settings')
-    changed_settings = {}
-    for key, value in settings.items():
-        for k, v in value.items():
-            changed_settings[k] = v
+    # Take care not to overwrite the secrets
+    for setting_name in settings:
+        setting = settings[setting_name]
+        for k in setting:
+            if setting_name not in self.settings:
+                self.settings[setting_name] = {}
+            self.settings[setting_name][k] = setting[k]
 
-            if key not in conn_settings:
-                conn_settings[key] = dbus.Dictionary({}, signature='sv')
-
-            conn_settings[key][k] = v
-
-    conn_obj.Set(CSETTINGS_IFACE, 'Settings', conn_settings)
-
-    conn_obj.EmitSignal(CSETTINGS_IFACE, 'PropertiesChanged', 'a{sv}', [changed_settings])
-    conn_obj.EmitSignal(CSETTINGS_IFACE, 'Updated', '', [])
+    self.EmitSignal(CSETTINGS_IFACE, 'Updated', '', [])
 
     auto_connect = False
     if 'autoconnect' in settings['connection']:
@@ -781,9 +780,34 @@ def ConnectionUpdate(self, connection_path, settings):
     return connection_path
 
 
-@dbus.service.method(CSETTINGS_IFACE,
-                     in_signature='o', out_signature='')
-def ConnectionDelete(self, connection_path):
+def ConnectionGetSettings(self):
+    # Deep copy the settings with the secrets stripped
+    # out. (NOTE: copy.deepcopy doesn't work with dbus
+    # types).
+    settings = {}
+    for setting_name in self.settings:
+        setting = self.settings[setting_name]
+        for k in setting:
+            if k != 'secrets':
+                if setting_name not in settings:
+                    settings[setting_name] = {}
+                settings[setting_name][k] = setting[k]
+
+    return settings
+
+
+def ConnectionGetSecrets(self, setting):
+    settings = self.settings[setting]
+
+    if 'secrets' in settings:
+        secrets = {setting: {'secrets': settings['secrets']}}
+    else:
+        secrets = {setting: {'secrets': {'no-secrets': True}}}
+
+    return secrets
+
+
+def ConnectionDelete(self):
     '''Deletes a connection.
 
     This also
@@ -795,6 +819,8 @@ def ConnectionDelete(self, connection_path):
     Note: If this was the only active connection, we change the global
     connection state.
     '''
+    connection_path = self.connection_path
+
     NM = dbusmock.get_object(MAIN_OBJ)
     settings_obj = dbusmock.get_object(SETTINGS_OBJ)
 
