@@ -1,3 +1,7 @@
+0.16.3 (UNRELEASED)
+ - NetworkManager template test: Make the test run standalone. Thanks Pete
+   Woods.
+
 0.16.2 (2015-12-09)
 -------------------
  - NetworkManager template: Fix connection settings Updated signal emitted by
