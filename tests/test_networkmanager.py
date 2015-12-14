@@ -15,6 +15,7 @@ import unittest
 import sys
 import subprocess
 import dbus
+import dbus.mainloop.glib
 import dbusmock
 import os
 import re
@@ -30,6 +31,7 @@ from dbusmock.templates.networkmanager import NMConnectivityState
 from dbusmock.templates.networkmanager import (CSETTINGS_IFACE, MAIN_IFACE,
                                                SETTINGS_OBJ, SETTINGS_IFACE)
 
+dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 
 p = subprocess.Popen(['which', 'nmcli'], stdout=subprocess.PIPE)
 p.communicate()
