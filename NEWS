@@ -1,4 +1,4 @@
-0.16.3 (UNRELEASED)
+0.16.3 (2015-12-14)
  - NetworkManager template test: Make the test run standalone. Thanks Pete
    Woods.
 
