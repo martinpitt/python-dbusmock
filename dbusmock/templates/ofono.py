@@ -39,6 +39,8 @@ _parameters = {}
 def load(mock, parameters):
     global _parameters
     mock.modems = []  # object paths
+    mock.modem_serial_counter = 0
+    mock.imsi_counter = 0
     _parameters = parameters
     mock.AddMethod(MAIN_IFACE, 'GetModems', '', 'a(oa{sv})',
                    'ret = [(m, objects[m].GetAll("org.ofono.Modem")) for m in self.modems]')
@@ -79,6 +81,7 @@ def AddModem(self, name, properties):
                        'Manufacturer': dbus.String('Fakesys', variant_level=1),
                        'Model': dbus.String('Mock Modem', variant_level=1),
                        'Revision': dbus.String('0815.42', variant_level=1),
+                       'Serial': dbus.String(new_modem_serial(self), variant_level=1),
                        'Type': dbus.String('hardware', variant_level=1),
                        'Interfaces': ['org.ofono.CallVolume',
                                       'org.ofono.VoiceCallManager',
@@ -102,12 +105,29 @@ def AddModem(self, name, properties):
     obj.name = name
     add_voice_call_api(obj)
     add_netreg_api(obj)
-    add_simmanager_api(obj)
+    add_simmanager_api(self, obj)
     add_connectionmanager_api(obj)
     self.modems.append(path)
     props = obj.GetAll('org.ofono.Modem', dbus_interface=dbus.PROPERTIES_IFACE)
     self.EmitSignal(MAIN_IFACE, 'ModemAdded', 'oa{sv}', [path, props])
     return path
+
+
+# Generate a new modem serial number so each modem we add gets a unique one.
+# Use a counter so that the result is predictable for tests.
+def new_modem_serial(mock):
+    serial = '12345678-1234-1234-1234-' + ('%012d' % mock.modem_serial_counter)
+    mock.modem_serial_counter += 1
+    return serial
+
+
+# Generate a new unique IMSI (start with USA/AT&T 310/150 to match the MCC/MNC SIM properties)
+# Use a counter so that the result is predictable for tests.
+def new_imsi(mock):
+    imsi = '310150' + ('%09d' % mock.imsi_counter)
+    mock.imsi_counter += 1
+    return imsi
+
 
 #  interface org.ofono.VoiceCallManager {
 #    methods:
@@ -299,17 +319,23 @@ def add_netreg_api(mock):
 #                      v value);
 #  };
 
-def add_simmanager_api(mock):
+def add_simmanager_api(self, mock):
     '''Add org.ofono.SimManager API to a mock'''
 
     iface = 'org.ofono.SimManager'
     mock.AddProperties(iface, {
-        'CardIdentifier': _parameters.get('CardIdentifier', 12345),
+        'BarredDialing': _parameters.get('BarredDialing', False),
+        'CardIdentifier': _parameters.get('CardIdentifier', '1234567890'),
+        'FixedDialing': _parameters.get('FixedDialing', False),
+        'LockedPins': _parameters.get('LockedPins', dbus.Array([], signature='s')),
+        'MobileCountryCode': _parameters.get('MobileCountryCode', '310'),
+        'MobileNetworkCode': _parameters.get('MobileNetworkCode', '150'),
+        'PreferredLanguages': _parameters.get('PreferredLanguages', ['en']),
         'Present': _parameters.get('Present', dbus.Boolean(True)),
         'Retries': _parameters.get('Retries', dbus.Dictionary([["pin", dbus.Byte(3)], ["puk", dbus.Byte(10)]])),
         'PinRequired': _parameters.get('PinRequired', "none"),
         'SubscriberNumbers': _parameters.get('SubscriberNumbers', ['123456789', '234567890']),
-        'SubscriberIdentity': _parameters.get('SubscriberIdentity', "23456"),
+        'SubscriberIdentity': _parameters.get('SubscriberIdentity', new_imsi(self)),
     })
     mock.AddMethods(iface, [
         ('GetProperties', '', 'a{sv}', 'ret = self.GetAll("%s")' % iface),
