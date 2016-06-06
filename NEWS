@@ -1,3 +1,6 @@
+0.16.4 (UNRELEASED)
+ - Ofono template: Add missing properties to SimManager interface.
+
 0.16.3 (2015-12-14)
  - NetworkManager template test: Make the test run standalone. Thanks Pete
    Woods.
