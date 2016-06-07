@@ -1,4 +1,4 @@
-0.16.4 (UNRELEASED)
+0.16.4 (2016-06-07)
 -------------------
  - Ofono template: Add missing properties to SimManager interface.
 
