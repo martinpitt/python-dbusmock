@@ -41,6 +41,7 @@ def load(mock, parameters):
     mock.modems = []  # object paths
     mock.modem_serial_counter = 0
     mock.imsi_counter = 0
+    mock.iccid_counter = 0
     _parameters = parameters
     mock.AddMethod(MAIN_IFACE, 'GetModems', '', 'a(oa{sv})',
                    'ret = [(m, objects[m].GetAll("org.ofono.Modem")) for m in self.modems]')
@@ -128,6 +129,13 @@ def new_imsi(mock):
     mock.imsi_counter += 1
     return imsi
 
+
+# Generate a new unique ICCID
+# Use a counter so that the result is predictable for tests.
+def new_iccid(mock):
+    iccid = '893581234' + ('%012d' % mock.iccid_counter)
+    mock.iccid_counter += 1
+    return iccid
 
 #  interface org.ofono.VoiceCallManager {
 #    methods:
@@ -325,7 +333,7 @@ def add_simmanager_api(self, mock):
     iface = 'org.ofono.SimManager'
     mock.AddProperties(iface, {
         'BarredDialing': _parameters.get('BarredDialing', False),
-        'CardIdentifier': _parameters.get('CardIdentifier', '1234567890'),
+        'CardIdentifier': _parameters.get('CardIdentifier', new_iccid(self)),
         'FixedDialing': _parameters.get('FixedDialing', False),
         'LockedPins': _parameters.get('LockedPins', dbus.Array([], signature='s')),
         'MobileCountryCode': _parameters.get('MobileCountryCode', '310'),

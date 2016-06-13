@@ -1,3 +1,7 @@
+0.16.5 (UNRELEASED)
+-------------------
+ - Ofono template: generate unique ICCIDs (CardIdentifier).
+
 0.16.4 (2016-06-07)
 -------------------
  - Ofono template: Add missing properties to SimManager interface.

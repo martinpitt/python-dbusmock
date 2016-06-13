@@ -54,7 +54,7 @@ class TestOfono(dbusmock.DBusTestCase):
         self.assertIn(b'[ org.ofono.SimManager ]', out)
         self.assertIn(b'PinRequired = none', out)
         self.assertIn(b'Present = 1', out)
-        self.assertIn(b'CardIdentifier = 1234567890', out)
+        self.assertIn(b'CardIdentifier = 893581234000000000000', out)
         self.assertIn(b'MobileCountryCode = 310', out)
         self.assertIn(b'MobileNetworkCode = 150', out)
         self.assertIn(b'Serial = 12345678-1234-1234-1234-000000000000', out)
@@ -145,6 +145,7 @@ class TestOfono(dbusmock.DBusTestCase):
     def test_second_modem(self):
         '''Add a second modem'''
         out = subprocess.check_output([os.path.join(script_dir, 'list-modems')])
+        self.assertIn(b'CardIdentifier = 893581234000000000000', out)
         self.assertIn(b'Serial = 12345678-1234-1234-1234-000000000000', out)
         self.assertIn(b'SubscriberIdentity = 310150000000000', out)
 
@@ -154,8 +155,10 @@ class TestOfono(dbusmock.DBusTestCase):
         self.assertTrue(out.startswith(b'[ /ril_0 ]'), out)
         self.assertIn(b'[ /sim2 ]', out)
         self.assertIn(b'Powered = 1', out)
+        self.assertIn(b'CardIdentifier = 893581234000000000000', out)
         self.assertIn(b'Serial = 12345678-1234-1234-1234-000000000000', out)
         self.assertIn(b'SubscriberIdentity = 310150000000000', out)
+        self.assertIn(b'CardIdentifier = 893581234000000000001', out)
         self.assertIn(b'Serial = 12345678-1234-1234-1234-000000000001', out)
         self.assertIn(b'SubscriberIdentity = 310150000000001', out)
 
