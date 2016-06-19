@@ -156,7 +156,7 @@ class TestUPower(dbusmock.DBusTestCase):
 
 
 @unittest.skipUnless(have_upower, 'upower not installed')
-@unittest.skipUnless(upower_client_version <= '0.99', 'pre-0.99 client API specific test')
+@unittest.skipUnless(upower_client_version < '0.99', 'pre-0.99 client API specific test')
 class TestUPower0(dbusmock.DBusTestCase):
     '''Test mocking upowerd with 0.x API'''
 

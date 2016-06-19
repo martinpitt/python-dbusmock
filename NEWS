@@ -1,3 +1,7 @@
+0.16.6 (UNRELEASED)
+-------------------
+ - upower template tests: Fix version comparison.
+
 0.16.5 (2016-06-19)
 -------------------
  - Ofono template: generate unique ICCIDs (CardIdentifier).
