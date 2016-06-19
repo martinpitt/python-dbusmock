@@ -1,4 +1,4 @@
-0.16.5 (UNRELEASED)
+0.16.5 (2016-06-19)
 -------------------
  - Ofono template: generate unique ICCIDs (CardIdentifier).
 
