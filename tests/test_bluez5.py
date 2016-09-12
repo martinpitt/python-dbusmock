@@ -46,7 +46,6 @@ def _run_bluetoothctl(command):
     '''
     process = subprocess.Popen(['bluetoothctl'], stdin=subprocess.PIPE,
                                stdout=subprocess.PIPE,
-                               stderr=sys.stderr,
                                universal_newlines=True)
 
     time.sleep(0.5)  # give it time to query the bus
@@ -105,7 +104,7 @@ class TestBlueZ5(dbusmock.DBusTestCase):
     def test_no_adapters(self):
         # Check for adapters.
         out = _run_bluetoothctl('list')
-        self.assertEqual(out, [])
+        self.assertEqual([l for l in out if 'Waiting to connect' not in l], [])
 
     def test_one_adapter(self):
         # Chosen parameters.
