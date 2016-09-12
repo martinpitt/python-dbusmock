@@ -1,4 +1,4 @@
-0.16.7 (UNRELEASED)
+0.16.7 (2016-09-12)
 -------------------
  - bluez5 template tests: Fix failure on "Waiting to connect to bluetoothd"
    messages.
