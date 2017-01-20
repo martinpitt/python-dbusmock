@@ -28,7 +28,7 @@ from dbusmock.templates.networkmanager import InfrastructureMode
 from dbusmock.templates.networkmanager import NMActiveConnectionState
 from dbusmock.templates.networkmanager import NMState
 from dbusmock.templates.networkmanager import NMConnectivityState
-from dbusmock.templates.networkmanager import (CSETTINGS_IFACE, MAIN_IFACE,
+from dbusmock.templates.networkmanager import (CSETTINGS_IFACE, MANAGER_IFACE,
                                                SETTINGS_OBJ, SETTINGS_IFACE)
 
 dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
@@ -67,7 +67,7 @@ class TestNetworkManager(dbusmock.DBusTestCase):
         self.dbusmock = dbus.Interface(self.obj_networkmanager,
                                        dbusmock.MOCK_IFACE)
         self.settings = dbus.Interface(
-            self.dbus_con.get_object(MAIN_IFACE, SETTINGS_OBJ),
+            self.dbus_con.get_object(MANAGER_IFACE, SETTINGS_OBJ),
             SETTINGS_IFACE)
 
     def tearDown(self):
@@ -309,7 +309,7 @@ class TestNetworkManager(dbusmock.DBusTestCase):
 
         con1 = self.settings.AddConnection(settings)
         con1_iface = dbus.Interface(
-            self.dbus_con.get_object(MAIN_IFACE, con1),
+            self.dbus_con.get_object(MANAGER_IFACE, con1),
             CSETTINGS_IFACE)
 
         self.assertEqual(con1, '/org/freedesktop/NetworkManager/Settings/0')
@@ -339,7 +339,7 @@ class TestNetworkManager(dbusmock.DBusTestCase):
             NMActiveConnectionState.NM_ACTIVE_CONNECTION_STATE_ACTIVATED)
 
         con1_i = dbus.Interface(
-            self.dbus_con.get_object(MAIN_IFACE, con1), CSETTINGS_IFACE)
+            self.dbus_con.get_object(MANAGER_IFACE, con1), CSETTINGS_IFACE)
         con1_i.Delete()
 
         self.assertRegex(self.read_general(), 'disconnected.*\sfull')
@@ -384,7 +384,7 @@ class TestNetworkManager(dbusmock.DBusTestCase):
         self.assertEqual(self.settings.ListConnections(), [connectionA, connectionB])
 
         connectionA_i = dbus.Interface(
-            self.dbus_con.get_object(MAIN_IFACE, connectionA), CSETTINGS_IFACE)
+            self.dbus_con.get_object(MANAGER_IFACE, connectionA), CSETTINGS_IFACE)
         connectionA_i.Delete()
         self.assertEqual(self.settings.ListConnections(), [connectionB])
 
@@ -428,7 +428,7 @@ class TestNetworkManager(dbusmock.DBusTestCase):
         self.assertEqual(self.settings.ListConnections(), [connectionA])
 
         connectionA_i = dbus.Interface(
-            self.dbus_con.get_object(MAIN_IFACE, connectionA), CSETTINGS_IFACE)
+            self.dbus_con.get_object(MANAGER_IFACE, connectionA), CSETTINGS_IFACE)
         connection['connection']['id'] = 'b'
 
         def do_update():
@@ -503,7 +503,7 @@ class TestNetworkManager(dbusmock.DBusTestCase):
         self.assertEqual(self.settings.ListConnections(), [connectionPath])
 
         connection_i = dbus.Interface(
-            self.dbus_con.get_object(MAIN_IFACE, connectionPath), CSETTINGS_IFACE)
+            self.dbus_con.get_object(MANAGER_IFACE, connectionPath), CSETTINGS_IFACE)
 
         # We expect there to be no secrets in the normal settings dict
         del connection['vpn']['secrets']
