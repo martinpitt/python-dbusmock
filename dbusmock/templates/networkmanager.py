@@ -558,7 +558,7 @@ def AddActiveConnection(self, devices, connection_device, specific_object, name,
     self.AddObject(active_connection_path,
                    ACTIVE_CONNECTION_IFACE,
                    {
-                       'Devices': device_objects,
+                       'Devices': dbus.Array(device_objects, signature='o'),
                        'Default6': False,
                        'Default': True,
                        'Type': conn_type,
