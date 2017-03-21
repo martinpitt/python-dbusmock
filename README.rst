@@ -5,7 +5,7 @@ Purpose
 -------
 With this program/Python library you can easily create mock objects on D-Bus.
 This is useful for writing tests for software which talks to D-Bus services
-such as upower, systemd, ConsoleKit, gnome-session or others, and it is hard
+such as upower, systemd, logind, gnome-session or others, and it is hard
 (or impossible without root privileges) to set the state of the real services
 to what you expect in your tests.
 
@@ -20,7 +20,7 @@ very friendly by most people, and if you want to run this in continuous
 integration test servers or package build environments, chances are that your
 process does not have the privilege to suspend, or there is no system bus or
 upower to begin with. Likewise, there is no way for an user process to
-forcefully set the system/seat idle flag in systemd or ConsoleKit, so your
+forcefully set the system/seat idle flag in logind, so your
 tests cannot set up the expected test environment on the real daemon.
 
 That's where mock objects come into play: They look like the real API (or at
