@@ -47,7 +47,7 @@ Simple example in Python
 Picking up the above example about mocking upower's ``Suspend()`` method, this
 is how you would set up a mock upower in your test case:
 
-::
+.. code-block:: python
 
   import dbus
   import dbusmock
