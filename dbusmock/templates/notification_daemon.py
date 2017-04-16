@@ -24,7 +24,7 @@ SYSTEM_BUS = False
 # default capabilities, can be modified with "capabilities" parameter
 default_caps = ['body', 'body-markup', 'icon-static', 'image/svg+xml',
                 'private-synchronous', 'append', 'private-icon-only',
-                'truncation']
+                'truncation', 'x-canonical-private-synchronous']
 
 
 def load(mock, parameters):
