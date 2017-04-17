@@ -866,3 +866,4 @@ def ConnectionDelete(self):
     connection_obj = dbusmock.get_object(connection_path)
     connection_obj.EmitSignal(CSETTINGS_IFACE, 'Removed', '', [])
     self.RemoveObject(connection_path)
+
