@@ -104,7 +104,8 @@ class TestBlueZ5(dbusmock.DBusTestCase):
     def test_no_adapters(self):
         # Check for adapters.
         out = _run_bluetoothctl('list')
-        self.assertEqual([l for l in out if 'Waiting to connect' not in l], [])
+        for line in out:
+            self.assertNotRegex(line, '^Controller ')
 
     def test_one_adapter(self):
         # Chosen parameters.
