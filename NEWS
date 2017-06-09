@@ -2,6 +2,7 @@
 -------------------
  - bluez5 template tests: Fix failure of test_no_adapters with BlueZ 5.45.
    (LP: #1696480)
+ - tests: Move from pep8 to pycodestyle for static code tests.
 
 0.16.7 (2016-09-12)
 -------------------

@@ -14,23 +14,23 @@ __license__ = 'LGPL 3+'
 import sys
 import unittest
 import subprocess
+import shutil
+
+
+pycodestyle = shutil.which('pycodestyle') or shutil.which('pycodestyle-3')
 
 
 class StaticCodeTests(unittest.TestCase):
-    @unittest.skipIf(subprocess.call(['which', 'pyflakes'],
-                                     stdout=subprocess.PIPE) != 0,
-                     'pyflakes not installed')
+    @unittest.skipUnless(shutil.which('pyflakes'), 'pyflakes not installed')
     def test_pyflakes(self):
         pyflakes = subprocess.Popen(['pyflakes', '.'], stdout=subprocess.PIPE,
                                     universal_newlines=True)
         (out, err) = pyflakes.communicate()
         self.assertEqual(pyflakes.returncode, 0, out)
 
-    @unittest.skipIf(subprocess.call(['which', 'pep8'],
-                                     stdout=subprocess.PIPE) != 0,
-                     'pep8 not installed')
-    def test_pep8(self):
-        pep8 = subprocess.Popen(['pep8', '--max-line-length=130', '--ignore=E124,E402,E731', '.'],
+    @unittest.skipUnless(pycodestyle, 'pycodestyle not installed')
+    def test_codestyle(self):
+        pep8 = subprocess.Popen([pycodestyle, '--max-line-length=130', '--ignore=E124,E402,E731', '.'],
                                 stdout=subprocess.PIPE, universal_newlines=True)
         (out, err) = pep8.communicate()
         self.assertEqual(pep8.returncode, 0, out)
