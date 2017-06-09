@@ -1,3 +1,8 @@
+0.16.8 (UNRELEASED)
+-------------------
+ - bluez5 template tests: Fix failure of test_no_adapters with BlueZ 5.45.
+   (LP: #1696480)
+
 0.16.7 (2016-09-12)
 -------------------
  - bluez5 template tests: Fix failure on "Waiting to connect to bluetoothd"
