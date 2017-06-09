@@ -200,7 +200,6 @@ def Dial(self, number, hide_callerid):
                        'LineIdentification': dbus.String(number, variant_level=1),
                        'Name': dbus.String('', variant_level=1),
                        'Multiparty': dbus.Boolean(False, variant_level=1),
-                       'Multiparty': dbus.Boolean(False, variant_level=1),
                        'RemoteHeld': dbus.Boolean(False, variant_level=1),
                        'RemoteMultiparty': dbus.Boolean(False, variant_level=1),
                        'Emergency': dbus.Boolean(False, variant_level=1),

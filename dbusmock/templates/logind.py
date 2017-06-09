@@ -72,7 +72,6 @@ def load(mock, parameters):
                            'IdleActionUSec': dbus.UInt64(parameters.get('IdleActionUSec', 1)),
                            'PreparingForShutdown': parameters.get('PreparingForShutdown', False),
                            'PreparingForSleep': parameters.get('PreparingForSleep', False),
-                           'PreparingForShutdown': parameters.get('PreparingForShutdown', False),
                        }, signature='sv'))
 
 
