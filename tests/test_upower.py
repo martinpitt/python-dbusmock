@@ -41,7 +41,7 @@ if have_upower:
         # 0.9 still prints the client version, 0.99 just crashes
         upower_client_version = '0.99'
 else:
-    upower_client_version = 0
+    upower_client_version = '0'
 
 
 @unittest.skipUnless(have_upower, 'upower not installed')
