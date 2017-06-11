@@ -84,6 +84,7 @@ class DBusMockObject(dbus.service.Object):
         self.path = path
         self.interface = interface
         self.is_object_manager = is_object_manager
+        self.object_manager = None
 
         self._template = None
         self._template_parameters = None
@@ -115,6 +116,7 @@ class DBusMockObject(dbus.service.Object):
                        'GetManagedObjects', '', 'a{oa{sa{sv}}}',
                        'ret = {dbus.ObjectPath(k): objects[k].props ' +
                        '  for k in objects.keys() if ' + cond + '}')
+        self.object_manager = self
 
     def _reset(self, props):
         # interface -> name -> value
@@ -232,6 +234,7 @@ class DBusMockObject(dbus.service.Object):
                              properties)
         # make sure created objects inherit the log file stream
         obj.logfile = self.logfile
+        obj.object_manager = self.object_manager
         obj.is_logfile_owner = False
         obj.AddMethods(interface, methods)
 
@@ -530,6 +533,18 @@ class DBusMockObject(dbus.service.Object):
         alternative to reading the mock's log or GetCalls().
         '''
         pass
+
+    def object_manager_emit_added(self, path):
+        if self.object_manager is not None:
+            self.object_manager.EmitSignal(OBJECT_MANAGER_IFACE, 'InterfacesAdded',
+                                           'oa{sa{sv}}', [dbus.ObjectPath(path),
+                                                          objects[path].props])
+
+    def object_manager_emit_removed(self, path):
+        if self.object_manager is not None:
+            self.object_manager.EmitSignal(OBJECT_MANAGER_IFACE, 'InterfacesRemoved',
+                                           'oas', [dbus.ObjectPath(path),
+                                                   objects[path].props])
 
     def mock_method(self, interface, dbus_method, in_signature, *args, **kwargs):
         '''Master mock method.
