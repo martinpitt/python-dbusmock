@@ -1,4 +1,4 @@
-0.16.8 (UNRELEASED)
+0.16.8 (2017-06-12)
 -------------------
  - bluez5 template tests: Fix failure of test_no_adapters with BlueZ 5.45.
    (LP: #1696480)
