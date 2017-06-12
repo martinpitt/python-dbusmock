@@ -104,13 +104,13 @@ class TestNetworkManager(dbusmock.DBusTestCase):
         self.dbusmock.AddEthernetDevice('mock_Ethernet1', 'eth0',
                                         DeviceState.DISCONNECTED)
         out = self.read_device()
-        self.assertRegex(out, 'eth0.*\sdisconnected')
+        self.assertRegex(out, r'eth0.*\sdisconnected')
 
     def test_one_eth_connected(self):
         self.dbusmock.AddEthernetDevice('mock_Ethernet1', 'eth0',
                                         DeviceState.ACTIVATED)
         out = self.read_device()
-        self.assertRegex(out, 'eth0.*\sconnected')
+        self.assertRegex(out, r'eth0.*\sconnected')
 
     def test_two_eth(self):
         # test with numeric state value
@@ -118,14 +118,14 @@ class TestNetworkManager(dbusmock.DBusTestCase):
         self.dbusmock.AddEthernetDevice('mock_Ethernet2', 'eth1',
                                         DeviceState.ACTIVATED)
         out = self.read_device()
-        self.assertRegex(out, 'eth0.*\sdisconnected')
-        self.assertRegex(out, 'eth1.*\sconnected')
+        self.assertRegex(out, r'eth0.*\sdisconnected')
+        self.assertRegex(out, r'eth1.*\sconnected')
 
     def test_wifi_without_access_points(self):
         self.dbusmock.AddWiFiDevice('mock_WiFi1', 'wlan0',
                                     DeviceState.ACTIVATED)
         out = self.read_device()
-        self.assertRegex(out, 'wlan0.*\sconnected')
+        self.assertRegex(out, r'wlan0.*\sconnected')
 
     def test_eth_and_wifi(self):
         self.dbusmock.AddEthernetDevice('mock_Ethernet1', 'eth0',
@@ -133,8 +133,8 @@ class TestNetworkManager(dbusmock.DBusTestCase):
         self.dbusmock.AddWiFiDevice('mock_WiFi1', 'wlan0',
                                     DeviceState.ACTIVATED)
         out = self.read_device()
-        self.assertRegex(out, 'eth0.*\sdisconnected')
-        self.assertRegex(out, 'wlan0.*\sconnected')
+        self.assertRegex(out, r'eth0.*\sdisconnected')
+        self.assertRegex(out, r'wlan0.*\sconnected')
 
     def test_one_wifi_with_accesspoints(self):
         wifi = self.dbusmock.AddWiFiDevice('mock_WiFi2', 'wlan0',
@@ -150,9 +150,9 @@ class TestNetworkManager(dbusmock.DBusTestCase):
                                      2425, 5400, 82, 0x400)
         out = self.read_device()
         aps = self.read_device_wifi()
-        self.assertRegex(out, 'wlan0.*\sconnected')
-        self.assertRegex(aps, 'AP_1.*\sAd-Hoc')
-        self.assertRegex(aps, 'AP_3.*\sInfra')
+        self.assertRegex(out, r'wlan0.*\sconnected')
+        self.assertRegex(aps, r'AP_1.*\sAd-Hoc')
+        self.assertRegex(aps, r'AP_3.*\sInfra')
 
     def test_two_wifi_with_accesspoints(self):
         wifi1 = self.dbusmock.AddWiFiDevice('mock_WiFi1', 'wlan0',
@@ -174,11 +174,11 @@ class TestNetworkManager(dbusmock.DBusTestCase):
                                      2425, 5400, 82, 0x400)
         out = self.read_device()
         aps = self.read_device_wifi()
-        self.assertRegex(out, 'wlan0.*\sconnected')
-        self.assertRegex(out, 'wlan1.*\sunavailable')
-        self.assertRegex(aps, 'AP_0.*\s(Unknown|N/A)')
-        self.assertRegex(aps, 'AP_1.*\sAd-Hoc')
-        self.assertRegex(aps, 'AP_2.*\sInfra')
+        self.assertRegex(out, r'wlan0.*\sconnected')
+        self.assertRegex(out, r'wlan1.*\sunavailable')
+        self.assertRegex(aps, r'AP_0.*\s(Unknown|N/A)')
+        self.assertRegex(aps, r'AP_1.*\sAd-Hoc')
+        self.assertRegex(aps, r'AP_2.*\sInfra')
 
     def test_wifi_with_connection(self):
         wifi1 = self.dbusmock.AddWiFiDevice('mock_WiFi1', 'wlan0',
@@ -190,44 +190,44 @@ class TestNetworkManager(dbusmock.DBusTestCase):
         con1 = self.dbusmock.AddWiFiConnection(wifi1, 'Mock_Con1', 'The_SSID',
                                                'wpa-psk')
 
-        self.assertRegex(self.read_connection(), 'The_SSID.*\s802-11-wireless')
+        self.assertRegex(self.read_connection(), r'The_SSID.*\s802-11-wireless')
         self.assertEqual(ap1, '/org/freedesktop/NetworkManager/AccessPoint/Mock_AP1')
         self.assertEqual(con1, '/org/freedesktop/NetworkManager/Settings/Mock_Con1')
 
     def test_global_state(self):
         self.dbusmock.SetGlobalConnectionState(NMState.NM_STATE_CONNECTED_GLOBAL)
-        self.assertRegex(self.read_general(), 'connected.*\sfull')
+        self.assertRegex(self.read_general(), r'connected.*\sfull')
 
         self.dbusmock.SetGlobalConnectionState(NMState.NM_STATE_CONNECTED_SITE)
-        self.assertRegex(self.read_general(), 'connected \(site only\).*\sfull')
+        self.assertRegex(self.read_general(), r'connected \(site only\).*\sfull')
 
         self.dbusmock.SetGlobalConnectionState(NMState.NM_STATE_CONNECTED_LOCAL)
-        self.assertRegex(self.read_general(), 'connected \(local only\).*\sfull')
+        self.assertRegex(self.read_general(), r'connected \(local only\).*\sfull')
 
         self.dbusmock.SetGlobalConnectionState(NMState.NM_STATE_CONNECTING)
-        self.assertRegex(self.read_general(), 'connecting.*\sfull')
+        self.assertRegex(self.read_general(), r'connecting.*\sfull')
 
         self.dbusmock.SetGlobalConnectionState(NMState.NM_STATE_DISCONNECTING)
-        self.assertRegex(self.read_general(), 'disconnecting.*\sfull')
+        self.assertRegex(self.read_general(), r'disconnecting.*\sfull')
 
         self.dbusmock.SetGlobalConnectionState(NMState.NM_STATE_DISCONNECTED)
-        self.assertRegex(self.read_general(), 'disconnected.*\sfull')
+        self.assertRegex(self.read_general(), r'disconnected.*\sfull')
 
         self.dbusmock.SetGlobalConnectionState(NMState.NM_STATE_ASLEEP)
-        self.assertRegex(self.read_general(), 'asleep.*\sfull')
+        self.assertRegex(self.read_general(), r'asleep.*\sfull')
 
     def test_connectivity_state(self):
         self.dbusmock.SetConnectivity(NMConnectivityState.NM_CONNECTIVITY_FULL)
-        self.assertRegex(self.read_general(), 'connected.*\sfull')
+        self.assertRegex(self.read_general(), r'connected.*\sfull')
 
         self.dbusmock.SetConnectivity(NMConnectivityState.NM_CONNECTIVITY_LIMITED)
-        self.assertRegex(self.read_general(), 'connected.*\slimited')
+        self.assertRegex(self.read_general(), r'connected.*\slimited')
 
         self.dbusmock.SetConnectivity(NMConnectivityState.NM_CONNECTIVITY_PORTAL)
-        self.assertRegex(self.read_general(), 'connected.*\sportal')
+        self.assertRegex(self.read_general(), r'connected.*\sportal')
 
         self.dbusmock.SetConnectivity(NMConnectivityState.NM_CONNECTIVITY_NONE)
-        self.assertRegex(self.read_general(), 'connected.*\snone')
+        self.assertRegex(self.read_general(), r'connected.*\snone')
 
     def test_wifi_with_active_connection(self):
         wifi1 = self.dbusmock.AddWiFiDevice('mock_WiFi1', 'wlan0',
@@ -245,20 +245,20 @@ class TestNetworkManager(dbusmock.DBusTestCase):
         self.assertEqual(con1, '/org/freedesktop/NetworkManager/Settings/Mock_Con1')
         self.assertEqual(active_con1, '/org/freedesktop/NetworkManager/ActiveConnection/Mock_Active1')
 
-        self.assertRegex(self.read_general(), 'connected.*\sfull')
-        self.assertRegex(self.read_connection(), 'The_SSID.*\s802-11-wireless')
-        self.assertRegex(self.read_active_connection(), 'The_SSID.*\s802-11-wireless')
+        self.assertRegex(self.read_general(), r'connected.*\sfull')
+        self.assertRegex(self.read_connection(), r'The_SSID.*\s802-11-wireless')
+        self.assertRegex(self.read_active_connection(), r'The_SSID.*\s802-11-wireless')
         self.assertRegex(self.read_device_wifi(), 'The_SSID')
 
         self.dbusmock.RemoveActiveConnection(wifi1, active_con1)
 
-        self.assertRegex(self.read_connection(), 'The_SSID.*\s802-11-wireless')
-        self.assertFalse(re.compile('The_SSID.*\s802-11-wireless').search(self.read_active_connection()))
+        self.assertRegex(self.read_connection(), r'The_SSID.*\s802-11-wireless')
+        self.assertFalse(re.compile(r'The_SSID.*\s802-11-wireless').search(self.read_active_connection()))
         self.assertRegex(self.read_device_wifi(), 'The_SSID')
 
         self.dbusmock.RemoveWifiConnection(wifi1, con1)
 
-        self.assertFalse(re.compile('The_SSID.*\s802-11-wireless').search(self.read_connection()))
+        self.assertFalse(re.compile(r'The_SSID.*\s802-11-wireless').search(self.read_connection()))
         self.assertRegex(self.read_device_wifi(), 'The_SSID')
 
         self.dbusmock.RemoveAccessPoint(wifi1, ap1)
@@ -279,7 +279,7 @@ class TestNetworkManager(dbusmock.DBusTestCase):
 
         self.assertEqual(con1, '/org/freedesktop/NetworkManager/Settings/0')
         self.assertRegex(self.read_connection(),
-                         '%s.*\s802-11-wireless' % uuid)
+                         r'%s.*\s802-11-wireless' % uuid)
 
         # Use the same settings, but this one will autoconnect.
         uuid2 = '22222222-2222-2222-2222-222222222222'
@@ -290,11 +290,11 @@ class TestNetworkManager(dbusmock.DBusTestCase):
         con2 = self.settings.AddConnection(settings)
         self.assertEqual(con2, '/org/freedesktop/NetworkManager/Settings/1')
 
-        self.assertRegex(self.read_general(), 'connected.*\sfull')
+        self.assertRegex(self.read_general(), r'connected.*\sfull')
         self.assertRegex(self.read_connection(),
-                         '%s.*\s802-11-wireless' % uuid2)
+                         r'%s.*\s802-11-wireless' % uuid2)
         self.assertRegex(self.read_active_connection(),
-                         '%s.*\s802-11-wireless' % uuid2)
+                         r'%s.*\s802-11-wireless' % uuid2)
 
     def test_update_connection(self):
         uuid = '133d8eb9-6de6-444f-8b37-f40bf9e33226'
@@ -313,7 +313,7 @@ class TestNetworkManager(dbusmock.DBusTestCase):
             CSETTINGS_IFACE)
 
         self.assertEqual(con1, '/org/freedesktop/NetworkManager/Settings/0')
-        self.assertRegex(self.read_connection(), '%s.*\s802-11-wireless' % uuid)
+        self.assertRegex(self.read_connection(), r'%s.*\s802-11-wireless' % uuid)
 
         new_settings = dbus.Dictionary({
             'connection': dbus.Dictionary({
@@ -324,7 +324,7 @@ class TestNetworkManager(dbusmock.DBusTestCase):
             }, signature='sv')}, signature='sa{sv}')
 
         con1_iface.Update(new_settings)
-        self.assertRegex(self.read_connection(), '%s.*\s802-3-ethernet' % uuid)
+        self.assertRegex(self.read_connection(), r'%s.*\s802-3-ethernet' % uuid)
 
     def test_remove_connection(self):
         wifi1 = self.dbusmock.AddWiFiDevice('mock_WiFi1', 'wlan0',
@@ -342,9 +342,9 @@ class TestNetworkManager(dbusmock.DBusTestCase):
             self.dbus_con.get_object(MANAGER_IFACE, con1), CSETTINGS_IFACE)
         con1_i.Delete()
 
-        self.assertRegex(self.read_general(), 'disconnected.*\sfull')
-        self.assertFalse(re.compile('The_SSID.*\s802-11-wireless').search(self.read_active_connection()))
-        self.assertRegex(self.read_device(), 'wlan0.*\sdisconnected')
+        self.assertRegex(self.read_general(), r'disconnected.*\sfull')
+        self.assertFalse(re.compile(r'The_SSID.*\s802-11-wireless').search(self.read_active_connection()))
+        self.assertRegex(self.read_device(), r'wlan0.*\sdisconnected')
 
     def test_add_remove_settings(self):
         connection = {
