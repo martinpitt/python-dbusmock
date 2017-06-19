@@ -105,7 +105,7 @@ class TestBlueZ5(dbusmock.DBusTestCase):
         # Check for adapters.
         out = _run_bluetoothctl('list')
         for line in out:
-            self.assertNotRegex(line, '^Controller ')
+            self.assertFalse(line.startswith('Controller '))
 
     def test_one_adapter(self):
         # Chosen parameters.
