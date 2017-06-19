@@ -103,7 +103,7 @@ assert args[2] == 5
 
         # check that it's logged correctly
         with open(self.mock_log.name) as f:
-            self.assertRegex(f.read(), '^[0-9.]+ Do -1 \["/foo"\] 5$')
+            self.assertRegex(f.read(), r'^[0-9.]+ Do -1 \["/foo"\] 5$')
 
     def test_dict_arg(self):
         '''dictionary argument'''
@@ -442,7 +442,7 @@ assert args[2] == 5
         self.assertRegex(log, '[0-9.]+ emit org.freedesktop.Test.Main.SigNoArgs\n')
         self.assertRegex(log, '[0-9.]+ emit org.freedesktop.Test.Sub.SigTwoArgs "hello" 42\n')
         self.assertRegex(log, '[0-9.]+ emit org.freedesktop.Test.Sub.SigTypeTest -42 42')
-        self.assertRegex(log, '[0-9.]+ emit org.freedesktop.Test.Sub.SigTypeTest -42 42 "hello" \["/a", "/b"\]\n')
+        self.assertRegex(log, r'[0-9.]+ emit org.freedesktop.Test.Sub.SigTypeTest -42 42 "hello" \["/a", "/b"\]\n')
 
     def test_signals_type_mismatch(self):
         '''emitting signals with wrong arguments'''
