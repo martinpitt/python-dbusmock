@@ -53,7 +53,7 @@ class TestNotificationDaemon(dbusmock.DBusTestCase):
 
         subprocess.check_call(['notify-send', 'title', 'my text'])
         log = self.p_mock.stdout.read()
-        self.assertRegex(log, b'[0-9.]+ Notify "notify-send" 0 "" "title" "my text" \[\]')
+        self.assertRegex(log, b'[0-9.]+ Notify "notify-send" 0 "" "title" "my text" \\[\\]')
 
     @unittest.skipIf(notify_send_version < '0.7.5', 'this requires libnotify >= 0.7.5')
     def test_options(self):
@@ -62,7 +62,7 @@ class TestNotificationDaemon(dbusmock.DBusTestCase):
         subprocess.check_call(['notify-send', '-t', '27', '-a', 'fooApp',
                                '-i', 'warning_icon', 'title', 'my text'])
         log = self.p_mock.stdout.read()
-        self.assertRegex(log, b'[0-9.]+ Notify "fooApp" 0 "warning_icon" "title" "my text" \[\] {"urgency": 1} 27\n')
+        self.assertRegex(log, b'[0-9.]+ Notify "fooApp" 0 "warning_icon" "title" "my text" \\[\\] {"urgency": 1} 27\n')
 
     def test_id(self):
         '''ID handling'''

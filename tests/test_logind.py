@@ -69,7 +69,7 @@ class TestLogind(dbusmock.DBusTestCase):
 
         out = subprocess.check_output(['loginctl', 'list-seats'],
                                       universal_newlines=True)
-        self.assertRegex(out, '(^|\n)seat0\s+')
+        self.assertRegex(out, r'(^|\n)seat0\s+')
 
         out = subprocess.check_output(['loginctl', 'show-seat', 'seat0'],
                                       universal_newlines=True)
