@@ -577,7 +577,7 @@ def AddActiveConnection(self, devices, connection_device, specific_object, name,
                        'Master': dbus.ObjectPath('/'),
                        'SpecificObject': dbus.ObjectPath(specific_object),
                        'Uuid': conn_uuid,
-                       'State': state,
+                       'State': dbus.UInt32(state),
                    },
                    [])
 
