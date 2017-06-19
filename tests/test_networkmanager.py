@@ -47,6 +47,8 @@ class TestNetworkManager(dbusmock.DBusTestCase):
         klass.start_system_bus()
         klass.dbus_con = klass.get_dbus(True)
 
+        os.environ['G_DEBUG'] = 'fatal-warnings,fatal-criticals'
+
         # prepare environment which avoids translations
         klass.lang_env = os.environ.copy()
         try:
