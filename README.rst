@@ -118,9 +118,9 @@ Let's walk through:
 Simple example from shell
 -------------------------
 
-We use the actual session bus for this example. You can use ``dbus-launch`` to
-start a private one as well if you want, but that is not part of the actual
-mocking.
+We use the actual session bus for this example. You can use
+``dbus-run-session`` to start a private one as well if you want, but that is
+not part of the actual mocking.
 
 So let's start a mock at the D-Bus name ``com.example.Foo`` with an initial
 "main" object on path /, with the main D-Bus interface

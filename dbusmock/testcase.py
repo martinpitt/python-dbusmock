@@ -97,16 +97,18 @@ class DBusTestCase(unittest.TestCase):
         Normally you do not need to call this directly. Use start_system_bus()
         and start_session_bus() instead.
         '''
-        argv = ['dbus-launch']
+        argv = ['dbus-daemon', '--fork', '--print-address=1', '--print-pid=1']
         if conf:
             argv.append('--config-file=' + conf)
-        out = subprocess.check_output(argv, universal_newlines=True)
-        variables = {}
-        for line in out.splitlines():
-            (k, v) = line.split('=', 1)
-            variables[k] = v
-        return (int(variables['DBUS_SESSION_BUS_PID']),
-                variables['DBUS_SESSION_BUS_ADDRESS'])
+        else:
+            argv.append('--session')
+        lines = subprocess.check_output(argv, universal_newlines=True).strip().splitlines()
+        assert len(lines) == 2, 'expected exactly 2 lines of output from dbus-daemon'
+        # usually the first line is the address, but be lenient and accept any order
+        try:
+            return (int(lines[1]), lines[0])
+        except ValueError:
+            return (int(lines[0]), lines[1])
 
     @classmethod
     def stop_dbus(klass, pid):
