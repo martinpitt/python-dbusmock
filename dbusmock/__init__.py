@@ -11,7 +11,7 @@ __author__ = 'Martin Pitt'
 __email__ = 'martin.pitt@ubuntu.com'
 __copyright__ = '(c) 2012 Canonical Ltd.'
 __license__ = 'LGPL 3+'
-__version__ = '0.16.8'
+__version__ = '0.16.9'
 
 from dbusmock.mockobject import (DBusMockObject, MOCK_IFACE,
                                  OBJECT_MANAGER_IFACE, get_object, get_objects)

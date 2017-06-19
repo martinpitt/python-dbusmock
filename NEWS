@@ -1,4 +1,4 @@
-0.16.9 (UNRELEASED)
+0.16.9 (2017-06-19)
 -------------------
  - NetworkManager template: Fix type of 'State' property in AddActiveConnection()
  - Fix BlueZ tests to work with Python 2 again.
