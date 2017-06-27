@@ -38,6 +38,8 @@ class DBusTestCase(unittest.TestCase):
     session_bus_pid = None
     system_bus_pid = None
 
+    STOP_DBUS_TIMEOUT = 50
+
     @classmethod
     def start_session_bus(klass):
         '''Set up a private local session bus
@@ -117,8 +119,10 @@ class DBusTestCase(unittest.TestCase):
         automatically stopped in tearDownClass().
         '''
         signal.signal(signal.SIGTERM, signal.SIG_IGN)
-        timeout = 50
-        while timeout > 0:
+
+        deadline = time.time() + klass.STOP_DBUS_TIMEOUT
+
+        while time.time() < deadline:
             try:
                 os.kill(pid, signal.SIGTERM)
             except OSError as e:
