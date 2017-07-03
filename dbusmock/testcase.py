@@ -119,8 +119,7 @@ class DBusTestCase(unittest.TestCase):
         automatically stopped in tearDownClass().
         '''
         signal.signal(signal.SIGTERM, signal.SIG_IGN)
-        timeout = 50
-        while timeout > 0:
+        for timeout in range(50):
             try:
                 os.kill(pid, signal.SIGTERM)
             except OSError as e:
