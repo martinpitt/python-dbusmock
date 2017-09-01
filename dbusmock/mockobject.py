@@ -313,7 +313,7 @@ class DBusMockObject(dbus.service.Object):
               paths to DBusMockObject instances.
 
               For keeping state across method calls, you are free to use normal
-              Python members of the "self" object, which will be persistant for
+              Python members of the "self" object, which will be persistent for
               the whole mock's life time. E. g. you can have a method with
               "self.my_state = True", and another method that returns it with
               "ret = self.my_state".
