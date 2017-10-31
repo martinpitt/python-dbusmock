@@ -65,12 +65,18 @@ class TestTimedated(dbusmock.DBusTestCase):
 
     def test_default_ntp(self):
         out = self.run_timedatectl()
-        self.assertRegex(out, 'NTP (enabled|synchronized): yes')
+        if 'systemd-timesyncd.service' in out:
+            self.assertRegex(out, 'systemd-timesyncd.service active: yes')
+        else:
+            self.assertRegex(out, 'NTP (enabled|synchronized): yes')
 
     def test_changing_ntp(self):
         self.obj_timedated.SetNTP(False, False)
         out = self.run_timedatectl()
-        self.assertRegex(out, 'NTP (enabled|synchronized): no')
+        if 'systemd-timesyncd.service' in out:
+            self.assertRegex(out, 'systemd-timesyncd.service active: no')
+        else:
+            self.assertRegex(out, 'NTP (enabled|synchronized): no')
 
     def test_default_local_rtc(self):
         out = self.run_timedatectl()
