@@ -1,4 +1,4 @@
-0.17 (UNRELEASED)
+0.17 (2017-11-07)
 -----------------
  - Call dbus-daemon directly instead of dbus-launch. (Debian #836053)
  - Fix DBusTestCase.stop_dbus() to actually enforce a timeout. Thanks to Renat
