@@ -56,11 +56,11 @@ def _run_test_command(prog, command):
     out, err = process.communicate()
 
     lines = out.split('\n')
-    lines = filter(lambda l: l != '', lines)
+    lines = filter(lambda line: line != '', lines)
     lines = list(lines)
 
     errlines = err.split('\n')
-    errlines = filter(lambda l: l != '', errlines)
+    errlines = filter(lambda line: line != '', errlines)
     errlines = list(errlines)
 
     return (lines, errlines)

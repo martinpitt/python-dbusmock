@@ -107,6 +107,7 @@ class TestNotificationDaemon(dbusmock.DBusTestCase):
         log = self.p_mock.stdout.read()
         self.assertNotIn(b'NotificationClosed', log)
 
+
 if __name__ == '__main__':
     # avoid writing to stderr
     unittest.main(testRunner=unittest.TextTestRunner(stream=sys.stdout, verbosity=2))

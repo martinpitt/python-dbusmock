@@ -82,6 +82,7 @@ class TestConsoleKit(dbusmock.DBusTestCase):
         self.assertRegex(out, 'is-local = TRUE')
         self.assertRegex(out, "login-session-id = '12345'")
 
+
 if __name__ == '__main__':
     # avoid writing to stderr
     unittest.main(testRunner=unittest.TextTestRunner(stream=sys.stdout, verbosity=2))

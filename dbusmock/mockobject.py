@@ -696,6 +696,7 @@ def _dbusmock_method_lookup(obj, method_name, dbus_interface):
     except KeyError:
         return orig_method_lookup(obj, method_name, dbus_interface)
 
+
 dbus.service._method_lookup = _dbusmock_method_lookup
 
 
