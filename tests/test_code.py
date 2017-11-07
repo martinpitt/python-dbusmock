@@ -22,10 +22,10 @@ except subprocess.CalledProcessError:
 
 
 class StaticCodeTests(unittest.TestCase):
-    @unittest.skipIf(subprocess.call(['which', 'pyflakes'], stdout=subprocess.PIPE) != 0,
-                     'pyflakes not installed')
+    @unittest.skipIf(subprocess.call(['which', 'pyflakes3'], stdout=subprocess.PIPE) != 0,
+                     'pyflakes3 not installed')
     def test_pyflakes(self):
-        pyflakes = subprocess.Popen(['pyflakes', '.'], stdout=subprocess.PIPE,
+        pyflakes = subprocess.Popen(['pyflakes3', '.'], stdout=subprocess.PIPE,
                                     universal_newlines=True)
         (out, err) = pyflakes.communicate()
         self.assertEqual(pyflakes.returncode, 0, out)
