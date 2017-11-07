@@ -3,6 +3,7 @@
  - Call dbus-daemon directly instead of dbus-launch. (Debian #836053)
  - Fix DBusTestCase.stop_dbus() to actually enforce a timeout. Thanks to Renat
    Galimov!
+ - Fix test_timedated for changed timedatectl output format in systemd 235.
 
 0.16.9 (2017-06-19)
 -------------------

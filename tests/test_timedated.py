@@ -17,6 +17,8 @@ import subprocess
 
 import dbusmock
 
+# timedatectl keeps changing its CLI output
+TIMEDATECTL_NTP_LABEL = '(NTP enabled|NTP synchronized|systemd-timesyncd.service active)'
 
 p = subprocess.Popen(['which', 'timedatectl'], stdout=subprocess.PIPE)
 p.communicate()
@@ -65,12 +67,12 @@ class TestTimedated(dbusmock.DBusTestCase):
 
     def test_default_ntp(self):
         out = self.run_timedatectl()
-        self.assertRegex(out, 'NTP (enabled|synchronized): yes')
+        self.assertRegex(out, '%s: yes' % TIMEDATECTL_NTP_LABEL)
 
     def test_changing_ntp(self):
         self.obj_timedated.SetNTP(False, False)
         out = self.run_timedatectl()
-        self.assertRegex(out, 'NTP (enabled|synchronized): no')
+        self.assertRegex(out, '%s: no' % TIMEDATECTL_NTP_LABEL)
 
     def test_default_local_rtc(self):
         out = self.run_timedatectl()
