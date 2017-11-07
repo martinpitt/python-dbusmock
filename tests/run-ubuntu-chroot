@@ -1,0 +1,63 @@
+#!/bin/sh
+set -eu
+
+echo ${ARCH:=amd64}
+
+if [ -z "${RELEASE:-}" ]; then
+    # determine latest stable release (see https://launchpad.net/+apidoc)
+    # in most cases the current series is devel, except for right after a stable release
+    rel=$(curl --silent https://api.launchpad.net/devel/ubuntu/current_series_link | sed 's/^"//; s/"$//')
+    if ! curl --silent "$rel" | grep -q '"supported": true'; then
+        # not supported, go back
+        rel=$(curl --silent "$rel/previous_series_link" | sed 's/^"//; s/"$//')
+
+        if ! curl --silent "$rel" | grep -q '"supported": true'; then
+            echo "ERROR: neither of the last two releases are supported!?" >&2
+            exit 1
+        fi
+    fi
+    # release name is the last part of the URL
+    RELEASE=${rel##*/}
+fi
+
+mkdir -p ${CACHE:=/tmp/cache/$RELEASE}
+
+# get LP chroot
+CHROOT_URL=$(curl --silent https://api.launchpad.net/1.0/ubuntu/$RELEASE/$ARCH | grep -o 'http://[^ "]*chroot-ubuntu-[^ "]*')
+CHROOT_TAR="$CACHE/$(basename $CHROOT_URL)"
+[ -e "$CHROOT_TAR" ] || curl -o "$CHROOT_TAR" "$CHROOT_URL"
+
+# prepare chroot
+BUILDDIR=$(mktemp -d)
+trap "sudo rm -rf $BUILDDIR" EXIT INT QUIT PIPE
+sudo tar -C "$BUILDDIR" -xf "$CHROOT_TAR"
+CHROOT="$BUILDDIR/chroot-autobuild"
+sudo cp /etc/resolv.conf "$CHROOT/etc/resolv.conf"
+
+# copy code checkout into chroot
+sudo cp -a . "$CHROOT/build/src"
+
+sudo chroot "$CHROOT" << EOF
+mount -t proc proc /proc
+mount -t devtmpfs devtmpfs /dev
+mount -t sysfs sysfs /sys
+trap "umount /proc /dev /sys" EXIT INT QUIT PIPE
+set -ex
+# install build deps
+cat <<EOU > /etc/apt/sources.list
+deb http://archive.ubuntu.com/ubuntu ${RELEASE} main universe
+deb http://archive.ubuntu.com/ubuntu ${RELEASE}-updates main universe
+EOU
+apt-get update
+apt-get install -y python-all python-setuptools python3-all python3-setuptools python-nose python-dbus python-gi python3-nose python3-dbus python3-gi gir1.2-glib-2.0 dbus libnotify-bin upower network-manager pyflakes3 bluez
+apt-get install -y pycodestyle || true
+
+# run build and tests as user
+chown -R buildd:buildd /build
+su - buildd <<EOU
+set -ex
+cd /build/src
+python3 setup.py test
+python2 setup.py test
+EOU
+EOF

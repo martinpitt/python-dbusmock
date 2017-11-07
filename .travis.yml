@@ -1,0 +1,10 @@
+dist: trusty
+language: c
+sudo: true
+script: tests/run-ubuntu-chroot
+env:
+- RELEASE=
+- RELEASE=xenial
+cache:
+  directories:
+  - /tmp/cache
