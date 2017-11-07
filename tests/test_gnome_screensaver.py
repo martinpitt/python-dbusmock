@@ -67,6 +67,7 @@ class TestGnomeScreensaver(dbusmock.DBusTestCase):
         self.assertRegex(self.p_mock.stdout.read(),
                          b'emit org.gnome.ScreenSaver.ActiveChanged False\n')
 
+
 if __name__ == '__main__':
     # avoid writing to stderr
     unittest.main(testRunner=unittest.TextTestRunner(stream=sys.stdout, verbosity=2))

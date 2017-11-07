@@ -253,6 +253,7 @@ class DBusTestCase(unittest.TestCase):
 
         return (daemon, obj)
 
+
 # Python 2 backwards compatibility
 if sys.version_info[0] < 3:
     import re

@@ -514,5 +514,6 @@ class TestNetworkManager(dbusmock.DBusTestCase):
         # Secrets request should contain just vpn section with the secrets in
         self.assertEqual(connection_i.GetSecrets('vpn'), {'vpn': {'secrets': secrets}})
 
+
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(stream=sys.stdout, verbosity=2))

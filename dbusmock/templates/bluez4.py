@@ -356,7 +356,7 @@ def DiscoverServices(self, pattern):
                              {
                                  'State': dbus.String('disconnected', variant_level=1),
                              })
-    except:
+    except dbus.exceptions.DBusException:
         pass
 
     device.props[AUDIO_IFACE]['State'] = dbus.String("disconnected",

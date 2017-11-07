@@ -76,10 +76,10 @@ def _run_bluetoothctl(command):
 
     lines = out.split('\n')
     lines = map(remove_prefix, lines)
-    lines = filter(lambda l: l != '', lines)
+    lines = filter(lambda line: line != '', lines)
 
     # Filter out the echoed commands. (bluetoothctl uses readline.)
-    lines = filter(lambda l: l not in ['list', command, 'quit'], lines)
+    lines = filter(lambda line: line not in ['list', command, 'quit'], lines)
     lines = list(lines)
 
     return lines
@@ -284,14 +284,14 @@ class TestBlueZObex(dbusmock.DBusTestCase):
         out, err = process.communicate()
 
         lines = out.split('\n')
-        lines = filter(lambda l: l != '', lines)
+        lines = filter(lambda line: line != '', lines)
         lines = list(lines)
 
         # Clean up the transferred files.
         for f in transferred_files:
             try:
                 os.remove(f)
-            except:
+            except OSError:
                 pass
 
         # See what pbap-client sees.
