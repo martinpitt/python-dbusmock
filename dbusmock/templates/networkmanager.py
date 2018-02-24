@@ -189,6 +189,17 @@ def add_and_activate_connection(self, conn_conf, dev, ap):
     return (wifi_conn, active_conn)
 
 
+def get_device_by_ip_iface(self, iface):
+    NM = dbusmock.get_object(MANAGER_OBJ)
+    for dev_path in NM.GetDevices():
+        dev_obj = dbusmock.get_object(dev_path)
+        interface = dev_obj.Get(DEVICE_IFACE, 'Interface')
+        if interface == iface:
+            return dev_path
+    else:
+        return None
+
+
 def load(mock, parameters):
     manager_props = {'ActiveConnections': dbus.Array([], signature='o'),
                      'Devices': dbus.Array([], signature='o'),
@@ -211,7 +222,9 @@ def load(mock, parameters):
                        ('ActivateConnection', 'ooo', 'o', "ret = self.activate_connection(self, args[0], args[1], args[2])"),
                        ('DeactivateConnection', 'o', '', "self.deactivate_connection(self, args[0])"),
                        ('AddAndActivateConnection', 'a{sa{sv}}oo', 'oo', "ret = self.add_and_activate_connection("
-                                                    "self, args[0], args[1], args[2])")]
+                                                    "self, args[0], args[1], args[2])"),
+                       ('GetDeviceByIpIface', 's', 'o', 'ret = self.get_device_by_ip_iface(self, args[0])')]
+
     mock.AddObject(MANAGER_OBJ,
                    MANAGER_IFACE,
                    manager_props,
@@ -222,6 +235,7 @@ def load(mock, parameters):
     obj.activate_connection = activate_connection
     obj.deactivate_connection = deactivate_connection
     obj.add_and_activate_connection = add_and_activate_connection
+    obj.get_device_by_ip_iface = get_device_by_ip_iface
 
     settings_props = {'Hostname': 'hostname',
                       'CanModify': True,
