@@ -2,21 +2,13 @@
 set -eu
 
 echo ${ARCH:=amd64}
+if [ "$ARCH" = i386 ]; then
+    chrootprefix=linux32
+fi
 
 if [ -z "${RELEASE:-}" ]; then
-    # determine latest stable release (see https://launchpad.net/+apidoc)
-    # in most cases the current series is devel, except for right after a stable release
+    # determine latest release, usually devel (see https://launchpad.net/+apidoc)
     rel=$(curl --silent https://api.launchpad.net/devel/ubuntu/current_series_link | sed 's/^"//; s/"$//')
-    if ! curl --silent "$rel" | grep -q '"supported": true'; then
-        # not supported, go back
-        rel=$(curl --silent "$rel/previous_series_link" | sed 's/^"//; s/"$//')
-
-        if ! curl --silent "$rel" | grep -q '"supported": true'; then
-            echo "ERROR: neither of the last two releases are supported!?" >&2
-            exit 1
-        fi
-    fi
-    # release name is the last part of the URL
     RELEASE=${rel##*/}
 fi
 
@@ -37,17 +29,21 @@ sudo cp /etc/resolv.conf "$CHROOT/etc/resolv.conf"
 # copy code checkout into chroot
 sudo cp -a . "$CHROOT/build/src"
 
-sudo chroot "$CHROOT" << EOF
+sudo ${chrootprefix:-} chroot "$CHROOT" << EOF
 mount -t proc proc /proc
 mount -t devtmpfs devtmpfs /dev
+mount -t devpts devpts /dev/pts
 mount -t sysfs sysfs /sys
-trap "umount /proc /dev /sys" EXIT INT QUIT PIPE
+trap "umount /proc /dev/pts /dev /sys" EXIT INT QUIT PIPE
 set -ex
 # install build deps
 cat <<EOU > /etc/apt/sources.list
 deb http://archive.ubuntu.com/ubuntu ${RELEASE} main universe
 deb http://archive.ubuntu.com/ubuntu ${RELEASE}-updates main universe
 EOU
+if [ -n "${PROPOSED:-}" ]; then
+    echo "deb http://archive.ubuntu.com/ubuntu ${RELEASE}-proposed main universe" >> /etc/apt/sources.list
+fi
 apt-get update
 apt-get install -y python-all python-setuptools python3-all python3-setuptools python-nose python-dbus python-gi python3-nose python3-dbus python3-gi gir1.2-glib-2.0 dbus libnotify-bin upower network-manager pyflakes3 bluez
 apt-get install -y pycodestyle || true
@@ -59,5 +55,7 @@ set -ex
 cd /build/src
 python3 setup.py test
 python2 setup.py test
+./setup.py sdist
 EOU
 EOF
+cp "$CHROOT"/build/src/dist/python-dbusmock-*.tar.gz .
