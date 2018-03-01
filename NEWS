@@ -1,3 +1,10 @@
+0.17.2 (UNRELEASED)
+-------------------
+ - NetworkManager template: Add GetDeviceByIpIface().
+ - Move release tarballs from Launchpad to
+   <https://github.com/martinpitt/python-dbusmock/releases>.
+   <https://pypi.python.org/pypi/python-dbusmock> remains as usual.
+
 0.17.1 (2018-02-22)
 -------------------
  - Fix NetworkManager tests due to name changes from 802-11-wireless to wifi.
