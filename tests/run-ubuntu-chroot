@@ -58,4 +58,5 @@ python2 setup.py test
 ./setup.py sdist
 EOU
 EOF
-cp "$CHROOT"/build/src/dist/python-dbusmock-*.tar.gz .
+mkdir -p dist
+cp "$CHROOT"/build/src/dist/python-dbusmock-*.tar.gz dist/
