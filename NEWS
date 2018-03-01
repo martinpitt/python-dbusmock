@@ -1,4 +1,4 @@
-0.17.2 (UNRELEASED)
+0.17.2 (2018-03-01)
 -------------------
  - NetworkManager template: Add GetDeviceByIpIface().
  - Move release tarballs from Launchpad to
