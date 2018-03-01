@@ -279,10 +279,3 @@ Development
 python-dbusmock is hosted on github:
 
   https://github.com/martinpitt/python-dbusmock
-
-Feedback
---------
-For feature requests and bugs, please file reports at one of:
-
-  https://github.com/martinpitt/python-dbusmock/issues
-  https://bugs.launchpad.net/python-dbusmock
