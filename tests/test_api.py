@@ -27,6 +27,9 @@ from gi.repository import GLib
 
 dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 
+# "a <heart> b" in py2/3 compatible unicode
+UNICODE = b'a\xe2\x99\xa5b'.decode('UTF-8')
+
 
 class TestAPI(dbusmock.DBusTestCase):
     '''Test dbus-mock API'''
@@ -78,6 +81,12 @@ class TestAPI(dbusmock.DBusTestCase):
         self.dbus_mock.AddMethod('', 'Do', 's', 's', 'ret = args[0]')
         self.assertEqual(self.dbus_test.Do('Hello'), 'Hello')
 
+    def test_unicode_str(self):
+        '''unicode string roundtrip'''
+
+        self.dbus_mock.AddMethod('', 'Do', 's', 's', 'ret = args[0] * 2')
+        self.assertEqual(self.dbus_test.Do(UNICODE), dbus.String(UNICODE * 2))
+
     def test_twoarg_ret(self):
         '''two arguments, code for return value'''
 
@@ -91,19 +100,24 @@ class TestAPI(dbusmock.DBusTestCase):
     def test_array_arg(self):
         '''array argument'''
 
-        self.dbus_mock.AddMethod('', 'Do', 'iaou', '',
-                                 '''assert len(args) == 3
+        self.dbus_mock.AddMethod('', 'Do', 'iaous', '',
+                                 '''assert len(args) == 4
 assert args[0] == -1;
 assert args[1] == ['/foo']
 assert type(args[1]) == dbus.Array
 assert type(args[1][0]) == dbus.ObjectPath
 assert args[2] == 5
-''')
-        self.assertEqual(self.dbus_test.Do(-1, ['/foo'], 5), None)
+assert args[3] == %s
+''' % repr(UNICODE))
+        self.assertEqual(self.dbus_test.Do(-1, ['/foo'], 5, UNICODE), None)
 
         # check that it's logged correctly
-        with open(self.mock_log.name) as f:
-            self.assertRegex(f.read(), r'^[0-9.]+ Do -1 \["/foo"\] 5$')
+        with open(self.mock_log.name, "rb") as f:
+            log = f.read()
+            if sys.version_info[0] >= 3:
+                self.assertRegex(log, b'^[0-9.]+ Do -1 \["/foo"\] 5 "a\\xe2\\x99\\xa5b"$')
+            else:
+                self.assertRegex(log, r'^[0-9.]+ Do -1 \["/foo"\] 5 "a\\xe2\\x99\\xa5b"$')
 
     def test_dict_arg(self):
         '''dictionary argument'''

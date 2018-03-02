@@ -90,7 +90,7 @@ class DBusMockObject(dbus.service.Object):
         self._template_parameters = None
 
         if logfile:
-            self.logfile = open(logfile, 'w')
+            self.logfile = open(logfile, 'wb')
         else:
             self.logfile = None
         self.is_logfile_owner = True
@@ -589,8 +589,10 @@ class DBusMockObject(dbus.service.Object):
                 return str(int(a))
             if isinstance(a, int) or isinstance(a, long):
                 return str(a)
-            if isinstance(a, str) or isinstance(a, unicode):
+            if isinstance(a, str):
                 return '"' + str(a) + '"'
+            if isinstance(a, unicode):  # Python 2 only
+                return '"' + repr(a.encode('UTF-8'))[1:-1] + '"'
             if isinstance(a, list):
                 return '[' + ', '.join([format_arg(x) for x in a]) + ']'
             if isinstance(a, dict):
@@ -623,12 +625,11 @@ class DBusMockObject(dbus.service.Object):
         otherwise it goes to stdout.
         '''
         if self.logfile:
-            fd = self.logfile
+            fd = self.logfile.fileno()
         else:
-            fd = sys.stdout
+            fd = sys.stdout.fileno()
 
-        fd.write('%.3f %s\n' % (time.time(), msg))
-        fd.flush()
+        os.write(fd, ('%.3f %s\n' % (time.time(), msg)).encode('UTF-8'))
 
     @dbus.service.method(dbus.INTROSPECTABLE_IFACE,
                          in_signature='',
