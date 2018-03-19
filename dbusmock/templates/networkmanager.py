@@ -241,7 +241,7 @@ def load(mock, parameters):
                       'CanModify': True,
                       'Connections': dbus.Array([], signature='o')}
     settings_methods = [('ListConnections', '', 'ao', "ret = self.Get('%s', 'Connections')" % SETTINGS_IFACE),
-                        ('GetConnectionByUuid', 's', 'o', ''),
+                        ('GetConnectionByUuid', 's', 'o', 'ret = self.SettingsGetConnectionByUuid(args[0])'),
                         ('AddConnection', 'a{sa{sv}}', 'o', 'ret = self.SettingsAddConnection(args[0])'),
                         ('SaveHostname', 's', '', '')]
     mock.AddObject(SETTINGS_OBJ,
@@ -763,6 +763,17 @@ def SettingsAddConnection(self, connection_settings):
             activate_connection(NM, connection_path, dev, connection_path)
 
     return connection_path
+
+
+@dbus.service.method(SETTINGS_IFACE, in_signature='s', out_signature='o')
+def SettingsGetConnectionByUuid(self, conn_uuid):
+    conns = self.ListConnections()
+    for o in conns:
+        self.conn = dbusmock.get_object(o)
+        settings = self.conn.GetSettings()
+        if settings['connection']['uuid'] == conn_uuid:
+            return o
+    raise dbus.exceptions.DBusException("There was no connection with uuid %s" % conn_uuid)
 
 
 def ConnectionUpdate(self, settings):

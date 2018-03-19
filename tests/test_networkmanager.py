@@ -514,6 +514,23 @@ class TestNetworkManager(dbusmock.DBusTestCase):
         # Secrets request should contain just vpn section with the secrets in
         self.assertEqual(connection_i.GetSecrets('vpn'), {'vpn': {'secrets': secrets}})
 
+    def test_get_conn_by_uuid(self):
+        uuid = '133d8eb9-6de6-444f-8b37-f40bf9e33226'
+        settings = dbus.Dictionary({
+            'connection': dbus.Dictionary({
+                'id': 'test wireless',
+                'uuid': uuid,
+                'type': '802-11-wireless'}, signature='sv'),
+            '802-11-wireless': dbus.Dictionary({
+                'ssid': dbus.ByteArray('The_SSID'.encode('UTF-8'))}, signature='sv')
+        }, signature='sa{sv}')
+        connectionPath = self.settings.AddConnection(settings)
+        self.assertEqual(self.settings.GetConnectionByUuid(uuid), connectionPath)
+
+        fakeuuid = '123123123213213'
+        with self.assertRaisesRegexp(dbus.exceptions.DBusException, ".*uuid.*%s$" % fakeuuid):
+            self.settings.GetConnectionByUuid(fakeuuid)
+
 
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(stream=sys.stdout, verbosity=2))
