@@ -34,11 +34,13 @@ def load(mock, parameters):
         ('Suspend', 'b', '', ''),
         ('Hibernate', 'b', '', ''),
         ('HybridSleep', 'b', '', ''),
+        ('SuspendThenHibernate', 'b', '', ''),
         ('CanPowerOff', '', 's', 'ret = "%s"' % parameters.get('CanPowerOff', 'yes')),
         ('CanReboot', '', 's', 'ret = "%s"' % parameters.get('CanReboot', 'yes')),
         ('CanSuspend', '', 's', 'ret = "%s"' % parameters.get('CanSuspend', 'yes')),
         ('CanHibernate', '', 's', 'ret = "%s"' % parameters.get('CanHibernate', 'yes')),
         ('CanHybridSleep', '', 's', 'ret = "%s"' % parameters.get('CanHybridSleep', 'yes')),
+        ('CanSuspendThenHibernate', '', 's', 'ret = "%s"' % parameters.get('CanSuspendThenHibernate', 'yes')),
 
         ('GetSession', 's', 'o', 'ret = "/org/freedesktop/login1/session/" + args[0]'),
         ('ActivateSession', 's', '', ''),
