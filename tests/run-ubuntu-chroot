@@ -6,10 +6,13 @@ if [ "$ARCH" = i386 ]; then
     chrootprefix=linux32
 fi
 
+# only upgrade chroots for Ubuntu devel series
+UPGRADE=""
 if [ -z "${RELEASE:-}" ]; then
     # determine latest release, usually devel (see https://launchpad.net/+apidoc)
     rel=$(curl --silent https://api.launchpad.net/devel/ubuntu/current_series_link | sed 's/^"//; s/"$//')
     RELEASE=${rel##*/}
+    UPGRADE="apt-get dist-upgrade -y --purge"
 fi
 
 mkdir -p ${CACHE:=/tmp/cache/$RELEASE}
@@ -45,6 +48,7 @@ if [ -n "${PROPOSED:-}" ]; then
     echo "deb http://archive.ubuntu.com/ubuntu ${RELEASE}-proposed main universe" >> /etc/apt/sources.list
 fi
 apt-get update
+$UPGRADE
 apt-get install -y python-all python-setuptools python3-all python3-setuptools python-nose python-dbus python-gi python3-nose python3-dbus python3-gi gir1.2-glib-2.0 dbus libnotify-bin upower network-manager pyflakes3 bluez
 apt-get install -y pycodestyle || true
 
