@@ -16,6 +16,8 @@ __version__ = '0.17.2'
 from dbusmock.mockobject import (DBusMockObject, MOCK_IFACE,
                                  OBJECT_MANAGER_IFACE, get_object, get_objects)
 from dbusmock.testcase import DBusTestCase
+from dbusmock.x11session import X11SessionTestCase
 
 __all__ = ['DBusMockObject', 'MOCK_IFACE', 'OBJECT_MANAGER_IFACE',
-           'DBusTestCase', 'get_object', 'get_objects']
+           'DBusTestCase', 'get_object', 'get_objects',
+           'X11SessionTestCase']
