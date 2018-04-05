@@ -49,7 +49,7 @@ if [ -n "${PROPOSED:-}" ]; then
 fi
 apt-get update
 $UPGRADE
-apt-get install -y python-all python-setuptools python3-all python3-setuptools python-nose python-dbus python-gi python3-nose python3-dbus python3-gi gir1.2-glib-2.0 dbus libnotify-bin upower network-manager pyflakes3 bluez
+apt-get install -y python-all python-setuptools python3-all python3-setuptools python-nose python-dbus python-gi python-future python3-nose python3-dbus python3-gi python3-future gir1.2-glib-2.0 dbus libnotify-bin upower network-manager pyflakes3 bluez
 apt-get install -y pycodestyle || true
 
 # run build and tests as user
