@@ -17,7 +17,8 @@ from dbusmock.mockobject import (DBusMockObject, MOCK_IFACE,
                                  OBJECT_MANAGER_IFACE, get_object, get_objects)
 from dbusmock.testcase import DBusTestCase
 from dbusmock.x11session import X11SessionTestCase
+from dbusmock.gtest import GTest
 
 __all__ = ['DBusMockObject', 'MOCK_IFACE', 'OBJECT_MANAGER_IFACE',
            'DBusTestCase', 'get_object', 'get_objects',
-           'X11SessionTestCase']
+           'X11SessionTestCase', 'GTest']
