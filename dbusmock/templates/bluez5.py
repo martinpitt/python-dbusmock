@@ -187,8 +187,8 @@ def AddDevice(self, adapter_device_name, device_address, alias):
 
 
 @dbus.service.method(BLUEZ_MOCK_IFACE,
-                     in_signature='ss', out_signature='')
-def PairDevice(self, adapter_device_name, device_address):
+                     in_signature='ssi', out_signature='')
+def PairDevice(self, adapter_device_name, device_address, class_=5898764):
     '''Convenience method to mark an existing device as paired.
 
     You have to specify a device address which must be a valid Bluetooth
@@ -243,7 +243,7 @@ def PairDevice(self, adapter_device_name, device_address):
         device.AddProperties(DEVICE_IFACE, {
             'Modalias': dbus.String('bluetooth:v000Fp1200d1436',
                                     variant_level=1),
-            'Class': dbus.UInt32(5898764, variant_level=1),
+            'Class': dbus.UInt32(class_, variant_level=1),
             'Icon': dbus.String('phone', variant_level=1),
         })
 
@@ -256,7 +256,7 @@ def PairDevice(self, adapter_device_name, device_address):
             'Blocked': dbus.Boolean(False, variant_level=1),
             'Modalias': dbus.String('bluetooth:v000Fp1200d1436',
                                     variant_level=1),
-            'Class': dbus.UInt32(5898764, variant_level=1),
+            'Class': dbus.UInt32(class_, variant_level=1),
             'Icon': dbus.String('phone', variant_level=1),
         },
         [],
