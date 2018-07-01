@@ -80,7 +80,7 @@ class TestLogind(dbusmock.DBusTestCase):
 
         out = subprocess.check_output(['loginctl', 'list-users'],
                                       universal_newlines=True)
-        self.assertRegex(out, '(^|\n) +500 +joe +($|\n)')
+        self.assertRegex(out, r'(^|\n)\s*500\s+joe\s*($|\n)')
 
         # note, this does an actual getpwnam() in the client, so we cannot call
         # this with hardcoded user names; get from actual user in the system
