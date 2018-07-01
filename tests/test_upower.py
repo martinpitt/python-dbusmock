@@ -306,16 +306,16 @@ class TestUPower1(dbusmock.DBusTestCase):
                                       universal_newlines=True, env=env)
         self.assertIn('/DisplayDevice\n', out)
         self.assertIn('  battery\n', out)  # type
-        self.assertRegex(out, 'state:\\s+charging')
-        self.assertRegex(out, 'percentage:\\s+50%')
-        self.assertRegex(out, 'energy:\\s+40 Wh')
-        self.assertRegex(out, 'energy-full:\\s+80 Wh')
-        self.assertRegex(out, 'energy-rate:\\s+2.5 W')
-        self.assertRegex(out, 'time to empty:\\s+1\.0 hours')
-        self.assertRegex(out, 'time to full:\\s+30\.0 minutes')
-        self.assertRegex(out, 'present:\\s+yes')
-        self.assertRegex(out, "icon-name:\\s+'half-battery'")
-        self.assertRegex(out, 'warning-level:\\s+low')
+        self.assertRegex(out, r'state:\s+charging')
+        self.assertRegex(out, r'percentage:\s+50%')
+        self.assertRegex(out, r'energy:\s+40 Wh')
+        self.assertRegex(out, r'energy-full:\s+80 Wh')
+        self.assertRegex(out, r'energy-rate:\s+2.5 W')
+        self.assertRegex(out, r'time to empty:\s+1\.0 hours')
+        self.assertRegex(out, r'time to full:\s+30\.0 minutes')
+        self.assertRegex(out, r'present:\s+yes')
+        self.assertRegex(out, r"icon-name:\s+'half-battery'")
+        self.assertRegex(out, r'warning-level:\s+low')
 
 
 if __name__ == '__main__':
