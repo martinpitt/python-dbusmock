@@ -1,3 +1,11 @@
+0.18 (UNRELEASED)
+-----------------
+ - logind template: Add support for suspend-then-hibernate
+ - NetworkManager template: Add GetConnectionByUuid method
+ - bluez template: Add PairDevice() 'class_' parameter
+ - Fix logging of unicode strings in Python 2
+ - Adjust logind and timedated tests to systemd 239 (Debian #902602)
+
 0.17.2 (2018-03-01)
 -------------------
  - NetworkManager template: Add GetDeviceByIpIface().
