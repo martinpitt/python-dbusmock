@@ -18,7 +18,7 @@ import subprocess
 import dbusmock
 
 # timedatectl keeps changing its CLI output
-TIMEDATECTL_NTP_LABEL = '(NTP enabled|NTP synchronized|systemd-timesyncd.service active)'
+TIMEDATECTL_NTP_LABEL = '(NTP enabled|synchronized|systemd-timesyncd.service active)'
 
 p = subprocess.Popen(['which', 'timedatectl'], stdout=subprocess.PIPE)
 p.communicate()
