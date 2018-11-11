@@ -1,4 +1,4 @@
-0.18.1 (UNRELEASED)
+0.18.1 (2018-11-11)
 -------------------
  - test: Fix failures with systemd 239 in chroots
 
