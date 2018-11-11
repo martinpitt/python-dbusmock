@@ -4,7 +4,7 @@ sudo: true
 script: tests/run-ubuntu-chroot
 env:
   - RELEASE=
-  - RELEASE=artful
+  - RELEASE=bionic
   - RELEASE=xenial
 cache:
   directories:
