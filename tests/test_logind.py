@@ -12,6 +12,7 @@ __copyright__ = '(c) 2013 Canonical Ltd.'
 __license__ = 'LGPL 3+'
 
 import unittest
+import os
 import sys
 import subprocess
 
@@ -24,6 +25,7 @@ have_loginctl = (p.returncode == 0)
 
 
 @unittest.skipUnless(have_loginctl, 'loginctl not installed')
+@unittest.skipUnless(os.path.exists('/run/systemd/system'), '/run/systemd/system does not exist')
 class TestLogind(dbusmock.DBusTestCase):
     '''Test mocking logind'''
 
