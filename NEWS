@@ -1,3 +1,7 @@
+0.18.1 (UNRELEASED)
+-------------------
+ - test: Fix failures with systemd 239 in chroots
+
 0.18 (2018-07-01)
 -----------------
  - logind template: Add support for suspend-then-hibernate
