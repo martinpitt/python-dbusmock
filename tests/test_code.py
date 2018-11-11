@@ -32,7 +32,7 @@ class StaticCodeTests(unittest.TestCase):
 
     @unittest.skipUnless(pycodestyle, 'pycodestyle not installed')
     def test_codestyle(self):
-        pep8 = subprocess.Popen([pycodestyle, '--max-line-length=130', '--ignore=E124,E402,E731', '.'],
+        pep8 = subprocess.Popen([pycodestyle, '--max-line-length=130', '--ignore=E124,E402,E731,W504', '.'],
                                 stdout=subprocess.PIPE, universal_newlines=True)
         (out, err) = pep8.communicate()
         self.assertEqual(pep8.returncode, 0, out)

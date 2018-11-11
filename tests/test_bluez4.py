@@ -165,8 +165,7 @@ class TestBlueZ4(dbusmock.DBusTestCase):
 
         path = self.dbusmock_bluez.AddDevice(adapter_name, address, alias)
         self.assertEqual(path,
-                         '/org/bluez/' + adapter_name + '/dev_' +
-                         address.replace(':', '_'))
+                         '/org/bluez/' + adapter_name + '/dev_' + address.replace(':', '_'))
 
         # Force a service discovery so the audio interface appears.
         device = self.dbus_con.get_object('org.bluez', path)

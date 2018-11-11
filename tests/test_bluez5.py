@@ -53,9 +53,7 @@ def _run_bluetoothctl(command):
 
     # Ignore output on stderr unless bluetoothctl dies.
     if process.returncode != 0:
-        raise Exception('bluetoothctl died with status ' +
-                        str(process.returncode) + ' and errors: ' +
-                        (err or ""))
+        raise Exception('bluetoothctl died with status ' + str(process.returncode) + ' and errors: ' + (err or ""))
 
     # Strip the prompt from the start of every line, then remove empty
     # lines.
@@ -121,8 +119,7 @@ class TestBlueZ5(dbusmock.DBusTestCase):
 
         # Check for the adapter.
         out = _run_bluetoothctl('list')
-        self.assertIn('Controller ' + address + ' ' + system_name +
-                      ' [default]', out)
+        self.assertIn('Controller ' + address + ' ' + system_name + ' [default]', out)
 
         out = _run_bluetoothctl('show ' + address)
         self.assertIn('Controller ' + address, out)
@@ -156,9 +153,7 @@ class TestBlueZ5(dbusmock.DBusTestCase):
         alias = 'My Phone'
 
         path = self.dbusmock_bluez.AddDevice(adapter_name, address, alias)
-        self.assertEqual(path,
-                         '/org/bluez/' + adapter_name + '/dev_' +
-                         address.replace(':', '_'))
+        self.assertEqual(path, '/org/bluez/' + adapter_name + '/dev_' + address.replace(':', '_'))
 
         # Check for the device.
         out = _run_bluetoothctl('devices')
@@ -186,9 +181,7 @@ class TestBlueZ5(dbusmock.DBusTestCase):
         alias = 'My Phone'
 
         path = self.dbusmock_bluez.AddDevice(adapter_name, address, alias)
-        self.assertEqual(path,
-                         '/org/bluez/' + adapter_name + '/dev_' +
-                         address.replace(':', '_'))
+        self.assertEqual(path, '/org/bluez/' + adapter_name + '/dev_' + address.replace(':', '_'))
 
         # Pair with the device.
         self.dbusmock_bluez.PairDevice(adapter_name, address)

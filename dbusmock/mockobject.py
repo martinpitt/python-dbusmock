@@ -442,8 +442,7 @@ class DBusMockObject(dbus.service.Object):
         # pick out all D-BUS service methods and add them to our interface
         for symbol in dir(module):
             fn = getattr(module, symbol)
-            if ('_dbus_interface' in dir(fn) and
-                    ('_dbus_is_signal' not in dir(fn) or not fn._dbus_is_signal)):
+            if ('_dbus_interface' in dir(fn) and ('_dbus_is_signal' not in dir(fn) or not fn._dbus_is_signal)):
                 # for dbus-python compatibility, add methods as callables
                 setattr(self.__class__, symbol, fn)
                 self.methods.setdefault(fn._dbus_interface, {})[str(symbol)] = (

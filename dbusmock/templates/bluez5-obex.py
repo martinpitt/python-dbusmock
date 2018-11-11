@@ -70,8 +70,7 @@ def CreateSession(self, destination, args):
 
     if 'Target' not in args or args['Target'].upper() != 'PBAP':
         raise dbus.exceptions.DBusException(
-            'Non-PBAP targets are not currently supported by this ' +
-            'python-dbusmock template.',
+            'Non-PBAP targets are not currently supported by this python-dbusmock template.',
             name=OBEX_MOCK_IFACE + '.Unsupported')
 
     # Find the first unused session ID.
