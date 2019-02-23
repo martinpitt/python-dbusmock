@@ -1,3 +1,7 @@
+0.18.2 (2019-02-23)
+-------------------
+ - test: Adjust for changed version output format in systemd 241
+
 0.18.1 (2018-11-11)
 -------------------
  - test: Fix failures with systemd 239 in chroots
