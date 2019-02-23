@@ -14,6 +14,7 @@ __license__ = 'LGPL 3+'
 import unittest
 import os
 import sys
+import re
 import subprocess
 
 import dbusmock
@@ -37,7 +38,7 @@ class TestLogind(dbusmock.DBusTestCase):
         if have_loginctl:
             out = subprocess.check_output(['loginctl', '--version'],
                                           universal_newlines=True)
-            klass.version = out.splitlines()[0].split()[-1]
+            klass.version = re.search(r'(\d+)', out.splitlines()[0]).group(1)
 
     def setUp(self):
         self.p_mock = None
