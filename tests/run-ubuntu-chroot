@@ -62,6 +62,14 @@ set -ex
 cd /build/src
 python3 setup.py test
 python2 setup.py test
+
+# massively parallel test to check for races
+for i in \\\$(seq 100); do
+    ( PYTHONPATH=. python3 tests/test_api.py TestTemplates || touch /tmp/fail ) &
+done
+wait
+[ ! -e /tmp/fail ]
+
 ./setup.py sdist
 EOU
 EOF
