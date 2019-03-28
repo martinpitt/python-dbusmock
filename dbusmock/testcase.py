@@ -27,7 +27,7 @@ from dbusmock.mockobject import MOCK_IFACE, OBJECT_MANAGER_IFACE, load_module
 
 
 class DBusTestCase(unittest.TestCase):
-    '''Base class for D-BUS mock tests.
+    '''Base class for D-Bus mock tests.
 
     This provides some convenience API to start/stop local D-Buses, so that you
     can run a private local session and/or system bus to run mocks on.
@@ -90,7 +90,7 @@ class DBusTestCase(unittest.TestCase):
 
     @classmethod
     def start_dbus(klass, conf=None):
-        '''Start a D-BUS daemon
+        '''Start a D-Bus daemon
 
         Return (pid, address) pair.
 
@@ -112,7 +112,7 @@ class DBusTestCase(unittest.TestCase):
 
     @classmethod
     def stop_dbus(klass, pid):
-        '''Stop a D-BUS daemon
+        '''Stop a D-Bus daemon
 
         Normally you do not need to call this directly. When you use
         start_system_bus() and start_session_bus(), these buses are
@@ -154,7 +154,7 @@ class DBusTestCase(unittest.TestCase):
 
     @classmethod
     def wait_for_bus_object(klass, dest, path, system_bus=False, timeout=600):
-        '''Wait for an object to appear on D-BUS
+        '''Wait for an object to appear on D-Bus
 
         Raise an exception if object does not appear within one minute. You can
         change the timeout with the "timeout" keyword argument which specifies
@@ -182,13 +182,13 @@ class DBusTestCase(unittest.TestCase):
             timeout -= 1
             time.sleep(0.1)
         if timeout <= 0:
-            assert timeout > 0, 'timed out waiting for D-BUS object %s: %s' % (path, last_exc)
+            assert timeout > 0, 'timed out waiting for D-Bus object %s: %s' % (path, last_exc)
 
     @classmethod
     def spawn_server(klass, name, path, interface, system_bus=False, stdout=None):
         '''Run a DBusMockObject instance in a separate process
 
-        The daemon will terminate automatically when the D-BUS that it connects
+        The daemon will terminate automatically when the D-Bus that it connects
         to goes down.  If that does not happen (e. g. you test on the actual
         system/session bus), you need to kill it manually.
 
@@ -213,13 +213,13 @@ class DBusTestCase(unittest.TestCase):
 
     @classmethod
     def spawn_server_template(klass, template, parameters=None, stdout=None):
-        '''Run a D-BUS mock template instance in a separate process
+        '''Run a D-Bus mock template instance in a separate process
 
-        This starts a D-BUS mock process and loads the given template with
+        This starts a D-Bus mock process and loads the given template with
         (optional) parameters into it. For details about templates see
         dbusmock.DBusMockObject.AddTemplate().
 
-        The daemon will terminate automatically when the D-BUS that it connects
+        The daemon will terminate automatically when the D-Bus that it connects
         to goes down.  If that does not happen (e. g. you test on the actual
         system/session bus), you need to kill it manually.
 
