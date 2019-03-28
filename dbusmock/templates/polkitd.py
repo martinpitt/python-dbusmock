@@ -2,7 +2,7 @@
 
 This creates the expected methods and properties of the main
 org.freedesktop.PolicyKit1 object. By default, all actions are rejected.  You
-can call AllowUnknown() and SetAllowed() on the mock D-BUS interface to control
+can call AllowUnknown() and SetAllowed() on the mock D-Bus interface to control
 which actions are allowed.
 '''
 

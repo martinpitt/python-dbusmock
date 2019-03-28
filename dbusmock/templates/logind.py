@@ -1,7 +1,7 @@
 '''systemd logind mock template
 
 This creates the expected methods and properties of the main
-org.freedesktop.login1.Manager object. You can specify D-BUS property values
+org.freedesktop.login1.Manager object. You can specify D-Bus property values
 like "CanSuspend" or the return value of Inhibit() in "parameters".
 '''
 

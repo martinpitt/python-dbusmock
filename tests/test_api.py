@@ -483,7 +483,7 @@ assert args[2] == 5
         check('s', [1], 'TypeError: Expected a string')
 
     def test_dbus_get_log(self):
-        '''query call logs over D-BUS'''
+        '''query call logs over D-Bus'''
 
         self.assertEqual(self.dbus_mock.ClearCalls(), None)
         self.assertEqual(self.dbus_mock.GetCalls(), dbus.Array([]))
@@ -514,7 +514,7 @@ assert args[2] == 5
         self.assertEqual(self.dbus_mock.GetCalls(), dbus.Array([]))
 
     def test_dbus_get_method_calls(self):
-        '''query method call logs over D-BUS'''
+        '''query method call logs over D-Bus'''
 
         self.dbus_mock.AddMethod('', 'Do', '', '', '')
         self.assertEqual(self.dbus_test.Do(), None)

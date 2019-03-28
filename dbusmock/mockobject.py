@@ -1,5 +1,5 @@
 # coding: UTF-8
-'''Mock D-BUS objects for test suites.'''
+'''Mock D-Bus objects for test suites.'''
 
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU Lesser General Public License as published by the Free
@@ -69,7 +69,7 @@ class DBusMockObject(dbus.service.Object):
                properties on "interface"
         logfile: When given, method calls will be logged into that file name;
                  if None, logging will be written to stdout. Note that you can
-                 also query the called methods over D-BUS with GetCalls() and
+                 also query the called methods over D-Bus with GetCalls() and
                  GetMethodCalls().
         is_object_manager: If True, the GetManagedObjects method will
                            automatically be implemented on the object, returning
@@ -439,7 +439,7 @@ class DBusMockObject(dbus.service.Object):
         if hasattr(module, 'IS_OBJECT_MANAGER') and module.IS_OBJECT_MANAGER:
             self._set_up_object_manager()
 
-        # pick out all D-BUS service methods and add them to our interface
+        # pick out all D-Bus service methods and add them to our interface
         for symbol in dir(module):
             fn = getattr(module, symbol)
             if ('_dbus_interface' in dir(fn) and ('_dbus_is_signal' not in dir(fn) or not fn._dbus_is_signal)):
@@ -579,7 +579,7 @@ class DBusMockObject(dbus.service.Object):
                 return loc['ret']
 
     def format_args(self, args):
-        '''Format a D-BUS argument tuple into an appropriate logging string.'''
+        '''Format a D-Bus argument tuple into an appropriate logging string.'''
 
         def format_arg(a):
             if isinstance(a, dbus.Boolean):

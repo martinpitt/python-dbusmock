@@ -5,9 +5,9 @@ org.freedesktop.UPower object, but no devices. You can specify any property
 such as 'OnLowBattery' or the return value of 'SuspendAllowed',
 'HibernateAllowed', and 'GetCriticalAction' in "parameters".
 
-This provides the 0.9 D-BUS API of upower by default, but if the
+This provides the 0.9 D-Bus API of upower by default, but if the
 DaemonVersion property (in parameters) is set to >= 0.99 it will provide the
-1.0 D-BUS API instead.
+1.0 D-Bus API instead.
 '''
 
 # This program is free software; you can redistribute it and/or modify it under
