@@ -16,19 +16,22 @@ import unittest
 import subprocess
 
 try:
-    pycodestyle = subprocess.check_output(['/bin/sh', '-ec', 'which pycodestyle-3 2>/dev/null || which pycodestyle']).strip()
+    pycodestyle = subprocess.check_output(['/bin/bash', '-ec', 'type -p pycodestyle-3 || type -p pycodestyle']).strip()
 except subprocess.CalledProcessError:
     pycodestyle = None
 
+try:
+    pyflakes = subprocess.check_output(['/bin/bash', '-ec', 'type -p pyflakes-3 || type -p pyflakes3']).strip()
+except subprocess.CalledProcessError:
+    pyflakes = None
+
 
 class StaticCodeTests(unittest.TestCase):
-    @unittest.skipIf(subprocess.call(['which', 'pyflakes3'], stdout=subprocess.PIPE) != 0,
-                     'pyflakes3 not installed')
+    @unittest.skipUnless(pyflakes, 'pyflakes3 not installed')
     def test_pyflakes(self):
-        pyflakes = subprocess.Popen(['pyflakes3', '.'], stdout=subprocess.PIPE,
-                                    universal_newlines=True)
-        (out, err) = pyflakes.communicate()
-        self.assertEqual(pyflakes.returncode, 0, out)
+        flakes = subprocess.Popen([pyflakes, '.'], stdout=subprocess.PIPE, universal_newlines=True)
+        (out, err) = flakes.communicate()
+        self.assertEqual(flakes.returncode, 0, out)
 
     @unittest.skipUnless(pycodestyle, 'pycodestyle not installed')
     def test_codestyle(self):
