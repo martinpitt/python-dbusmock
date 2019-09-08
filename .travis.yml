@@ -1,14 +1,13 @@
 dist: trusty
 language: c
 sudo: true
-script: tests/run-ubuntu-chroot
+services:
+  - docker
 env:
-  - RELEASE=
-  - RELEASE=bionic
-  - RELEASE=xenial
-cache:
-  directories:
-    - /tmp/cache
+  - TEST=tests/run-ubuntu RELEASE=devel
+  - TEST=tests/run-ubuntu RELEASE=rolling
+  - TEST=tests/run-ubuntu RELEASE=latest
+script: $TEST
 deploy:
   - provider: releases
     api_key:
@@ -17,7 +16,7 @@ deploy:
     skip_cleanup: true
     on:
       tags: true
-      condition: -z "$RELEASE"
+      condition: "$RELEASE = devel"
   - provider: pypi
     user: "Martin.Pitt"
     password:
@@ -25,4 +24,4 @@ deploy:
     skip_cleanup: true
     on:
       tags: true
-      condition: -z "$RELEASE"
+      condition: "$RELEASE = devel"

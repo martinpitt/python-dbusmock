@@ -1,0 +1,53 @@
+#!/bin/sh
+set -eu
+
+if type podman >/dev/null 2>&1; then
+    RUNC=podman
+else
+    RUNC="sudo docker"
+fi
+
+$RUNC run --interactive --rm --volume `pwd`:/source ${ARCH:-amd64}/ubuntu:${RELEASE:-rolling} /bin/sh << EOF
+set -ex
+SUCCESS=0
+
+trap "if [ \$SUCCESS -eq 0 ] && [ -n '${DEBUG:-}' ]; then echo sleeping indefinitely for debugging; sleep infinity; fi"  EXIT INT QUIT PIPE
+
+# go-faster apt
+echo  'Acquire::Languages "none";' > /etc/apt/apt.conf.d/90nolanguages
+
+# upgrade
+export DEBIAN_FRONTEND=noninteractive
+apt-get update
+apt-get install -y eatmydata
+eatmydata apt-get -y --purge dist-upgrade
+
+# install build dependencies
+eatmydata apt-get install --no-install-recommends -y python-all python-setuptools python3-all python3-setuptools python-nose python-dbus python-gi python3-nose python3-dbus python3-gi gir1.2-glib-2.0 dbus libnotify-bin upower network-manager pyflakes3 bluez pycodestyle
+
+# systemd's tools otherwise fail on "not been booted with systemd"
+mkdir -p /run/systemd/system
+
+# run build and test as user
+useradd build
+su -s /bin/sh - build << EOG
+set -ex
+cp -r /source /tmp
+cd /tmp/source
+python3 setup.py test
+python2 setup.py test
+
+# massively parallel test to check for races
+for i in \\\$(seq 100); do
+    ( PYTHONPATH=. python3 tests/test_api.py TestTemplates || touch /tmp/fail ) &
+done
+wait
+[ ! -e /tmp/fail ]
+
+./setup.py sdist
+EOG
+
+# copy release tarball to outside
+cp -r /tmp/source/dist /source/
+SUCCESS=1
+EOF
