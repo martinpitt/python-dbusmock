@@ -584,10 +584,8 @@ class DBusMockObject(dbus.service.Object):
         def format_arg(a):
             if isinstance(a, dbus.Boolean):
                 return str(bool(a))
-            if isinstance(a, dbus.Byte):
+            if isinstance(a, dbus.Byte) or isinstance(a, int) or isinstance(a, long):
                 return str(int(a))
-            if isinstance(a, int) or isinstance(a, long):
-                return str(a)
             if isinstance(a, str):
                 return '"' + str(a) + '"'
             if isinstance(a, unicode):  # Python 2 only
