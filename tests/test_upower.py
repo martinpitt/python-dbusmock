@@ -78,7 +78,7 @@ class TestUPower(dbusmock.DBusTestCase):
         for line in out.splitlines():
             if line.endswith('/DisplayDevice'):
                 continue
-            self.assertFalse('Device' in line, out)
+            self.assertNotIn('Device', line)
         self.assertRegex(out, 'on-battery:\\s+yes')
         self.assertRegex(out, 'lid-is-present:\\s+yes')
 
@@ -245,7 +245,7 @@ class TestUPower1(dbusmock.DBusTestCase):
         for line in out.splitlines():
             if line.endswith('/DisplayDevice'):
                 continue
-            self.assertFalse('Device' in line, out)
+            self.assertNotIn('Device', line)
         self.assertRegex(out, 'on-battery:\\s+yes')
         self.assertRegex(out, 'lid-is-present:\\s+yes')
 

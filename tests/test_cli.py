@@ -133,7 +133,7 @@ class TestCLI(dbusmock.DBusTestCase):
                              universal_newlines=True)
         (out, err) = p.communicate()
         self.assertEqual(out, '')
-        self.assertTrue('must specify NAME' in err, err)
+        self.assertIn('must specify NAME', err)
         self.assertNotEqual(p.returncode, 0)
 
     def test_help(self):
@@ -142,8 +142,8 @@ class TestCLI(dbusmock.DBusTestCase):
                              universal_newlines=True)
         (out, err) = p.communicate()
         self.assertEqual(err, '')
-        self.assertTrue('INTERFACE' in out, out)
-        self.assertTrue('--system' in out, out)
+        self.assertIn('INTERFACE', out)
+        self.assertIn('--system', out)
         self.assertEqual(p.returncode, 0)
 
 

@@ -190,7 +190,7 @@ assert args[2] == 5
                 self.fail('method call did not raise an error for signature "%s" and arguments %s'
                           % (signature, args))
             except dbus.exceptions.DBusException as e:
-                self.assertTrue(err in str(e), e)
+                self.assertIn(err, str(e))
 
         # not enough arguments
         check('i', [], 'TypeError: More items found')
@@ -344,20 +344,20 @@ assert args[2] == 5
         dbus_introspect = dbus.Interface(self.obj_test, dbus.INTROSPECTABLE_IFACE)
 
         xml_empty = dbus_introspect.Introspect()
-        self.assertTrue('<interface name="org.freedesktop.DBus.Mock">' in xml_empty, xml_empty)
-        self.assertTrue('<method name="AddMethod">' in xml_empty, xml_empty)
+        self.assertIn('<interface name="org.freedesktop.DBus.Mock">', xml_empty)
+        self.assertIn('<method name="AddMethod">', xml_empty)
 
         self.dbus_mock.AddMethod('', 'Do', 'saiv', 'i', 'ret = 42')
 
         xml_method = dbus_introspect.Introspect()
-        self.assertFalse(xml_empty == xml_method, 'No change from empty XML')
-        self.assertTrue('<interface name="org.freedesktop.Test.Main">' in xml_method, xml_method)
-        self.assertTrue('''<method name="Do">
+        self.assertNotEqual(xml_empty, xml_method)
+        self.assertIn('<interface name="org.freedesktop.Test.Main">', xml_method)
+        self.assertIn('''<method name="Do">
       <arg direction="in" name="arg1" type="s" />
       <arg direction="in" name="arg2" type="ai" />
       <arg direction="in" name="arg3" type="v" />
       <arg direction="out" type="i" />
-    </method>''' in xml_method, xml_method)
+    </method>''', xml_method)
 
     # properties in introspection are not supported by dbus-python right now
     def test_introspection_properties(self):
@@ -368,10 +368,10 @@ assert args[2] == 5
 
         xml = self.obj_test.Introspect()
 
-        self.assertTrue('<interface name="org.freedesktop.Test.Main">' in xml, xml)
-        self.assertTrue('<interface name="org.freedesktop.Test.Sub">' in xml, xml)
-        self.assertTrue('<property access="readwrite" name="Color" type="s" />' in xml, xml)
-        self.assertTrue('<property access="readwrite" name="Count" type="i" />' in xml, xml)
+        self.assertIn('<interface name="org.freedesktop.Test.Main">', xml)
+        self.assertIn('<interface name="org.freedesktop.Test.Sub">', xml)
+        self.assertIn('<property access="readwrite" name="Color" type="s" />', xml)
+        self.assertIn('<property access="readwrite" name="Count" type="i" />', xml)
 
     def test_objects_map(self):
         '''access global objects map'''
@@ -467,7 +467,7 @@ assert args[2] == 5
                 self.fail('EmitSignal did not raise an error for signature "%s" and arguments %s'
                           % (signature, args))
             except dbus.exceptions.DBusException as e:
-                self.assertTrue(err in str(e), e)
+                self.assertIn(err, str(e))
 
         # not enough arguments
         check('i', [], 'TypeError: More items found')
