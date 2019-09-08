@@ -352,12 +352,20 @@ assert args[2] == 5
         xml_method = dbus_introspect.Introspect()
         self.assertNotEqual(xml_empty, xml_method)
         self.assertIn('<interface name="org.freedesktop.Test.Main">', xml_method)
-        self.assertIn('''<method name="Do">
+        # various Python versions use different name vs. type ordering
+        expected1 = '''<method name="Do">
       <arg direction="in" name="arg1" type="s" />
       <arg direction="in" name="arg2" type="ai" />
       <arg direction="in" name="arg3" type="v" />
       <arg direction="out" type="i" />
-    </method>''', xml_method)
+    </method>'''
+        expected2 = '''<method name="Do">
+      <arg direction="in" type="s" name="arg1" />
+      <arg direction="in" type="ai" name="arg2" />
+      <arg direction="in" type="v" name="arg3" />
+      <arg direction="out" type="i" />
+    </method>'''
+        self.assertTrue(expected1 in xml_method or expected2 in xml_method, xml_method)
 
     # properties in introspection are not supported by dbus-python right now
     def test_introspection_properties(self):
@@ -370,8 +378,11 @@ assert args[2] == 5
 
         self.assertIn('<interface name="org.freedesktop.Test.Main">', xml)
         self.assertIn('<interface name="org.freedesktop.Test.Sub">', xml)
-        self.assertIn('<property access="readwrite" name="Color" type="s" />', xml)
-        self.assertIn('<property access="readwrite" name="Count" type="i" />', xml)
+        # various Python versions use different attribute ordering
+        self.assertTrue('<property access="readwrite" name="Color" type="s" />' in xml or
+                        '<property name="Color" type="s" access="readwrite" />' in xml, xml)
+        self.assertTrue('<property access="readwrite" name="Count" type="i" />' in xml or
+                        '<property name="Count" type="i" access="readwrite" />' in xml, xml)
 
     def test_objects_map(self):
         '''access global objects map'''
