@@ -1,0 +1,34 @@
+#!/bin/sh
+set -eu
+
+if type podman >/dev/null 2>&1; then
+    RUNC=podman
+else
+    RUNC="sudo docker"
+fi
+
+$RUNC run --interactive --rm --volume `pwd`:/source fedora:${RELEASE:-latest} /bin/sh << EOF
+set -ex
+SUCCESS=0
+
+trap "if [ \$SUCCESS -eq 0 ] && [ -n '${DEBUG:-}' ]; then echo sleeping indefinitely for debugging; sleep infinity; fi"  EXIT INT QUIT PIPE
+
+# install build dependencies
+# FIXME: s/which/type in tests
+dnf -y install which python3-setuptools python3-nose python3-gobject-base \
+    python3-dbus dbus-x11 python3-pycodestyle python3-pyflakes \
+    upower NetworkManager bluez libnotify polkit
+
+# systemd's tools otherwise fail on "not been booted with systemd"
+mkdir -p /run/systemd/system
+
+# run build and test as user
+useradd build
+su -s /bin/sh - build << EOG
+set -ex
+cp -r /source /tmp
+cd /tmp/source
+python3 setup.py test
+EOG
+SUCCESS=1
+EOF

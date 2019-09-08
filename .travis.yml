@@ -7,6 +7,8 @@ env:
   - TEST=tests/run-ubuntu RELEASE=devel
   - TEST=tests/run-ubuntu RELEASE=rolling
   - TEST=tests/run-ubuntu RELEASE=latest
+  - TEST=tests/run-fedora RELEASE=latest
+  - TEST=tests/run-fedora RELEASE=rawhide
 script: $TEST
 deploy:
   - provider: releases
