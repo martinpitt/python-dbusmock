@@ -1,0 +1,11 @@
+#!/bin/sh
+set -eux
+IMAGE="$1"
+
+if type podman >/dev/null 2>&1; then
+    RUNC=podman
+else
+    RUNC="sudo docker"
+fi
+
+$RUNC run --interactive --rm --volume `pwd`:/source --workdir /source "$IMAGE" /bin/sh tests/run-${IMAGE%:*}

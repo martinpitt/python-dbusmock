@@ -4,12 +4,12 @@ sudo: true
 services:
   - docker
 env:
-  - TEST=tests/run-ubuntu RELEASE=devel
-  - TEST=tests/run-ubuntu RELEASE=rolling
-  - TEST=tests/run-ubuntu RELEASE=latest
-  - TEST=tests/run-fedora RELEASE=latest
-  - TEST=tests/run-fedora RELEASE=rawhide
-script: $TEST
+  - IMAGE=ubuntu:devel
+  - IMAGE=ubuntu:rolling
+  - IMAGE=ubuntu:latest
+  - IMAGE=fedora:latest
+  - IMAGE=fedora:rawhide
+script: tests/run $IMAGE
 deploy:
   - provider: releases
     api_key:
@@ -18,7 +18,7 @@ deploy:
     skip_cleanup: true
     on:
       tags: true
-      condition: "$RELEASE = devel"
+      condition: "$IMAGE = ubuntu:devel"
   - provider: pypi
     user: "Martin.Pitt"
     password:
@@ -26,4 +26,4 @@ deploy:
     skip_cleanup: true
     on:
       tags: true
-      condition: "$RELEASE = devel"
+      condition: "$IMAGE = ubuntu:devel"
