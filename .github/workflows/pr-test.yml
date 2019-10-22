@@ -1,18 +1,18 @@
-name: Run tests for PR
+name: Test
 
 on:
   pull_request:
     branches: [master]
 
 jobs:
-  build:
+  run:
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 4
       matrix:
-        release: ["latest", "rawhide"]
-
+        image: ["ubuntu:devel", "ubuntu:rolling", "ubuntu:latest", "fedora:latest", "fedora:rawhide"]
+    container: ${{ matrix.image }}
     steps:
     - uses: actions/checkout@v1
-    - name: Run Fedora tests
-      run: tests/run-fedora ${{ matrix.release }}
+    - name: Run test
+      run: sh tests/run-$(I=${{ matrix.image }}; echo ${I%:*})
