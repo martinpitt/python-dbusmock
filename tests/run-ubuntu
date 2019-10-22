@@ -1,17 +1,5 @@
 #!/bin/sh
-set -eu
-
-if type podman >/dev/null 2>&1; then
-    RUNC=podman
-else
-    RUNC="sudo docker"
-fi
-
-$RUNC run --interactive --rm --volume `pwd`:/source ${ARCH:-amd64}/ubuntu:${RELEASE:-rolling} /bin/sh << EOF
-set -ex
-SUCCESS=0
-
-trap "if [ \$SUCCESS -eq 0 ] && [ -n '${DEBUG:-}' ]; then echo sleeping indefinitely for debugging; sleep infinity; fi"  EXIT INT QUIT PIPE
+set -eux
 
 # go-faster apt
 echo  'Acquire::Languages "none";' > /etc/apt/apt.conf.d/90nolanguages
@@ -30,24 +18,22 @@ mkdir -p /run/systemd/system
 
 # run build and test as user
 useradd build
-su -s /bin/sh - build << EOG
+su -s /bin/sh - build << EOF
 set -ex
-cp -r /source /tmp
+cp -r $(pwd) /tmp/source
 cd /tmp/source
 python3 setup.py test
 python2 setup.py test
 
 # massively parallel test to check for races
-for i in \\\$(seq 100); do
+for i in \$(seq 100); do
     ( PYTHONPATH=. python3 tests/test_api.py TestTemplates || touch /tmp/fail ) &
 done
 wait
 [ ! -e /tmp/fail ]
 
 ./setup.py sdist
-EOG
-
-# copy release tarball to outside
-cp -r /tmp/source/dist /source/
-SUCCESS=1
 EOF
+
+# copy release tarball to outside; for bind mounts only
+[ ! -d /source ] || cp -r /tmp/source/dist /source/
