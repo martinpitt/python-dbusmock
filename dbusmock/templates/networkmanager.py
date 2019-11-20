@@ -321,6 +321,7 @@ def AddEthernetDevice(self, device_name, iface_name, state):
 
     props = {'DeviceType': dbus.UInt32(1),
              'State': dbus.UInt32(state),
+             'StateReason': (dbus.UInt32(state), dbus.UInt32(0)),
              'Interface': iface_name,
              'ActiveConnection': dbus.ObjectPath('/'),
              'AvailableConnections': dbus.Array([], signature='o'),
@@ -389,6 +390,7 @@ def AddWiFiDevice(self, device_name, iface_name, state):
                               'Driver': 'dbusmock',
                               'DeviceType': dbus.UInt32(2),
                               'State': dbus.UInt32(state),
+                              'StateReason': (dbus.UInt32(state), dbus.UInt32(0)),
                               'Interface': iface_name,
                               'IpInterface': iface_name,
                           })
