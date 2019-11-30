@@ -577,6 +577,7 @@ def AddActiveConnection(self, devices, connection_device, specific_object, name,
     settings = conn_obj.settings
     conn_uuid = settings['connection']['uuid']
     conn_type = settings['connection']['type']
+    conn_id = settings['connection']['id']
 
     device_objects = [dbus.ObjectPath(dev) for dev in devices]
 
@@ -594,6 +595,7 @@ def AddActiveConnection(self, devices, connection_device, specific_object, name,
                        'SpecificObject': dbus.ObjectPath(specific_object),
                        'Uuid': conn_uuid,
                        'State': dbus.UInt32(state),
+                       'Id': conn_id,
                    },
                    [])
 
