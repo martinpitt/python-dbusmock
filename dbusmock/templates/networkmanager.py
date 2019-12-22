@@ -43,7 +43,7 @@ IS_OBJECT_MANAGER = True
 class NMState:
     '''Global state
 
-    As per https://developer.gnome.org/NetworkManager/unstable/spec.html#type-NM_STATE
+    As per https://developer.gnome.org/NetworkManager/unstable/nm-dbus-types.html#NMState
     '''
     NM_STATE_UNKNOWN = 0
     NM_STATE_ASLEEP = 10
@@ -58,7 +58,7 @@ class NMState:
 class NMConnectivityState:
     '''Connectvity state
 
-    As per https://developer.gnome.org/NetworkManager/unstable/spec.html#type-NM_CONNECTIVITY
+    As per https://developer.gnome.org/NetworkManager/unstable/nm-dbus-types.html#NMConnectivityState
     '''
     NM_CONNECTIVITY_UNKNOWN = 0
     NM_CONNECTIVITY_NONE = 1
@@ -70,7 +70,7 @@ class NMConnectivityState:
 class NMActiveConnectionState:
     '''Active connection state
 
-    As per https://developer.gnome.org/NetworkManager/unstable/spec.html#type-NM_ACTIVE_CONNECTION_STATE
+    As per https://developer.gnome.org/NetworkManager/unstable/nm-dbus-types.html#NMActiveConnectionState
     '''
     NM_ACTIVE_CONNECTION_STATE_UNKNOWN = 0
     NM_ACTIVE_CONNECTION_STATE_ACTIVATING = 1
@@ -82,7 +82,7 @@ class NMActiveConnectionState:
 class InfrastructureMode:
     '''Infrastructure mode
 
-    As per https://developer.gnome.org/NetworkManager/unstable/spec.html#type-NM_802_11_MODE
+    As per https://developer.gnome.org/NetworkManager/unstable/nm-dbus-types.html#NM80211Mode
     '''
     NM_802_11_MODE_UNKNOWN = 0
     NM_802_11_MODE_ADHOC = 1
@@ -100,7 +100,7 @@ class InfrastructureMode:
 class DeviceState:
     '''Device states
 
-    As per https://developer.gnome.org/NetworkManager/unstable/spec.html#type-NM_DEVICE_STATE
+    As per https://developer.gnome.org/NetworkManager/unstable/nm-dbus-types.html#NMDeviceState
     '''
     UNKNOWN = 0
     UNMANAGED = 10
@@ -120,7 +120,7 @@ class DeviceState:
 class NM80211ApSecurityFlags:
     '''Security flags
 
-    As per https://developer.gnome.org/NetworkManager/unstable/spec.html#type-NM_802_11_AP_SEC
+    As per https://developer.gnome.org/NetworkManager/unstable/nm-dbus-types.html#NM80211ApSecurityFlags
     '''
     NM_802_11_AP_SEC_NONE = 0x00000000
     NM_802_11_AP_SEC_PAIR_WEP40 = 0x00000001
@@ -145,7 +145,7 @@ class NM80211ApSecurityFlags:
 class NM80211ApFlags:
     '''Device flags
 
-    As per https://developer.gnome.org/NetworkManager/unstable/spec.html#type-NM_802_11_AP_FLAGS
+    As per https://developer.gnome.org/NetworkManager/unstable/nm-dbus-types.html#NM80211ApFlags
     '''
     NM_802_11_AP_FLAGS_NONE = 0x00000000
     NM_802_11_AP_FLAGS_PRIVACY = 0x00000001
@@ -305,7 +305,7 @@ def AddEthernetDevice(self, device_name, iface_name, state):
     state. You can use the predefined DeviceState values (e. g.
     DeviceState.ACTIVATED) or supply a numeric value. For valid state values
     please visit
-    http://projects.gnome.org/NetworkManager/developers/api/09/spec.html#type-NM_DEVICE_STATE
+    https://developer.gnome.org/NetworkManager/unstable/nm-dbus-types.html#NMDeviceState
 
     Please note that this does not set any global properties.
 
@@ -355,7 +355,7 @@ def AddWiFiDevice(self, device_name, iface_name, state):
     state. You can use the predefined DeviceState values (e. g.
     DeviceState.ACTIVATED) or supply a numeric value. For valid state values,
     please visit
-    http://projects.gnome.org/NetworkManager/developers/api/09/spec.html#type-NM_DEVICE_STATE
+    https://developer.gnome.org/NetworkManager/unstable/nm-dbus-types.html#NMDeviceState
 
     Please note that this does not set any global properties.
 
@@ -417,7 +417,7 @@ def AddAccessPoint(self, dev_path, ap_name, ssid, hw_address,
     You have to specify WiFi Device path, Access Point object name,
     ssid, hw_address, mode, frequency, rate, strength and security.
     For valid access point property values, please visit
-    http://projects.gnome.org/NetworkManager/developers/api/09/spec.html#org.freedesktop.NetworkManager.AccessPoint
+    https://developer.gnome.org/NetworkManager/unstable/gdbus-org.freedesktop.NetworkManager.AccessPoint.html
 
     Please note that this does not set any global properties.
 
@@ -705,8 +705,7 @@ def SettingsAddConnection(self, connection_settings):
     '''Add a connection.
 
     connection_settings is a String String Variant Map Map. See
-    https://developer.gnome.org/NetworkManager/0.9/spec.html
-        #type-String_String_Variant_Map_Map
+    https://developer.gnome.org/NetworkManager/0.9/spec.html #type-String_String_Variant_Map_Map
 
     If you omit uuid, this method adds one for you.
     '''
@@ -786,8 +785,7 @@ def ConnectionUpdate(self, settings):
     '''Update settings on a connection.
 
     settings is a String String Variant Map Map. See
-    https://developer.gnome.org/NetworkManager/0.9/spec.html
-        #type-String_String_Variant_Map_Map
+    https://developer.gnome.org/NetworkManager/0.9/spec.html#type-String_String_Variant_Map_Map
     '''
     connection_path = self.connection_path
 
