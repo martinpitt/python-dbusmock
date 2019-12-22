@@ -279,6 +279,7 @@ def SetDeviceActive(self, device_path, active_connection_path):
     dev_obj.Set(DEVICE_IFACE, 'ActiveConnection', dbus.ObjectPath(active_connection_path))
     old_state = dev_obj.Get(DEVICE_IFACE, 'State')
     dev_obj.Set(DEVICE_IFACE, 'State', dbus.UInt32(DeviceState.ACTIVATED))
+    dev_obj.Set(DEVICE_IFACE, 'StateReason', (dbus.UInt32(DeviceState.ACTIVATED), dbus.UInt32(0)))
 
     dev_obj.EmitSignal(DEVICE_IFACE, 'StateChanged', 'uuu', [dbus.UInt32(DeviceState.ACTIVATED), old_state, dbus.UInt32(1)])
 
@@ -290,6 +291,7 @@ def SetDeviceDisconnected(self, device_path):
     dev_obj.Set(DEVICE_IFACE, 'ActiveConnection', dbus.ObjectPath('/'))
     old_state = dev_obj.Get(DEVICE_IFACE, 'State')
     dev_obj.Set(DEVICE_IFACE, 'State', dbus.UInt32(DeviceState.DISCONNECTED))
+    dev_obj.Set(DEVICE_IFACE, 'StateReason', (dbus.UInt32(DeviceState.DISCONNECTED), dbus.UInt32(0)))
 
     dev_obj.EmitSignal(DEVICE_IFACE, 'StateChanged', 'uuu', [dbus.UInt32(DeviceState.DISCONNECTED), old_state, dbus.UInt32(1)])
 
