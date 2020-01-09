@@ -1,3 +1,8 @@
+0.19 (2020-01-09)
+-----------------
+- NetworkManager template: Add "StateReason" property and active connection ID
+- Add low-memory-monitor template
+
 0.18.3 (2019-09-08)
 -------------------
  - Fix timeouts for loaded machines and parallel tests
