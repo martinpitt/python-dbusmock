@@ -1,0 +1,29 @@
+dist: trusty
+language: c
+sudo: true
+services:
+  - docker
+env:
+  - IMAGE=ubuntu:devel
+  - IMAGE=ubuntu:rolling
+  - IMAGE=ubuntu:latest
+  - IMAGE=fedora:latest
+  - IMAGE=fedora:rawhide
+script: tests/run $IMAGE
+deploy:
+  - provider: releases
+    api_key:
+      secure: "RzUxna9M0f8dcVvpDMR+hfB0acWbC0vBuW0aMC0AjCbwpATQADaUuDKtMkP7LLOniFTan73Cat6nX+nVT1CtiePoYz1azwvKQBYLEZRUQ2WpY6cAUMbCq+Xcpfw9audcLaw7Wj/LBVXJnciJM6on2qooR3u7VBCCRjtppIoPJspFTQEePOH+oCJgp+KCMYQnj5XQezZpko19bSWoNWoF2dbXpMczGCL2fEawPumcV7uqLranhNxoIcDgcZdRAGWgoGdn8c7i8yT/Bk/7krmjRpYM1Bp/ZNBYp76EXyj2mwEuFhieAkcL10KDI5n29smB9NsbFtRe4wPJuXuLwdtslwalir/AP5YGdfFN9BprFAj5yi6RYYKg2nA8BjZ/t8pFSFy60Ek4WFRvgyaK9t83FAkg/ht7vuQ21fSjBqckE6Arnn46y20U6QjVlbSLj7SlER5Td1XzxPZmd6IZj5EfvzBPWB6x5liC+vQNZK+noW3dZBg8al6YhvS+r1WRMJLdOGdipr2ZztK8uH+IEj8sCqdi7BOuCgQJc2Iefq+nhTbE1w9EAosjF6tdkfV1qz3+TuHZN0eEXscwULFFvosOHa/+dfTiDcZeXwyI6RhiCGwnxZJlJUVn3hXTwyOryaZMWr7/l5/bYJyi973wijXAGcL8cAYUdJCrB9Jvw/93XrE="
+    file: dist/python-dbusmock-${TRAVIS_TAG}.tar.gz
+    skip_cleanup: true
+    on:
+      tags: true
+      condition: "$IMAGE = ubuntu:devel"
+  - provider: pypi
+    user: "Martin.Pitt"
+    password:
+      secure: "jv9FTmI6rzNBJXjmo8lU7yWsQ9bG4Faqxi0JK6TgY6n9tGGyLWHa5eviIPq3Ka1Q6xiUJDjTGZH8dgFFZhd2V+TjL7Y4V4nip0/rpIyUJ8ZzJBatN3xlYXPWWiLM7kmcVbupMHKok0BIDv9QdSCSZ3owxIBahghQ/w3gWB7B+HVv7CiyPwrYpAL6EYkVl1XvAtWYLyECGcPpRRhDQwP/BxRSaFrxZKHmJjJDPHF5y673wKUgilHARB1sHhamGBF82n+9YsPp7Xt0ahmBVexzWKuOAkcpdoJWpOmCeVTt5ss5z1YvseFc2AS0Pn1+MtOrEAsPP/GUoe8GLoxD820tRs9UQ5x9XovHV5RRQ1knvCqxAsTd9IA21VjhpVGjg+wmwpM3jGXJjm+SIHAwx/2gDKkROkkJyFGk5ySZgjraxmgSXQN7O/mu+zDTx0+0EOa8OGjZiSHnQvscQALZfAXRjkfoXFmSttRapSZQz0XMHNSaH/gRSlOsrJgDNk97+lkTHUfSNHmVaE+Ucq6iocjXRz5IgyrQSFFax8ZQtDQC/HD2OkXALQ8ovRcU3WZSWk5zS0MYYaW6Irfouwx4ELD2cJ/g/BV+yhpHAZFjsMHnA3Shpt1OsmuqYlHNzIlM90JeStet6s7DrQwdoBoKW44jzfcms3hYXh3g8up+M3bDXt0="
+    skip_cleanup: true
+    on:
+      tags: true
+      condition: "$IMAGE = ubuntu:devel"

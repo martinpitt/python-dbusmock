@@ -1,0 +1,19 @@
+#!/bin/sh
+set -eux
+# install build dependencies
+# FIXME: s/which/type in tests
+dnf -y install which python3-setuptools python3-nose python3-gobject-base \
+    python3-dbus dbus-x11 python3-pycodestyle python3-pyflakes \
+    upower NetworkManager bluez libnotify polkit
+
+# systemd's tools otherwise fail on "not been booted with systemd"
+mkdir -p /run/systemd/system
+
+# run build and test as user
+useradd build
+su -s /bin/sh - build << EOF
+set -ex
+cp -r $(pwd) /tmp/source
+cd /tmp/source
+python3 setup.py test
+EOF

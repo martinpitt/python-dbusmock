@@ -1,0 +1,39 @@
+#!/bin/sh
+set -eux
+
+# go-faster apt
+echo  'Acquire::Languages "none";' > /etc/apt/apt.conf.d/90nolanguages
+
+# upgrade
+export DEBIAN_FRONTEND=noninteractive
+apt-get update
+apt-get install -y eatmydata
+eatmydata apt-get -y --purge dist-upgrade
+
+# install build dependencies
+eatmydata apt-get install --no-install-recommends -y python-all python-setuptools python3-all python3-setuptools python-nose python-dbus python-gi python3-nose python3-dbus python3-gi gir1.2-glib-2.0 dbus libnotify-bin upower network-manager pyflakes3 bluez pycodestyle
+
+# systemd's tools otherwise fail on "not been booted with systemd"
+mkdir -p /run/systemd/system
+
+# run build and test as user
+useradd build
+su -s /bin/sh - build << EOF
+set -ex
+cp -r $(pwd) /tmp/source
+cd /tmp/source
+python3 setup.py test
+python2 setup.py test
+
+# massively parallel test to check for races
+for i in \$(seq 100); do
+    ( PYTHONPATH=. python3 tests/test_api.py TestTemplates || touch /tmp/fail ) &
+done
+wait
+[ ! -e /tmp/fail ]
+
+./setup.py sdist
+EOF
+
+# copy release tarball to outside; for bind mounts only
+[ ! -d /source ] || cp -r /tmp/source/dist /source/

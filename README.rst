@@ -118,9 +118,9 @@ Let's walk through:
 Simple example from shell
 -------------------------
 
-We use the actual session bus for this example. You can use ``dbus-launch`` to
-start a private one as well if you want, but that is not part of the actual
-mocking.
+We use the actual session bus for this example. You can use
+``dbus-run-session`` to start a private one as well if you want, but that is
+not part of the actual mocking.
 
 So let's start a mock at the D-Bus name ``com.example.Foo`` with an initial
 "main" object on path /, with the main D-Bus interface
@@ -180,17 +180,17 @@ which arguments. There are three ways to do that:
    Python.
 
  - You can use the ``GetCalls()``, ``GetMethodCalls()`` and ``ClearCalls()``
-   methods on the ``org.freedesktop.DBus.Mock`` D-BUS interface to get an array
+   methods on the ``org.freedesktop.DBus.Mock`` D-Bus interface to get an array
    of tuples describing the calls.
 
 
 Templates
 ---------
-Some D-BUS services are commonly used in test suites, such as UPower or
+Some D-Bus services are commonly used in test suites, such as UPower or
 NetworkManager. python-dbusmock provides "templates" which set up the common
 structure of these services (their main objects, properties, and methods) so
 that you do not need to carry around this common code, and only need to set up
-the particular properties and specific D-BUS objects that you need. These
+the particular properties and specific D-Bus objects that you need. These
 templates can be parameterized for common customizations, and they can provide
 additional convenience methods on the ``org.freedesktop.DBus.Mock`` interface
 to provide more abstract functionality like "add a battery".
@@ -279,10 +279,3 @@ Development
 python-dbusmock is hosted on github:
 
   https://github.com/martinpitt/python-dbusmock
-
-Feedback
---------
-For feature requests and bugs, please file reports at one of:
-
-  https://github.com/martinpitt/python-dbusmock/issues
-  https://bugs.launchpad.net/python-dbusmock

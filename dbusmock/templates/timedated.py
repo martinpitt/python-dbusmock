@@ -1,7 +1,7 @@
 '''systemd timedated mock template
 
 This creates the expected methods and properties of the main
-org.freedesktop.timedate object. You can specify D-BUS property values like
+org.freedesktop.timedate object. You can specify D-Bus property values like
 "Timezone" or "NTP" in "parameters".
 '''
 

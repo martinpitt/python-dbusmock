@@ -53,9 +53,7 @@ def _run_bluetoothctl(command):
 
     # Ignore output on stderr unless bluetoothctl dies.
     if process.returncode != 0:
-        raise Exception('bluetoothctl died with status ' +
-                        str(process.returncode) + ' and errors: ' +
-                        (err or ""))
+        raise Exception('bluetoothctl died with status ' + str(process.returncode) + ' and errors: ' + (err or ""))
 
     # Strip the prompt from the start of every line, then remove empty
     # lines.
@@ -76,10 +74,10 @@ def _run_bluetoothctl(command):
 
     lines = out.split('\n')
     lines = map(remove_prefix, lines)
-    lines = filter(lambda l: l != '', lines)
+    lines = filter(lambda line: line != '', lines)
 
     # Filter out the echoed commands. (bluetoothctl uses readline.)
-    lines = filter(lambda l: l not in ['list', command, 'quit'], lines)
+    lines = filter(lambda line: line not in ['list', command, 'quit'], lines)
     lines = list(lines)
 
     return lines
@@ -104,7 +102,8 @@ class TestBlueZ5(dbusmock.DBusTestCase):
     def test_no_adapters(self):
         # Check for adapters.
         out = _run_bluetoothctl('list')
-        self.assertEqual([l for l in out if 'Waiting to connect' not in l], [])
+        for line in out:
+            self.assertFalse(line.startswith('Controller '))
 
     def test_one_adapter(self):
         # Chosen parameters.
@@ -120,8 +119,7 @@ class TestBlueZ5(dbusmock.DBusTestCase):
 
         # Check for the adapter.
         out = _run_bluetoothctl('list')
-        self.assertIn('Controller ' + address + ' ' + system_name +
-                      ' [default]', out)
+        self.assertIn('Controller ' + address + ' ' + system_name + ' [default]', out)
 
         out = _run_bluetoothctl('show ' + address)
         self.assertIn('Controller ' + address, out)
@@ -155,9 +153,7 @@ class TestBlueZ5(dbusmock.DBusTestCase):
         alias = 'My Phone'
 
         path = self.dbusmock_bluez.AddDevice(adapter_name, address, alias)
-        self.assertEqual(path,
-                         '/org/bluez/' + adapter_name + '/dev_' +
-                         address.replace(':', '_'))
+        self.assertEqual(path, '/org/bluez/' + adapter_name + '/dev_' + address.replace(':', '_'))
 
         # Check for the device.
         out = _run_bluetoothctl('devices')
@@ -185,9 +181,7 @@ class TestBlueZ5(dbusmock.DBusTestCase):
         alias = 'My Phone'
 
         path = self.dbusmock_bluez.AddDevice(adapter_name, address, alias)
-        self.assertEqual(path,
-                         '/org/bluez/' + adapter_name + '/dev_' +
-                         address.replace(':', '_'))
+        self.assertEqual(path, '/org/bluez/' + adapter_name + '/dev_' + address.replace(':', '_'))
 
         # Pair with the device.
         self.dbusmock_bluez.PairDevice(adapter_name, address)
@@ -283,14 +277,14 @@ class TestBlueZObex(dbusmock.DBusTestCase):
         out, err = process.communicate()
 
         lines = out.split('\n')
-        lines = filter(lambda l: l != '', lines)
+        lines = filter(lambda line: line != '', lines)
         lines = list(lines)
 
         # Clean up the transferred files.
         for f in transferred_files:
             try:
                 os.remove(f)
-            except:
+            except OSError:
                 pass
 
         # See what pbap-client sees.

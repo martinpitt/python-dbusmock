@@ -37,11 +37,11 @@ if have_upower:
         upower_client_version = out.splitlines()[0].split()[-1]
         assert p.returncode == 0
     except IndexError:
-        # FIXME: this happens in environments without a system D-BUS; upower
+        # FIXME: this happens in environments without a system D-Bus; upower
         # 0.9 still prints the client version, 0.99 just crashes
         upower_client_version = '0.99'
 else:
-    upower_client_version = 0
+    upower_client_version = '0'
 
 
 @unittest.skipUnless(have_upower, 'upower not installed')
@@ -78,9 +78,9 @@ class TestUPower(dbusmock.DBusTestCase):
         for line in out.splitlines():
             if line.endswith('/DisplayDevice'):
                 continue
-            self.assertFalse('Device' in line, out)
-        self.assertRegex(out, 'on-battery:\s+yes')
-        self.assertRegex(out, 'lid-is-present:\s+yes')
+            self.assertNotIn('Device', line)
+        self.assertRegex(out, 'on-battery:\\s+yes')
+        self.assertRegex(out, 'lid-is-present:\\s+yes')
 
     def test_one_ac(self):
         path = self.dbusmock.AddAC('mock_AC', 'Mock AC')
@@ -95,8 +95,8 @@ class TestUPower(dbusmock.DBusTestCase):
         self.assertRegex(out, 'Device: ' + path)
         # note, Add* is not magic: this just adds an object, not change
         # properties
-        self.assertRegex(out, 'on-battery:\s+yes')
-        self.assertRegex(out, 'lid-is-present:\s+yes')
+        self.assertRegex(out, 'on-battery:\\s+yes')
+        self.assertRegex(out, 'lid-is-present:\\s+yes')
         # print('--------- out --------\n%s\n------------' % out)
 
         mon = subprocess.Popen(['upower', '--monitor-detail'],
@@ -111,7 +111,7 @@ class TestUPower(dbusmock.DBusTestCase):
 
         mon.terminate()
         out = mon.communicate()[0]
-        self.assertRegex(out, 'device changed:\s+' + path)
+        self.assertRegex(out, 'device changed:\\s+' + path)
         # print('--------- monitor out --------\n%s\n------------' % out)
 
     def test_discharging_battery(self):
@@ -127,12 +127,12 @@ class TestUPower(dbusmock.DBusTestCase):
         self.assertRegex(out, 'Device: ' + path)
         # note, Add* is not magic: this just adds an object, not change
         # properties
-        self.assertRegex(out, 'on-battery:\s+yes')
-        self.assertRegex(out, 'lid-is-present:\s+yes')
-        self.assertRegex(out, ' present:\s+yes')
-        self.assertRegex(out, ' percentage:\s+30%')
-        self.assertRegex(out, ' time to empty:\s+20.0 min')
-        self.assertRegex(out, ' state:\s+discharging')
+        self.assertRegex(out, 'on-battery:\\s+yes')
+        self.assertRegex(out, 'lid-is-present:\\s+yes')
+        self.assertRegex(out, ' present:\\s+yes')
+        self.assertRegex(out, ' percentage:\\s+30%')
+        self.assertRegex(out, ' time to empty:\\s+20.0 min')
+        self.assertRegex(out, ' state:\\s+discharging')
 
     def test_charging_battery(self):
         path = self.dbusmock.AddChargingBattery('mock_BAT', 'Mock Battery', 30.0, 1200)
@@ -147,12 +147,12 @@ class TestUPower(dbusmock.DBusTestCase):
         self.assertRegex(out, 'Device: ' + path)
         # note, Add* is not magic: this just adds an object, not change
         # properties
-        self.assertRegex(out, 'on-battery:\s+yes')
-        self.assertRegex(out, 'lid-is-present:\s+yes')
-        self.assertRegex(out, ' present:\s+yes')
-        self.assertRegex(out, ' percentage:\s+30%')
-        self.assertRegex(out, ' time to full:\s+20.0 min')
-        self.assertRegex(out, ' state:\s+charging')
+        self.assertRegex(out, 'on-battery:\\s+yes')
+        self.assertRegex(out, 'lid-is-present:\\s+yes')
+        self.assertRegex(out, ' present:\\s+yes')
+        self.assertRegex(out, ' percentage:\\s+30%')
+        self.assertRegex(out, ' time to full:\\s+20.0 min')
+        self.assertRegex(out, ' state:\\s+charging')
 
 
 @unittest.skipUnless(have_upower, 'upower not installed')
@@ -193,9 +193,9 @@ class TestUPower0(dbusmock.DBusTestCase):
 
         out = subprocess.check_output(['upower', '--dump'],
                                       universal_newlines=True)
-        self.assertRegex(out, 'daemon-version:\s+0.9')
-        self.assertRegex(out, 'can-suspend:\s+yes')
-        self.assertRegex(out, 'can-hibernate:?\s+no')
+        self.assertRegex(out, 'daemon-version:\\s+0.9')
+        self.assertRegex(out, 'can-suspend:\\s+yes')
+        self.assertRegex(out, 'can-hibernate:?\\s+no')
         self.assertNotIn('critical-action:', out)
 
     def test_no_display_device(self):
@@ -245,17 +245,17 @@ class TestUPower1(dbusmock.DBusTestCase):
         for line in out.splitlines():
             if line.endswith('/DisplayDevice'):
                 continue
-            self.assertFalse('Device' in line, out)
-        self.assertRegex(out, 'on-battery:\s+yes')
-        self.assertRegex(out, 'lid-is-present:\s+yes')
+            self.assertNotIn('Device', line)
+        self.assertRegex(out, 'on-battery:\\s+yes')
+        self.assertRegex(out, 'lid-is-present:\\s+yes')
 
     def test_properties(self):
         '''1.0 API specific properties'''
 
         out = subprocess.check_output(['upower', '--dump'],
                                       universal_newlines=True)
-        self.assertRegex(out, 'daemon-version:\s+1.0')
-        self.assertRegex(out, 'critical-action:\s+Suspend')
+        self.assertRegex(out, 'daemon-version:\\s+1.0')
+        self.assertRegex(out, 'critical-action:\\s+Suspend')
         self.assertNotIn('can-suspend', out)
 
     def test_enumerate(self):
@@ -306,16 +306,16 @@ class TestUPower1(dbusmock.DBusTestCase):
                                       universal_newlines=True, env=env)
         self.assertIn('/DisplayDevice\n', out)
         self.assertIn('  battery\n', out)  # type
-        self.assertRegex(out, 'state:\s+charging')
-        self.assertRegex(out, 'percentage:\s+50%')
-        self.assertRegex(out, 'energy:\s+40 Wh')
-        self.assertRegex(out, 'energy-full:\s+80 Wh')
-        self.assertRegex(out, 'energy-rate:\s+2.5 W')
-        self.assertRegex(out, 'time to empty:\s+1\.0 hours')
-        self.assertRegex(out, 'time to full:\s+30\.0 minutes')
-        self.assertRegex(out, 'present:\s+yes')
-        self.assertRegex(out, "icon-name:\s+'half-battery'")
-        self.assertRegex(out, 'warning-level:\s+low')
+        self.assertRegex(out, r'state:\s+charging')
+        self.assertRegex(out, r'percentage:\s+50%')
+        self.assertRegex(out, r'energy:\s+40 Wh')
+        self.assertRegex(out, r'energy-full:\s+80 Wh')
+        self.assertRegex(out, r'energy-rate:\s+2.5 W')
+        self.assertRegex(out, r'time to empty:\s+1\.0 hours')
+        self.assertRegex(out, r'time to full:\s+30\.0 minutes')
+        self.assertRegex(out, r'present:\s+yes')
+        self.assertRegex(out, r"icon-name:\s+'half-battery'")
+        self.assertRegex(out, r'warning-level:\s+low')
 
 
 if __name__ == '__main__':

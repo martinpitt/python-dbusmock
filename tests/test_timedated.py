@@ -12,11 +12,14 @@ __copyright__ = '(c) 2013 Canonical Ltd.'
 __license__ = 'LGPL 3+'
 
 import unittest
+import os
 import sys
 import subprocess
 
 import dbusmock
 
+# timedatectl keeps changing its CLI output
+TIMEDATECTL_NTP_LABEL = '(NTP enabled|synchronized|systemd-timesyncd.service active)'
 
 p = subprocess.Popen(['which', 'timedatectl'], stdout=subprocess.PIPE)
 p.communicate()
@@ -24,6 +27,7 @@ have_timedatectl = (p.returncode == 0)
 
 
 @unittest.skipUnless(have_timedatectl, 'timedatectl not installed')
+@unittest.skipUnless(os.path.exists('/run/systemd/system'), '/run/systemd/system does not exist')
 class TestTimedated(dbusmock.DBusTestCase):
     '''Test mocking timedated'''
 
@@ -65,12 +69,12 @@ class TestTimedated(dbusmock.DBusTestCase):
 
     def test_default_ntp(self):
         out = self.run_timedatectl()
-        self.assertRegex(out, 'NTP (enabled|synchronized): yes')
+        self.assertRegex(out, '%s: yes' % TIMEDATECTL_NTP_LABEL)
 
     def test_changing_ntp(self):
         self.obj_timedated.SetNTP(False, False)
         out = self.run_timedatectl()
-        self.assertRegex(out, 'NTP (enabled|synchronized): no')
+        self.assertRegex(out, '%s: no' % TIMEDATECTL_NTP_LABEL)
 
     def test_default_local_rtc(self):
         out = self.run_timedatectl()

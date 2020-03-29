@@ -1,7 +1,7 @@
 '''systemd logind mock template
 
 This creates the expected methods and properties of the main
-org.freedesktop.login1.Manager object. You can specify D-BUS property values
+org.freedesktop.login1.Manager object. You can specify D-Bus property values
 like "CanSuspend" or the return value of Inhibit() in "parameters".
 '''
 
@@ -34,11 +34,13 @@ def load(mock, parameters):
         ('Suspend', 'b', '', ''),
         ('Hibernate', 'b', '', ''),
         ('HybridSleep', 'b', '', ''),
+        ('SuspendThenHibernate', 'b', '', ''),
         ('CanPowerOff', '', 's', 'ret = "%s"' % parameters.get('CanPowerOff', 'yes')),
         ('CanReboot', '', 's', 'ret = "%s"' % parameters.get('CanReboot', 'yes')),
         ('CanSuspend', '', 's', 'ret = "%s"' % parameters.get('CanSuspend', 'yes')),
         ('CanHibernate', '', 's', 'ret = "%s"' % parameters.get('CanHibernate', 'yes')),
         ('CanHybridSleep', '', 's', 'ret = "%s"' % parameters.get('CanHybridSleep', 'yes')),
+        ('CanSuspendThenHibernate', '', 's', 'ret = "%s"' % parameters.get('CanSuspendThenHibernate', 'yes')),
 
         ('GetSession', 's', 'o', 'ret = "/org/freedesktop/login1/session/" + args[0]'),
         ('ActivateSession', 's', '', ''),
@@ -72,7 +74,6 @@ def load(mock, parameters):
                            'IdleActionUSec': dbus.UInt64(parameters.get('IdleActionUSec', 1)),
                            'PreparingForShutdown': parameters.get('PreparingForShutdown', False),
                            'PreparingForSleep': parameters.get('PreparingForSleep', False),
-                           'PreparingForShutdown': parameters.get('PreparingForShutdown', False),
                        }, signature='sv'))
 
 

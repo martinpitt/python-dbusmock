@@ -1,3 +1,59 @@
+0.19 (2020-01-09)
+-----------------
+- NetworkManager template: Add "StateReason" property and active connection ID
+- Add low-memory-monitor template
+
+0.18.3 (2019-09-08)
+-------------------
+ - Fix timeouts for loaded machines and parallel tests
+ - Fix tests for Python 3.8
+
+0.18.2 (2019-02-23)
+-------------------
+ - test: Adjust for changed version output format in systemd 241
+
+0.18.1 (2018-11-11)
+-------------------
+ - test: Fix failures with systemd 239 in chroots
+
+0.18 (2018-07-01)
+-----------------
+ - logind template: Add support for suspend-then-hibernate
+ - NetworkManager template: Add GetConnectionByUuid method
+ - bluez template: Add PairDevice() 'class_' parameter
+ - Fix logging of unicode strings in Python 2
+ - Adjust logind and timedated tests to systemd 239 (Debian #902602)
+
+0.17.2 (2018-03-01)
+-------------------
+ - NetworkManager template: Add GetDeviceByIpIface().
+ - Move release tarballs from Launchpad to
+   <https://github.com/martinpitt/python-dbusmock/releases>.
+   <https://pypi.python.org/pypi/python-dbusmock> remains as usual.
+
+0.17.1 (2018-02-22)
+-------------------
+ - Fix NetworkManager tests due to name changes from 802-11-wireless to wifi.
+
+0.17 (2017-11-07)
+-----------------
+ - Call dbus-daemon directly instead of dbus-launch. (Debian #836053)
+ - Fix DBusTestCase.stop_dbus() to actually enforce a timeout. Thanks to Renat
+   Galimov!
+ - Fix test_timedated for changed timedatectl output format in systemd 235.
+
+0.16.9 (2017-06-19)
+-------------------
+ - NetworkManager template: Fix type of 'State' property in AddActiveConnection()
+ - Fix BlueZ tests to work with Python 2 again.
+
+0.16.8 (2017-06-12)
+-------------------
+ - bluez5 template tests: Fix failure of test_no_adapters with BlueZ 5.45.
+   (LP: #1696480)
+ - tests: Move from pep8 to pycodestyle for static code tests.
+ - NetworkManager: Add ObjectManager, to work with NM ≥ 1.6.
+
 0.16.7 (2016-09-12)
 -------------------
  - bluez5 template tests: Fix failure on "Waiting to connect to bluetoothd"
@@ -150,7 +206,7 @@
 0.10.3 (2014-07-16)
 -------------------
  - Fix upower tests to work for upower 0.99 in environments without a system
-   D-BUS.
+   D-Bus.
 
 0.10.2 (2014-07-16)
 -------------------
@@ -175,7 +231,7 @@
    with Qt's property support, d-feet, and other tools. Thanks Iain Lane!
  - Fix frequent KeyError() when calling static methods from a template.
    Regression from 0.9.
- - Support having the same method name on different D-BUS interfaces.
+ - Support having the same method name on different D-Bus interfaces.
  - Add ofono template with support for the Manager, VoiceCallManager, and
    NetworkRegistration/NetworkOperator interfaces.
  - Add template for systemd's timedated. Thanks Iain Lane!
@@ -236,7 +292,7 @@
 
 0.7.1 (2013-08-02)
 ------------------
- - Handle the "Disconnected" signal only if it comes from the D-BUS object, to
+ - Handle the "Disconnected" signal only if it comes from the D-Bus object, to
    avoid accidentally reacting to other signals (like from BlueZ). Thanks
    Lucas De Marchi.
 
@@ -256,7 +312,7 @@
 
 0.6.2 (2013-06-13)
 ------------------
- - Fix test_api.TestSubclass test to work without an existing session D-BUS.
+ - Fix test_api.TestSubclass test to work without an existing session D-Bus.
 
 0.6.1 (2013-06-13)
 ------------------
@@ -277,7 +333,7 @@
  - DBusMockObject.AddTemplate() and DBusTestCase.spawn_server_template() can
    now load local templates by specifying a path to a *.py file as template
    name. Thanks Lucas De Marchi.
- - Quit mock process if the D-BUS it connected to goes down. (LP: #1156561)
+ - Quit mock process if the D-Bus it connected to goes down. (LP: #1156561)
  - Support Get() and GetAll() with empty interface names, default to main
    interface in this case.
  - Add template for systemd's logind.
@@ -289,7 +345,7 @@
 
 0.4.0 (2013-01-21)
 ------------------
- - Add GetCalls(), GetMethodCalls() and ClearCalls() methods on the mock D-BUS
+ - Add GetCalls(), GetMethodCalls() and ClearCalls() methods on the mock D-Bus
    interface to query the call log, for cases where parsing stdout is
    inconvenient. Thanks to Robert Bruce Park for the patch! (LP: #1099483)
  - Document how to keep internal state in AddMethod().
@@ -305,7 +361,7 @@
 ----------------
  - In the logging of mock method calls, log the arguments as well.
  - Fix race condition in waiting for mock to get online on the bus, by avoiding
-   triggering D-BUS service activation with system-installed services.
+   triggering D-Bus service activation with system-installed services.
  - Add "notification_daemon" mock template.
 
 0.2.2 (2012-11-27)
@@ -332,7 +388,7 @@
    DBusTestCase.spawn_server_template(). Templates set up the common structure
    of these services (their main objects, properties, and methods) so that you
    do not need to carry around this common code, and only need to set up the
-   particular properties and specific D-BUS objects that you need. These
+   particular properties and specific D-Bus objects that you need. These
    templates can be parameterized for common customizations, and they can
    provide additional convenience methods on the org.freedesktop.DBus.Mock
    interface to provide more abstract functionality like "add a battery".

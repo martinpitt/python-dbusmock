@@ -69,7 +69,7 @@ class TestCLI(dbusmock.DBusTestCase):
         if have_upower:
             out = subprocess.check_output(['upower', '--dump'],
                                           universal_newlines=True)
-            self.assertRegex(out, 'on-battery:\s+no')
+            self.assertRegex(out, r'on-battery:\s+no')
 
             mock_out = self.p_mock.stdout.readline()
             self.assertTrue('EnumerateDevices' in mock_out or 'GetAll' in mock_out,
@@ -87,8 +87,8 @@ class TestCLI(dbusmock.DBusTestCase):
         if have_upower:
             out = subprocess.check_output(['upower', '--dump'],
                                           universal_newlines=True)
-            self.assertRegex(out, 'daemon-version:\s+0\\.99\\.0')
-            self.assertRegex(out, 'on-battery:\s+yes')
+            self.assertRegex(out, r'daemon-version:\s+0\.99\.0')
+            self.assertRegex(out, r'on-battery:\s+yes')
 
     def test_template_parameters_malformed_json(self):
         with self.assertRaises(subprocess.CalledProcessError) as cm:
@@ -133,7 +133,7 @@ class TestCLI(dbusmock.DBusTestCase):
                              universal_newlines=True)
         (out, err) = p.communicate()
         self.assertEqual(out, '')
-        self.assertTrue('must specify NAME' in err, err)
+        self.assertIn('must specify NAME', err)
         self.assertNotEqual(p.returncode, 0)
 
     def test_help(self):
@@ -142,8 +142,8 @@ class TestCLI(dbusmock.DBusTestCase):
                              universal_newlines=True)
         (out, err) = p.communicate()
         self.assertEqual(err, '')
-        self.assertTrue('INTERFACE' in out, out)
-        self.assertTrue('--system' in out, out)
+        self.assertIn('INTERFACE', out)
+        self.assertIn('--system', out)
         self.assertEqual(p.returncode, 0)
 
 

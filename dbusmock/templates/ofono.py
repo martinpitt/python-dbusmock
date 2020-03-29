@@ -1,4 +1,4 @@
-'''ofonod D-BUS mock template'''
+'''ofonod D-Bus mock template'''
 
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU Lesser General Public License as published by the Free
@@ -199,7 +199,6 @@ def Dial(self, number, hide_callerid):
                        'State': dbus.String('dialing', variant_level=1),
                        'LineIdentification': dbus.String(number, variant_level=1),
                        'Name': dbus.String('', variant_level=1),
-                       'Multiparty': dbus.Boolean(False, variant_level=1),
                        'Multiparty': dbus.Boolean(False, variant_level=1),
                        'RemoteHeld': dbus.Boolean(False, variant_level=1),
                        'RemoteMultiparty': dbus.Boolean(False, variant_level=1),

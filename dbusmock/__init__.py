@@ -1,5 +1,5 @@
 # coding: UTF-8
-'''Mock D-BUS objects for test suites.'''
+'''Mock D-Bus objects for test suites.'''
 
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU Lesser General Public License as published by the Free
@@ -11,7 +11,7 @@ __author__ = 'Martin Pitt'
 __email__ = 'martin.pitt@ubuntu.com'
 __copyright__ = '(c) 2012 Canonical Ltd.'
 __license__ = 'LGPL 3+'
-__version__ = '0.16.7'
+__version__ = '0.18.1'
 
 from dbusmock.mockobject import (DBusMockObject, MOCK_IFACE,
                                  OBJECT_MANAGER_IFACE, get_object, get_objects)

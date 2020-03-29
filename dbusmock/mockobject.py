@@ -1,5 +1,5 @@
 # coding: UTF-8
-'''Mock D-BUS objects for test suites.'''
+'''Mock D-Bus objects for test suites.'''
 
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU Lesser General Public License as published by the Free
@@ -69,7 +69,7 @@ class DBusMockObject(dbus.service.Object):
                properties on "interface"
         logfile: When given, method calls will be logged into that file name;
                  if None, logging will be written to stdout. Note that you can
-                 also query the called methods over D-BUS with GetCalls() and
+                 also query the called methods over D-Bus with GetCalls() and
                  GetMethodCalls().
         is_object_manager: If True, the GetManagedObjects method will
                            automatically be implemented on the object, returning
@@ -84,12 +84,13 @@ class DBusMockObject(dbus.service.Object):
         self.path = path
         self.interface = interface
         self.is_object_manager = is_object_manager
+        self.object_manager = None
 
         self._template = None
         self._template_parameters = None
 
         if logfile:
-            self.logfile = open(logfile, 'w')
+            self.logfile = open(logfile, 'wb')
         else:
             self.logfile = None
         self.is_logfile_owner = True
@@ -115,6 +116,7 @@ class DBusMockObject(dbus.service.Object):
                        'GetManagedObjects', '', 'a{oa{sa{sv}}}',
                        'ret = {dbus.ObjectPath(k): objects[k].props ' +
                        '  for k in objects.keys() if ' + cond + '}')
+        self.object_manager = self
 
     def _reset(self, props):
         # interface -> name -> value
@@ -232,6 +234,7 @@ class DBusMockObject(dbus.service.Object):
                              properties)
         # make sure created objects inherit the log file stream
         obj.logfile = self.logfile
+        obj.object_manager = self.object_manager
         obj.is_logfile_owner = False
         obj.AddMethods(interface, methods)
 
@@ -310,7 +313,7 @@ class DBusMockObject(dbus.service.Object):
               paths to DBusMockObject instances.
 
               For keeping state across method calls, you are free to use normal
-              Python members of the "self" object, which will be persistant for
+              Python members of the "self" object, which will be persistent for
               the whole mock's life time. E. g. you can have a method with
               "self.my_state = True", and another method that returns it with
               "ret = self.my_state".
@@ -436,11 +439,10 @@ class DBusMockObject(dbus.service.Object):
         if hasattr(module, 'IS_OBJECT_MANAGER') and module.IS_OBJECT_MANAGER:
             self._set_up_object_manager()
 
-        # pick out all D-BUS service methods and add them to our interface
+        # pick out all D-Bus service methods and add them to our interface
         for symbol in dir(module):
             fn = getattr(module, symbol)
-            if ('_dbus_interface' in dir(fn) and
-                    ('_dbus_is_signal' not in dir(fn) or not fn._dbus_is_signal)):
+            if ('_dbus_interface' in dir(fn) and ('_dbus_is_signal' not in dir(fn) or not fn._dbus_is_signal)):
                 # for dbus-python compatibility, add methods as callables
                 setattr(self.__class__, symbol, fn)
                 self.methods.setdefault(fn._dbus_interface, {})[str(symbol)] = (
@@ -531,6 +533,18 @@ class DBusMockObject(dbus.service.Object):
         '''
         pass
 
+    def object_manager_emit_added(self, path):
+        if self.object_manager is not None:
+            self.object_manager.EmitSignal(OBJECT_MANAGER_IFACE, 'InterfacesAdded',
+                                           'oa{sa{sv}}', [dbus.ObjectPath(path),
+                                                          objects[path].props])
+
+    def object_manager_emit_removed(self, path):
+        if self.object_manager is not None:
+            self.object_manager.EmitSignal(OBJECT_MANAGER_IFACE, 'InterfacesRemoved',
+                                           'oas', [dbus.ObjectPath(path),
+                                                   objects[path].props])
+
     def mock_method(self, interface, dbus_method, in_signature, *args, **kwargs):
         '''Master mock method.
 
@@ -565,17 +579,17 @@ class DBusMockObject(dbus.service.Object):
                 return loc['ret']
 
     def format_args(self, args):
-        '''Format a D-BUS argument tuple into an appropriate logging string.'''
+        '''Format a D-Bus argument tuple into an appropriate logging string.'''
 
         def format_arg(a):
             if isinstance(a, dbus.Boolean):
                 return str(bool(a))
-            if isinstance(a, dbus.Byte):
+            if isinstance(a, dbus.Byte) or isinstance(a, int) or isinstance(a, long):
                 return str(int(a))
-            if isinstance(a, int) or isinstance(a, long):
-                return str(a)
-            if isinstance(a, str) or isinstance(a, unicode):
+            if isinstance(a, str):
                 return '"' + str(a) + '"'
+            if isinstance(a, unicode):  # Python 2 only
+                return '"' + repr(a.encode('UTF-8'))[1:-1] + '"'
             if isinstance(a, list):
                 return '[' + ', '.join([format_arg(x) for x in a]) + ']'
             if isinstance(a, dict):
@@ -608,12 +622,11 @@ class DBusMockObject(dbus.service.Object):
         otherwise it goes to stdout.
         '''
         if self.logfile:
-            fd = self.logfile
+            fd = self.logfile.fileno()
         else:
-            fd = sys.stdout
+            fd = sys.stdout.fileno()
 
-        fd.write('%.3f %s\n' % (time.time(), msg))
-        fd.flush()
+        os.write(fd, ('%.3f %s\n' % (time.time(), msg)).encode('UTF-8'))
 
     @dbus.service.method(dbus.INTROSPECTABLE_IFACE,
                          in_signature='',
@@ -680,6 +693,7 @@ def _dbusmock_method_lookup(obj, method_name, dbus_interface):
         return (m[3], m[3])
     except KeyError:
         return orig_method_lookup(obj, method_name, dbus_interface)
+
 
 dbus.service._method_lookup = _dbusmock_method_lookup
 

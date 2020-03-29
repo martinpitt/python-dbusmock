@@ -27,6 +27,9 @@ from gi.repository import GLib
 
 dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 
+# "a <heart> b" in py2/3 compatible unicode
+UNICODE = b'a\xe2\x99\xa5b'.decode('UTF-8')
+
 
 class TestAPI(dbusmock.DBusTestCase):
     '''Test dbus-mock API'''
@@ -78,6 +81,12 @@ class TestAPI(dbusmock.DBusTestCase):
         self.dbus_mock.AddMethod('', 'Do', 's', 's', 'ret = args[0]')
         self.assertEqual(self.dbus_test.Do('Hello'), 'Hello')
 
+    def test_unicode_str(self):
+        '''unicode string roundtrip'''
+
+        self.dbus_mock.AddMethod('', 'Do', 's', 's', 'ret = args[0] * 2')
+        self.assertEqual(self.dbus_test.Do(UNICODE), dbus.String(UNICODE * 2))
+
     def test_twoarg_ret(self):
         '''two arguments, code for return value'''
 
@@ -91,19 +100,24 @@ class TestAPI(dbusmock.DBusTestCase):
     def test_array_arg(self):
         '''array argument'''
 
-        self.dbus_mock.AddMethod('', 'Do', 'iaou', '',
-                                 '''assert len(args) == 3
+        self.dbus_mock.AddMethod('', 'Do', 'iaous', '',
+                                 '''assert len(args) == 4
 assert args[0] == -1;
 assert args[1] == ['/foo']
 assert type(args[1]) == dbus.Array
 assert type(args[1][0]) == dbus.ObjectPath
 assert args[2] == 5
-''')
-        self.assertEqual(self.dbus_test.Do(-1, ['/foo'], 5), None)
+assert args[3] == %s
+''' % repr(UNICODE))
+        self.assertEqual(self.dbus_test.Do(-1, ['/foo'], 5, UNICODE), None)
 
         # check that it's logged correctly
-        with open(self.mock_log.name) as f:
-            self.assertRegex(f.read(), '^[0-9.]+ Do -1 \["/foo"\] 5$')
+        with open(self.mock_log.name, "rb") as f:
+            log = f.read()
+            if sys.version_info[0] >= 3:
+                self.assertRegex(log, b'^[0-9.]+ Do -1 \\["/foo"\\] 5 "a\\xe2\\x99\\xa5b"$')
+            else:
+                self.assertRegex(log, r'^[0-9.]+ Do -1 \["/foo"\] 5 "a\\xe2\\x99\\xa5b"$')
 
     def test_dict_arg(self):
         '''dictionary argument'''
@@ -176,7 +190,7 @@ assert args[2] == 5
                 self.fail('method call did not raise an error for signature "%s" and arguments %s'
                           % (signature, args))
             except dbus.exceptions.DBusException as e:
-                self.assertTrue(err in str(e), e)
+                self.assertIn(err, str(e))
 
         # not enough arguments
         check('i', [], 'TypeError: More items found')
@@ -330,20 +344,28 @@ assert args[2] == 5
         dbus_introspect = dbus.Interface(self.obj_test, dbus.INTROSPECTABLE_IFACE)
 
         xml_empty = dbus_introspect.Introspect()
-        self.assertTrue('<interface name="org.freedesktop.DBus.Mock">' in xml_empty, xml_empty)
-        self.assertTrue('<method name="AddMethod">' in xml_empty, xml_empty)
+        self.assertIn('<interface name="org.freedesktop.DBus.Mock">', xml_empty)
+        self.assertIn('<method name="AddMethod">', xml_empty)
 
         self.dbus_mock.AddMethod('', 'Do', 'saiv', 'i', 'ret = 42')
 
         xml_method = dbus_introspect.Introspect()
-        self.assertFalse(xml_empty == xml_method, 'No change from empty XML')
-        self.assertTrue('<interface name="org.freedesktop.Test.Main">' in xml_method, xml_method)
-        self.assertTrue('''<method name="Do">
+        self.assertNotEqual(xml_empty, xml_method)
+        self.assertIn('<interface name="org.freedesktop.Test.Main">', xml_method)
+        # various Python versions use different name vs. type ordering
+        expected1 = '''<method name="Do">
       <arg direction="in" name="arg1" type="s" />
       <arg direction="in" name="arg2" type="ai" />
       <arg direction="in" name="arg3" type="v" />
       <arg direction="out" type="i" />
-    </method>''' in xml_method, xml_method)
+    </method>'''
+        expected2 = '''<method name="Do">
+      <arg direction="in" type="s" name="arg1" />
+      <arg direction="in" type="ai" name="arg2" />
+      <arg direction="in" type="v" name="arg3" />
+      <arg direction="out" type="i" />
+    </method>'''
+        self.assertTrue(expected1 in xml_method or expected2 in xml_method, xml_method)
 
     # properties in introspection are not supported by dbus-python right now
     def test_introspection_properties(self):
@@ -354,10 +376,13 @@ assert args[2] == 5
 
         xml = self.obj_test.Introspect()
 
-        self.assertTrue('<interface name="org.freedesktop.Test.Main">' in xml, xml)
-        self.assertTrue('<interface name="org.freedesktop.Test.Sub">' in xml, xml)
-        self.assertTrue('<property access="readwrite" name="Color" type="s" />' in xml, xml)
-        self.assertTrue('<property access="readwrite" name="Count" type="i" />' in xml, xml)
+        self.assertIn('<interface name="org.freedesktop.Test.Main">', xml)
+        self.assertIn('<interface name="org.freedesktop.Test.Sub">', xml)
+        # various Python versions use different attribute ordering
+        self.assertTrue('<property access="readwrite" name="Color" type="s" />' in xml or
+                        '<property name="Color" type="s" access="readwrite" />' in xml, xml)
+        self.assertTrue('<property access="readwrite" name="Count" type="i" />' in xml or
+                        '<property name="Count" type="i" access="readwrite" />' in xml, xml)
 
     def test_objects_map(self):
         '''access global objects map'''
@@ -442,7 +467,7 @@ assert args[2] == 5
         self.assertRegex(log, '[0-9.]+ emit org.freedesktop.Test.Main.SigNoArgs\n')
         self.assertRegex(log, '[0-9.]+ emit org.freedesktop.Test.Sub.SigTwoArgs "hello" 42\n')
         self.assertRegex(log, '[0-9.]+ emit org.freedesktop.Test.Sub.SigTypeTest -42 42')
-        self.assertRegex(log, '[0-9.]+ emit org.freedesktop.Test.Sub.SigTypeTest -42 42 "hello" \["/a", "/b"\]\n')
+        self.assertRegex(log, r'[0-9.]+ emit org.freedesktop.Test.Sub.SigTypeTest -42 42 "hello" \["/a", "/b"\]\n')
 
     def test_signals_type_mismatch(self):
         '''emitting signals with wrong arguments'''
@@ -453,7 +478,7 @@ assert args[2] == 5
                 self.fail('EmitSignal did not raise an error for signature "%s" and arguments %s'
                           % (signature, args))
             except dbus.exceptions.DBusException as e:
-                self.assertTrue(err in str(e), e)
+                self.assertIn(err, str(e))
 
         # not enough arguments
         check('i', [], 'TypeError: More items found')
@@ -469,7 +494,7 @@ assert args[2] == 5
         check('s', [1], 'TypeError: Expected a string')
 
     def test_dbus_get_log(self):
-        '''query call logs over D-BUS'''
+        '''query call logs over D-Bus'''
 
         self.assertEqual(self.dbus_mock.ClearCalls(), None)
         self.assertEqual(self.dbus_mock.GetCalls(), dbus.Array([]))
@@ -500,7 +525,7 @@ assert args[2] == 5
         self.assertEqual(self.dbus_mock.GetCalls(), dbus.Array([]))
 
     def test_dbus_get_method_calls(self):
-        '''query method call logs over D-BUS'''
+        '''query method call logs over D-Bus'''
 
         self.dbus_mock.AddMethod('', 'Do', '', '', '')
         self.assertEqual(self.dbus_test.Do(), None)

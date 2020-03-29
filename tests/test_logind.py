@@ -12,7 +12,9 @@ __copyright__ = '(c) 2013 Canonical Ltd.'
 __license__ = 'LGPL 3+'
 
 import unittest
+import os
 import sys
+import re
 import subprocess
 
 import dbusmock
@@ -24,6 +26,7 @@ have_loginctl = (p.returncode == 0)
 
 
 @unittest.skipUnless(have_loginctl, 'loginctl not installed')
+@unittest.skipUnless(os.path.exists('/run/systemd/system'), '/run/systemd/system does not exist')
 class TestLogind(dbusmock.DBusTestCase):
     '''Test mocking logind'''
 
@@ -35,7 +38,7 @@ class TestLogind(dbusmock.DBusTestCase):
         if have_loginctl:
             out = subprocess.check_output(['loginctl', '--version'],
                                           universal_newlines=True)
-            klass.version = out.splitlines()[0].split()[-1]
+            klass.version = re.search(r'(\d+)', out.splitlines()[0]).group(1)
 
     def setUp(self):
         self.p_mock = None
@@ -69,7 +72,7 @@ class TestLogind(dbusmock.DBusTestCase):
 
         out = subprocess.check_output(['loginctl', 'list-seats'],
                                       universal_newlines=True)
-        self.assertRegex(out, '(^|\n)seat0\s+')
+        self.assertRegex(out, r'(^|\n)seat0\s+')
 
         out = subprocess.check_output(['loginctl', 'show-seat', 'seat0'],
                                       universal_newlines=True)
@@ -80,7 +83,7 @@ class TestLogind(dbusmock.DBusTestCase):
 
         out = subprocess.check_output(['loginctl', 'list-users'],
                                       universal_newlines=True)
-        self.assertRegex(out, '(^|\n) +500 +joe +($|\n)')
+        self.assertRegex(out, r'(^|\n)\s*500\s+joe\s*($|\n)')
 
         # note, this does an actual getpwnam() in the client, so we cannot call
         # this with hardcoded user names; get from actual user in the system

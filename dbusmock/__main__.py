@@ -24,7 +24,7 @@ import sys
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='mock D-BUS object')
+    parser = argparse.ArgumentParser(description='mock D-Bus object')
     parser.add_argument('-s', '--system', action='store_true',
                         help='put object(s) on system bus (default: session bus)')
     parser.add_argument('-l', '--logfile', metavar='PATH',
@@ -32,11 +32,11 @@ def parse_args():
     parser.add_argument('-t', '--template', metavar='NAME',
                         help='template to load (instead of specifying name, path, interface)')
     parser.add_argument('name', metavar='NAME', nargs='?',
-                        help='D-BUS name to claim (e. g. "com.example.MyService") (if not using -t)')
+                        help='D-Bus name to claim (e. g. "com.example.MyService") (if not using -t)')
     parser.add_argument('path', metavar='PATH', nargs='?',
-                        help='D-BUS object path for initial/main object (if not using -t)')
+                        help='D-Bus object path for initial/main object (if not using -t)')
     parser.add_argument('interface', metavar='INTERFACE', nargs='?',
-                        help='main D-BUS interface name for initial object (if not using -t)')
+                        help='main D-Bus interface name for initial object (if not using -t)')
     parser.add_argument('-m', '--is-object-manager', action='store_true',
                         help='automatically implement the org.freedesktop.DBus.ObjectManager interface')
     parser.add_argument('-p', '--parameters',
