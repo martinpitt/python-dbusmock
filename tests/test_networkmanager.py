@@ -81,6 +81,11 @@ class TestNetworkManager(dbusmock.DBusTestCase):
                                        env=self.lang_env,
                                        universal_newlines=True)
 
+    def read_networking(self):
+        return subprocess.check_output(['nmcli', '--nocheck', 'networking'],
+                                       env=self.lang_env,
+                                       universal_newlines=True)
+
     def read_connection(self):
         return subprocess.check_output(['nmcli', '--nocheck', 'connection'],
                                        env=self.lang_env,
@@ -230,6 +235,13 @@ class TestNetworkManager(dbusmock.DBusTestCase):
 
         self.dbusmock.SetConnectivity(NMConnectivityState.NM_CONNECTIVITY_NONE)
         self.assertRegex(self.read_general(), r'connected.*\snone')
+
+    def test_networking(self):
+        self.dbusmock.SetNetworkingEnabled(False)
+        self.assertRegex(self.read_networking(), 'disabled')
+
+        self.dbusmock.SetNetworkingEnabled(True)
+        self.assertRegex(self.read_networking(), 'enabled')
 
     def test_wifi_with_active_connection(self):
         wifi1 = self.dbusmock.AddWiFiDevice('mock_WiFi1', 'wlan0',

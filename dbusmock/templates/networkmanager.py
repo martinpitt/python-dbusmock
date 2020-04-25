@@ -200,6 +200,19 @@ def get_device_by_ip_iface(self, iface):
         return None
 
 
+def set_networking_enabled(self, networking_enabled):
+    if networking_enabled:
+        SetGlobalConnectionState(self, NMState.NM_STATE_CONNECTING)
+        SetGlobalConnectionState(self, NMState.NM_STATE_CONNECTED_LOCAL)
+        SetGlobalConnectionState(self, NMState.NM_STATE_CONNECTED_GLOBAL)
+    else:
+        SetGlobalConnectionState(self, NMState.NM_STATE_DISCONNECTING)
+        SetGlobalConnectionState(self, NMState.NM_STATE_DISCONNECTED)
+        SetGlobalConnectionState(self, NMState.NM_STATE_ASLEEP)
+
+    SetNetworkingEnabled(self, networking_enabled)
+
+
 def load(mock, parameters):
     manager_props = {'ActiveConnections': dbus.Array([], signature='o'),
                      'Devices': dbus.Array([], signature='o'),
@@ -223,7 +236,8 @@ def load(mock, parameters):
                        ('DeactivateConnection', 'o', '', "self.deactivate_connection(self, args[0])"),
                        ('AddAndActivateConnection', 'a{sa{sv}}oo', 'oo', "ret = self.add_and_activate_connection("
                                                     "self, args[0], args[1], args[2])"),
-                       ('GetDeviceByIpIface', 's', 'o', 'ret = self.get_device_by_ip_iface(self, args[0])')]
+                       ('GetDeviceByIpIface', 's', 'o', 'ret = self.get_device_by_ip_iface(self, args[0])'),
+                       ('Enable', 'b', '', 'self.set_networking_enabled(self, args[0])')]
 
     mock.AddObject(MANAGER_OBJ,
                    MANAGER_IFACE,
@@ -236,6 +250,7 @@ def load(mock, parameters):
     obj.deactivate_connection = deactivate_connection
     obj.add_and_activate_connection = add_and_activate_connection
     obj.get_device_by_ip_iface = get_device_by_ip_iface
+    obj.set_networking_enabled = set_networking_enabled
 
     settings_props = {'Hostname': 'hostname',
                       'CanModify': True,
@@ -271,6 +286,10 @@ def SetGlobalConnectionState(self, state):
 def SetConnectivity(self, connectivity):
     self.SetProperty(MANAGER_OBJ, MANAGER_IFACE, 'Connectivity', dbus.UInt32(connectivity, variant_level=1))
 
+@dbus.service.method(MOCK_IFACE,
+                     in_signature='b', out_signature='')
+def SetNetworkingEnabled(self, networking_enabled):
+    self.SetProperty(MANAGER_OBJ, MANAGER_IFACE, 'NetworkingEnabled', dbus.Boolean(networking_enabled, variant_level=1))
 
 @dbus.service.method(MOCK_IFACE,
                      in_signature='ss', out_signature='')
