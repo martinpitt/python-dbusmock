@@ -258,6 +258,7 @@ def load(mock, parameters):
     settings_methods = [('ListConnections', '', 'ao', "ret = self.Get('%s', 'Connections')" % SETTINGS_IFACE),
                         ('GetConnectionByUuid', 's', 'o', 'ret = self.SettingsGetConnectionByUuid(args[0])'),
                         ('AddConnection', 'a{sa{sv}}', 'o', 'ret = self.SettingsAddConnection(args[0])'),
+                        ('AddConnectionUnsaved', 'a{sa{sv}}', 'o', 'ret = self.SettingsAddConnection(args[0])'),
                         ('SaveHostname', 's', '', '')]
     mock.AddObject(SETTINGS_OBJ,
                    SETTINGS_IFACE,
