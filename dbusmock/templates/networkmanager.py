@@ -287,10 +287,12 @@ def SetGlobalConnectionState(self, state):
 def SetConnectivity(self, connectivity):
     self.SetProperty(MANAGER_OBJ, MANAGER_IFACE, 'Connectivity', dbus.UInt32(connectivity, variant_level=1))
 
+
 @dbus.service.method(MOCK_IFACE,
                      in_signature='b', out_signature='')
 def SetNetworkingEnabled(self, networking_enabled):
     self.SetProperty(MANAGER_OBJ, MANAGER_IFACE, 'NetworkingEnabled', dbus.Boolean(networking_enabled, variant_level=1))
+
 
 @dbus.service.method(MOCK_IFACE,
                      in_signature='ss', out_signature='')
