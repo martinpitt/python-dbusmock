@@ -1,4 +1,4 @@
-## [0.20.0] - UNRELEASED
+## [0.20.0] - 2020-12-19
 - NetworkManager template: Handle NetworkingEnable
 - NetworkManager template: AddConnectionUnsaved
 - Drop support for Python 2
