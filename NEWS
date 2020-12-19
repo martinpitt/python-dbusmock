@@ -1,457 +1,397 @@
-0.19 (2020-01-09)
------------------
+## [0.19] - 2020-01-09
 - NetworkManager template: Add "StateReason" property and active connection ID
 - Add low-memory-monitor template
 
-0.18.3 (2019-09-08)
--------------------
- - Fix timeouts for loaded machines and parallel tests
- - Fix tests for Python 3.8
+## [0.18.3] - 2019-09-08
+- Fix timeouts for loaded machines and parallel tests
+- Fix tests for Python 3.8
 
-0.18.2 (2019-02-23)
--------------------
- - test: Adjust for changed version output format in systemd 241
+## [0.18.2] - 2019-02-23
+- test: Adjust for changed version output format in systemd 241
 
-0.18.1 (2018-11-11)
--------------------
- - test: Fix failures with systemd 239 in chroots
+## [0.18.1] - 2018-11-11
+- test: Fix failures with systemd 239 in chroots
 
-0.18 (2018-07-01)
------------------
- - logind template: Add support for suspend-then-hibernate
- - NetworkManager template: Add GetConnectionByUuid method
- - bluez template: Add PairDevice() 'class_' parameter
- - Fix logging of unicode strings in Python 2
- - Adjust logind and timedated tests to systemd 239 (Debian #902602)
+## [0.18] - 2018-07-01
+- logind template: Add support for suspend-then-hibernate
+- NetworkManager template: Add GetConnectionByUuid method
+- bluez template: Add PairDevice() 'class_' parameter
+- Fix logging of unicode strings in Python 2
+- Adjust logind and timedated tests to systemd 239 (Debian #902602)
 
-0.17.2 (2018-03-01)
--------------------
- - NetworkManager template: Add GetDeviceByIpIface().
- - Move release tarballs from Launchpad to
-   <https://github.com/martinpitt/python-dbusmock/releases>.
-   <https://pypi.python.org/pypi/python-dbusmock> remains as usual.
+## [0.17.2] - 2018-03-01
+- NetworkManager template: Add GetDeviceByIpIface().
+- Move release tarballs from Launchpad to
+  <https://github.com/martinpitt/python-dbusmock/releases>.
+  <https://pypi.python.org/pypi/python-dbusmock> remains as usual.
 
-0.17.1 (2018-02-22)
--------------------
- - Fix NetworkManager tests due to name changes from 802-11-wireless to wifi.
+## [0.17.1] - 2018-02-22
+- Fix NetworkManager tests due to name changes from 802-11-wireless to wifi.
 
-0.17 (2017-11-07)
------------------
- - Call dbus-daemon directly instead of dbus-launch. (Debian #836053)
- - Fix DBusTestCase.stop_dbus() to actually enforce a timeout. Thanks to Renat
-   Galimov!
- - Fix test_timedated for changed timedatectl output format in systemd 235.
+## [0.17] - 2017-11-07
+- Call dbus-daemon directly instead of dbus-launch. (Debian #836053)
+- Fix DBusTestCase.stop_dbus() to actually enforce a timeout. Thanks to Renat
+  Galimov!
+- Fix test_timedated for changed timedatectl output format in systemd 235.
 
-0.16.9 (2017-06-19)
--------------------
- - NetworkManager template: Fix type of 'State' property in AddActiveConnection()
- - Fix BlueZ tests to work with Python 2 again.
+## [0.16.9] - 2017-06-19
+- NetworkManager template: Fix type of 'State' property in AddActiveConnection()
+- Fix BlueZ tests to work with Python 2 again.
 
-0.16.8 (2017-06-12)
--------------------
- - bluez5 template tests: Fix failure of test_no_adapters with BlueZ 5.45.
-   (LP: #1696480)
- - tests: Move from pep8 to pycodestyle for static code tests.
- - NetworkManager: Add ObjectManager, to work with NM ≥ 1.6.
+## [0.16.8] - 2017-06-12
+- bluez5 template tests: Fix failure of test_no_adapters with BlueZ 5.45.
+  (LP: #1696480)
+- tests: Move from pep8 to pycodestyle for static code tests.
+- NetworkManager: Add ObjectManager, to work with NM ≥ 1.6.
 
-0.16.7 (2016-09-12)
--------------------
- - bluez5 template tests: Fix failure on "Waiting to connect to bluetoothd"
-   messages.
+## [0.16.7] - 2016-09-12
+- bluez5 template tests: Fix failure on "Waiting to connect to bluetoothd"
+  messages.
 
-0.16.6 (2016-06-19)
--------------------
- - upower template tests: Fix version comparison.
+## [0.16.6] - 2016-06-19
+- upower template tests: Fix version comparison.
 
-0.16.5 (2016-06-19)
--------------------
- - Ofono template: generate unique ICCIDs (CardIdentifier).
+## [0.16.5] - 2016-06-19
+- Ofono template: generate unique ICCIDs (CardIdentifier).
 
-0.16.4 (2016-06-07)
--------------------
- - Ofono template: Add missing properties to SimManager interface.
+## [0.16.4] - 2016-06-07
+- Ofono template: Add missing properties to SimManager interface.
 
-0.16.3 (2015-12-14)
--------------------
- - NetworkManager template test: Make the test run standalone. Thanks Pete
-   Woods.
+## [0.16.3] - 2015-12-14
+- NetworkManager template test: Make the test run standalone. Thanks Pete
+  Woods.
 
-0.16.2 (2015-12-09)
--------------------
- - NetworkManager template: Fix connection settings Updated signal emitted by
-   wrong object.
- - NetworkManager template: Handle empty device at connection activation.
- - NetworkManager template: Implement secrets management in settings.
+## [0.16.2] - 2015-12-09
+- NetworkManager template: Fix connection settings Updated signal emitted by
+  wrong object.
+- NetworkManager template: Handle empty device at connection activation.
+- NetworkManager template: Implement secrets management in settings.
 
-0.16.1 (2015-10-22)
--------------------
- - NetworkManager template: Fix indexing bug in SettingsAddConnection. Thanks
-   Pete Woods.
+## [0.16.1] - 2015-10-22
+- NetworkManager template: Fix indexing bug in SettingsAddConnection. Thanks
+  Pete Woods.
 
-0.16 (2015-10-08)
------------------
- - NetworkManager template: Generate a new unused name in connection activation
-   instead of just using the access point name. Thanks Pete Woods for the
-   original patch!
- - Allow the passing of template parameters via the command-line as JSON
-   strings. Thanks Pete Woods.
+## [0.16] - 2015-10-08
+- NetworkManager template: Generate a new unused name in connection activation
+  instead of just using the access point name. Thanks Pete Woods for the
+  original patch!
+- Allow the passing of template parameters via the command-line as JSON
+  strings. Thanks Pete Woods.
 
-0.15.3 (2015-09-16)
--------------------
- - NetworkManager template: Add missing properties to ethernet device and
-   active connection. Thanks Pete Woods.
- - Quiesce irrelevant PEP-8 errors with pep8 1.6.
+## [0.15.3] - 2015-09-16
+- NetworkManager template: Add missing properties to ethernet device and
+  active connection. Thanks Pete Woods.
+- Quiesce irrelevant PEP-8 errors with pep8 1.6.
 
-0.15.2 (2015-06-11)
--------------------
- - test_ofono: Test fields which don't get obfuscated with Ubuntu's latest
-   ofono (See LP #1459983). Thanks Iain Lane.
- - timedated template: Add NTPSynchronized property and set it in SetNTP(), to
-   also work with systemd 220.
+## [0.15.2] - 2015-06-11
+- test_ofono: Test fields which don't get obfuscated with Ubuntu's latest
+  ofono (See LP #1459983). Thanks Iain Lane.
+- timedated template: Add NTPSynchronized property and set it in SetNTP(), to
+  also work with systemd 220.
 
-0.15.1 (2015-05-12)
--------------------
- - SECURITY FIX: When loading a template from an arbitrary file through the
-   AddTemplate() D-Bus method call or DBusTestCase.spawn_server_template()
-   Python method, don't create or use Python's *.pyc cached files. By tricking
-   a user into loading a template from a world-writable directory like /tmp, an
-   attacker could run arbitrary code with the user's privileges by putting a
-   crafted .pyc file into that directory. Note that this is highly unlikely to
-   actually appear in practice as custom dbusmock templates are usually shipped
-   in project directories, not directly in world-writable directories.
-   Thanks to Simon McVittie for discovering this!
-   (LP: #1453815, CVE-2015-1326)
+## [0.15.1] - 2015-05-12
+- SECURITY FIX: When loading a template from an arbitrary file through the
+  AddTemplate() D-Bus method call or DBusTestCase.spawn_server_template()
+  Python method, don't create or use Python's *.pyc cached files. By tricking
+  a user into loading a template from a world-writable directory like /tmp, an
+  attacker could run arbitrary code with the user's privileges by putting a
+  crafted .pyc file into that directory. Note that this is highly unlikely to
+  actually appear in practice as custom dbusmock templates are usually shipped
+  in project directories, not directly in world-writable directories.
+  Thanks to Simon McVittie for discovering this!
+  (LP: #1453815, CVE-2015-1326)
 
-0.15 (2015-05-08)
--------------------
- - NetworkManager template: Restore nm-specific PropertiesChanged signal
- - NetworkManager template: Add DeactivateConnection(),
-   Settings.AddConnection(), Settings.Connection.Update(), and
-   Settings.Connection.Delete() methods. Also allow Connections with
-   autoconnect, added using AddConnection, to be automatically connected by the
-   first found device, roughly like NetworkManager itself does. Thanks Jonas
-   Grønås Drange!
- - NetworkManager template: Fix broken exception in AddWiFiConnection.
- - NetworkManager template: Set RsnFlags to have the same value as WpaFlags.
-   Thanks Pete Woods!
+## [0.15] - 2015-05-08
+- NetworkManager template: Restore nm-specific PropertiesChanged signal
+- NetworkManager template: Add DeactivateConnection(),
+  Settings.AddConnection(), Settings.Connection.Update(), and
+  Settings.Connection.Delete() methods. Also allow Connections with
+  autoconnect, added using AddConnection, to be automatically connected by the
+  first found device, roughly like NetworkManager itself does. Thanks Jonas
+  Grønås Drange!
+- NetworkManager template: Fix broken exception in AddWiFiConnection.
+- NetworkManager template: Set RsnFlags to have the same value as WpaFlags.
+  Thanks Pete Woods!
 
-0.14 (2015-03-30)
------------------
- - Move project hosting to github, update README.rst.
- - urfkill template: Return boolean from block() method, as the original
-   urfkill does. Thanks Jonas Grønås Drange!
- - Correctly instantiate DBusExceptions so that they get a proper name and
-   message (issue #3)
- - ofono template: Fix SubscriberIdentity property type
- - Emit PropertiesChanged signal when Set()ing properties.
- - urfkill template: Return boolean from Block() and FlightMode() methods
- - ofono template: Add ConnectionManager interface.
- - NetworkManager template: Much more complete support for mocking access
-   points and connections.
+## [0.14] - 2015-03-30
+- Move project hosting to github, update README.rst.
+- urfkill template: Return boolean from block() method, as the original
+  urfkill does. Thanks Jonas Grønås Drange!
+- Correctly instantiate DBusExceptions so that they get a proper name and
+  message (issue #3)
+- ofono template: Fix SubscriberIdentity property type
+- Emit PropertiesChanged signal when Set()ing properties.
+- urfkill template: Return boolean from Block() and FlightMode() methods
+- ofono template: Add ConnectionManager interface.
+- NetworkManager template: Much more complete support for mocking access
+  points and connections.
 
-0.13 (2015-02-27)
------------------
- - Add urfkill template. Thanks Jussi Pakkanen!
+## [0.13] - 2015-02-27
+- Add urfkill template. Thanks Jussi Pakkanen!
 
-0.12 (2015-01-17)
------------------
- - upower template: Add SetDeviceProperties() convenience method for changing
-   upower device properties. Thanks Charles Kerr!
+## [0.12] - 2015-01-17
+- upower template: Add SetDeviceProperties() convenience method for changing
+  upower device properties. Thanks Charles Kerr!
 
-0.11.4 (2014-09-22)
--------------------
- - upower template: Go back to using type 's' for Device* signal arguments for
-   upower 0.9. The older library does not get along with 'o'. (Regression in
-   0.11.2)
+## [0.11.4] - 2014-09-22
+- upower template: Go back to using type 's' for Device* signal arguments for
+  upower 0.9. The older library does not get along with 'o'. (Regression in
+  0.11.2)
 
-0.11.3 (2014-09-19)
--------------------
- - Fix test suite crash if loginctl is not installed.
+## [0.11.3] - 2014-09-19
+- Fix test suite crash if loginctl is not installed.
 
-0.11.2 (2014-09-19)
--------------------
- - upower template: Fix type of Device* signal arguments to be 'o', not 's'.
-   Thanks Iain Lane.
- - ofono template: Add org.ofono.SimManager interface. Thanks Jonas Grønås
-   Drange.
- - bluez5 template: Fix the type of the 'Transferred' property. Thanks Philip
-   Withnall.
- - networkmanager template: Fix the "FAILED" state value to be 120, not 12.
-   Thanks Jonas Grønås Drange.
- - bluez5 tests: Accept devices in state "not available" (or other states) as
-   well.
- - timedated and logind tests: Adjust to also accept output format of
-   systemd 215.
+## [0.11.2] - 2014-09-19
+- upower template: Fix type of Device* signal arguments to be 'o', not 's'.
+  Thanks Iain Lane.
+- ofono template: Add org.ofono.SimManager interface. Thanks Jonas Grønås
+  Drange.
+- bluez5 template: Fix the type of the 'Transferred' property. Thanks Philip
+  Withnall.
+- networkmanager template: Fix the "FAILED" state value to be 120, not 12.
+  Thanks Jonas Grønås Drange.
+- bluez5 tests: Accept devices in state "not available" (or other states) as
+  well.
+- timedated and logind tests: Adjust to also accept output format of
+  systemd 215.
 
-0.11.1 (2014-08-08)
--------------------
- - Rename bluez test classes to TestBlueZ4 and TestBlueZ5, to tell them apart
-   in the output.
- - logind template: Fix type of IdleSinceHint property, and add
-   IdleSinceHintMonotonic and IdleActionUSec properties. (LP: #1348437)
- - bluez4 template: Fix settings properties in StartDiscovery/StopDiscovery.
-   Thanks to Mathieu Trudel-Lapierre.
- - NetworkManager template: Add "Devices" and "AccessPoints" properties of
-   NetworkManager 0.9.10. (LP: #1328579)
- - NetworkManager template: Fix the types of the AccessPoint properties, and
-   add some more properties.
- - Adjust NetworkManager template tests for changed strings in NM 0.9.10.
+## [0.11.1] - 2014-08-08
+- Rename bluez test classes to TestBlueZ4 and TestBlueZ5, to tell them apart
+  in the output.
+- logind template: Fix type of IdleSinceHint property, and add
+  IdleSinceHintMonotonic and IdleActionUSec properties. (LP: #1348437)
+- bluez4 template: Fix settings properties in StartDiscovery/StopDiscovery.
+  Thanks to Mathieu Trudel-Lapierre.
+- NetworkManager template: Add "Devices" and "AccessPoints" properties of
+  NetworkManager 0.9.10. (LP: #1328579)
+- NetworkManager template: Fix the types of the AccessPoint properties, and
+  add some more properties.
+- Adjust NetworkManager template tests for changed strings in NM 0.9.10.
 
-0.11 (2014-07-24)
------------------
- - ofono: Fix GetOperators() to only apply to its own modem, not all modems.
-   Thanks to Jonas Grønås Drange.
- - Add template for BlueZ 4. Thanks to Mathieu Trudel-Lapierre!
+## [0.11] - 2014-07-24
+- ofono: Fix GetOperators() to only apply to its own modem, not all modems.
+  Thanks to Jonas Grønås Drange.
+- Add template for BlueZ 4. Thanks to Mathieu Trudel-Lapierre!
 
-0.10.3 (2014-07-16)
--------------------
- - Fix upower tests to work for upower 0.99 in environments without a system
-   D-Bus.
+## [0.10.3] - 2014-07-16
+- Fix upower tests to work for upower 0.99 in environments without a system
+  D-Bus.
 
-0.10.2 (2014-07-16)
--------------------
- - ofono: Make Scan() do the same as GetOperators(). Thanks Iain Lane.
- - README.rst: Clarify that the "True" argument to get_dbus() means the system
-   bus.
- - Fix code to be compliant with pep8 1.5.
- - Fix TestCLI.test_template_system test with upower 0.99. (LP: #1330037)
- - ofono template: Support adding a second modem with AddModem().
-   (LP: #1340590)
+## [0.10.2] - 2014-07-16
+- ofono: Make Scan() do the same as GetOperators(). Thanks Iain Lane.
+- README.rst: Clarify that the "True" argument to get_dbus() means the system
+  bus.
+- Fix code to be compliant with pep8 1.5.
+- Fix TestCLI.test_template_system test with upower 0.99. (LP: #1330037)
+- ofono template: Support adding a second modem with AddModem().
+  (LP: #1340590)
 
-0.10.1 (2014-01-30)
--------------------
- - Move code from bzr to git, adjust README.rst, do-release, and other files
-   accordingly.
- - timedated template: Emit PropertiesChanged when setting properties. Thanks
-   Iain Lane.
+## [0.10.1] - 2014-01-30
+- Move code from bzr to git, adjust README.rst, do-release, and other files
+  accordingly.
+- timedated template: Emit PropertiesChanged when setting properties. Thanks
+  Iain Lane.
 
-0.10 (2013-12-18)
------------------
- - Add dynamic properties to introspection XML, to make mocked properties work
-   with Qt's property support, d-feet, and other tools. Thanks Iain Lane!
- - Fix frequent KeyError() when calling static methods from a template.
-   Regression from 0.9.
- - Support having the same method name on different D-Bus interfaces.
- - Add ofono template with support for the Manager, VoiceCallManager, and
-   NetworkRegistration/NetworkOperator interfaces.
- - Add template for systemd's timedated. Thanks Iain Lane!
+## [0.10] - 2013-12-18
+- Add dynamic properties to introspection XML, to make mocked properties work
+  with Qt's property support, d-feet, and other tools. Thanks Iain Lane!
+- Fix frequent KeyError() when calling static methods from a template.
+  Regression from 0.9.
+- Support having the same method name on different D-Bus interfaces.
+- Add ofono template with support for the Manager, VoiceCallManager, and
+  NetworkRegistration/NetworkOperator interfaces.
+- Add template for systemd's timedated. Thanks Iain Lane!
 
-0.9.2 (2013-12-13)
-------------------
- - upower template: Emit DeviceAdded when adding new a new AC adapter or
-   battery. Thanks Iain Lane!
- - Fix ResourceWarnings in test suite.
+## [0.9.2] - 2013-12-13
+- upower template: Emit DeviceAdded when adding new a new AC adapter or
+  battery. Thanks Iain Lane!
+- Fix ResourceWarnings in test suite.
 
-0.9.1 (2013-12-10)
-------------------
- - Fix UnicodeDecodeError in NEWS parsing when trying to build with a C locale.
-   Thanks Dmitry Shachnev.
+## [0.9.1] - 2013-12-10
+- Fix UnicodeDecodeError in NEWS parsing when trying to build with a C locale.
+  Thanks Dmitry Shachnev.
 
-0.9 (2013-11-29)
-----------------
- - Make static template methods appear in introspection. Thanks Philip
-   Whitnall! (LP: #1250096)
- - Add support for the D-Bus ObjectManager interface. This can now be enabled
-   in templates (IS_OBJECT_MANAGER = True) or the CLI (--is-object-manager/-m).
-   Thanks Philip Whitnall!
- - Add Reset() mock interface method to reset that object’s state (including
-   removing all its sub-objects) as if the object or template had been
-   destroyed and re-created. This is intended for use at the end of test cases
-   to reset state before the next test case is run, as an alternative to
-   killing python-dbusmock and re-starting it. Thanks Philip Whitnall!
- - logind template: Fix return value of CanSuspend() and related methods,
-   calling them previously caused a crash.
- - Don't close the log file multiple times if it is shared between objects.
-   Thanks Philip Whitnall!
- - Log calls to Get(), GetAll(), and Set().
- - Add templates for BlueZ 5 and BlueZ-OBEX. These templates are moderately
-   well featured, though currently targeted exclusively at testing OBEX vCard
-   transfers from phones to computers. Thanks Philip Whitnall!
+## [0.9] - 2013-11-29
+- Make static template methods appear in introspection. Thanks Philip
+  Whitnall! (LP: #1250096)
+- Add support for the D-Bus ObjectManager interface. This can now be enabled
+  in templates (IS_OBJECT_MANAGER = True) or the CLI (--is-object-manager/-m).
+  Thanks Philip Whitnall!
+- Add Reset() mock interface method to reset that object’s state (including
+  removing all its sub-objects) as if the object or template had been
+  destroyed and re-created. This is intended for use at the end of test cases
+  to reset state before the next test case is run, as an alternative to
+  killing python-dbusmock and re-starting it. Thanks Philip Whitnall!
+- logind template: Fix return value of CanSuspend() and related methods,
+  calling them previously caused a crash.
+- Don't close the log file multiple times if it is shared between objects.
+  Thanks Philip Whitnall!
+- Log calls to Get(), GetAll(), and Set().
+- Add templates for BlueZ 5 and BlueZ-OBEX. These templates are moderately
+  well featured, though currently targeted exclusively at testing OBEX vCard
+  transfers from phones to computers. Thanks Philip Whitnall!
 
-0.8.1 (2013-11-11)
-------------------
- - Fix test failure if the "upower" tool is not installed.
- - Fix bad upower test which assumed a locale with a comma decimal separator.
+## [0.8.1] - 2013-11-11
+- Fix test failure if the "upower" tool is not installed.
+- Fix bad upower test which assumed a locale with a comma decimal separator.
 
-0.8 (2013-11-08)
-----------------
- - upower template: Change default daemon version to "0.9", and fix tests to
-   work with both upower 0.9 and 1.0 client tool.
- - upower template: Provide 1.0 API if DaemonVersion property/template
-   parameter gets set to >= "0.99". (LP: #1245955)
- - upower template: Add SetupDisplayDevice() method on the mock interface to
-   conveniently configure all defined properties of the DisplayDevice. Only
-   available when using the 1.0 API. (LP: #1245955)
+## [0.8] - 2013-11-08
+- upower template: Change default daemon version to "0.9", and fix tests to
+  work with both upower 0.9 and 1.0 client tool.
+- upower template: Provide 1.0 API if DaemonVersion property/template
+  parameter gets set to >= "0.99". (LP: #1245955)
+- upower template: Add SetupDisplayDevice() method on the mock interface to
+  conveniently configure all defined properties of the DisplayDevice. Only
+  available when using the 1.0 API. (LP: #1245955)
 
-0.7.2 (2013-08-30)
-------------------
- - Add optional "timeout" argument to DBusTestCase.wait_for_bus_object().
-   (LP: #1218318)
- - DBusTestCase.start_system_bus(): Make the fake bus look more like a real
-   system bus by specifying a configuration file with type "system".
+## [0.7.2] - 2013-08-30
+- Add optional "timeout" argument to DBusTestCase.wait_for_bus_object().
+  (LP: #1218318)
+- DBusTestCase.start_system_bus(): Make the fake bus look more like a real
+  system bus by specifying a configuration file with type "system".
 
-0.7.1 (2013-08-02)
-------------------
- - Handle the "Disconnected" signal only if it comes from the D-Bus object, to
-   avoid accidentally reacting to other signals (like from BlueZ). Thanks
-   Lucas De Marchi.
+## [0.7.1] - 2013-08-02
+- Handle the "Disconnected" signal only if it comes from the D-Bus object, to
+  avoid accidentally reacting to other signals (like from BlueZ). Thanks
+  Lucas De Marchi.
 
-0.7 (2013-07-30)
-----------------
- - Accept *.py files for the --template command line option, similar to
-   AddTemplate(). Thanks Emanuele Aina.
- - Pass log file to objects created with AddObject(). Thanks Emanuele Aina.
- - NetworkManager template: Add new method AddWiFiConnection(), to simulate a
-   connection associated to a previously added device (with AddWiFiDevice()).
-   Thanks Pete Woods.
+## [0.7] - 2013-07-30
+- Accept *.py files for the--template command line option, similar to
+  AddTemplate(). Thanks Emanuele Aina.
+- Pass log file to objects created with AddObject(). Thanks Emanuele Aina.
+- NetworkManager template: Add new method AddWiFiConnection(), to simulate a
+  connection associated to a previously added device (with AddWiFiDevice()).
+  Thanks Pete Woods.
 
-0.6.3 (2013-06-13)
-------------------
- - Drop "can-suspend" and "can-hibernate" checks from upower template test.
-   upower 1.0 deprecates this functionality, and defaults to not building it.
+## [0.6.3] - 2013-06-13
+- Drop "can-suspend" and "can-hibernate" checks from upower template test.
+  upower 1.0 deprecates this functionality, and defaults to not building it.
 
-0.6.2 (2013-06-13)
-------------------
- - Fix test_api.TestSubclass test to work without an existing session D-Bus.
+## [0.6.2] - 2013-06-13
+- Fix test_api.TestSubclass test to work without an existing session D-Bus.
 
-0.6.1 (2013-06-13)
-------------------
- - Add dbusmock.__version__ attribute, as per PEP-0396.
- - Fix not being able to inherit from DBusMockObject. Thanks Lucas De Marchi!
- - Allow subclassed DBusMockObject constructors to specify props arguments as
-   None.
- - Fix failing notification-daemon tests for too old libnotify. (LP: #1190208)
- - notification_daemon template: Generate new IDs for Notify() calls with an
-   input ID of 0. (LP: #1190209 part 1)
- - notification_daemon template: Send NotificationClosed signal in
-   CloseNotification() method for valid IDs. (LP: #1190209 part 2)
+## [0.6.1] - 2013-06-13
+- Add dbusmock.__version__ attribute, as per PEP-0396.
+- Fix not being able to inherit from DBusMockObject. Thanks Lucas De Marchi!
+- Allow subclassed DBusMockObject constructors to specify props arguments as
+  None.
+- Fix failing notification-daemon tests for too old libnotify. (LP: #1190208)
+- notification_daemon template: Generate new IDs for Notify() calls with an
+  input ID of 0. (LP: #1190209 part 1)
+- notification_daemon template: Send NotificationClosed signal in
+  CloseNotification() method for valid IDs. (LP: #1190209 part 2)
 
-0.6 (2013-03-20)
-----------------
- - Emit MethodCalled() signal on the DBusMock interface, as an alternative way
-   of verifying method calls. Thanks Lars Uebernickel.
- - DBusMockObject.AddTemplate() and DBusTestCase.spawn_server_template() can
-   now load local templates by specifying a path to a *.py file as template
-   name. Thanks Lucas De Marchi.
- - Quit mock process if the D-Bus it connected to goes down. (LP: #1156561)
- - Support Get() and GetAll() with empty interface names, default to main
-   interface in this case.
- - Add template for systemd's logind.
+## [0.6] - 2013-03-20
+- Emit MethodCalled() signal on the DBusMock interface, as an alternative way
+  of verifying method calls. Thanks Lars Uebernickel.
+- DBusMockObject.AddTemplate() and DBusTestCase.spawn_server_template() can
+  now load local templates by specifying a path to a *.py file as template
+  name. Thanks Lucas De Marchi.
+- Quit mock process if the D-Bus it connected to goes down. (LP: #1156561)
+- Support Get() and GetAll() with empty interface names, default to main
+  interface in this case.
+- Add template for systemd's logind.
 
-0.5 (2013-02-03)
-----------------
- - upower template: Change LidIsClosed property default value to False.
- - Add polkitd template. (LP: #1112551)
+## [0.5] - 2013-02-03
+- upower template: Change LidIsClosed property default value to False.
+- Add polkitd template. (LP: #1112551)
 
-0.4.0 (2013-01-21)
-------------------
- - Add GetCalls(), GetMethodCalls() and ClearCalls() methods on the mock D-Bus
-   interface to query the call log, for cases where parsing stdout is
-   inconvenient. Thanks to Robert Bruce Park for the patch! (LP: #1099483)
- - Document how to keep internal state in AddMethod().
- - Add template for gnome-screensaver. Thanks to Bastien Nocera!
- - Fix logging of signal arguments to have the same format as method call
-   arguments.
+## [0.4.0] - 2013-01-21
+- Add GetCalls(), GetMethodCalls() and ClearCalls() methods on the mock D-Bus
+  interface to query the call log, for cases where parsing stdout is
+  inconvenient. Thanks to Robert Bruce Park for the patch! (LP: #1099483)
+- Document how to keep internal state in AddMethod().
+- Add template for gnome-screensaver. Thanks to Bastien Nocera!
+- Fix logging of signal arguments to have the same format as method call
+  arguments.
 
-0.3.1 (2013-01-07)
-------------------
- - upower template: Set Energy and EnergyFull properties.
+## [0.3.1] - 2013-01-07
+- upower template: Set Energy and EnergyFull properties.
 
-0.3 (2012-12-19)
-----------------
- - In the logging of mock method calls, log the arguments as well.
- - Fix race condition in waiting for mock to get online on the bus, by avoiding
-   triggering D-Bus service activation with system-installed services.
- - Add "notification_daemon" mock template.
+## [0.3] - 2012-12-19
+- In the logging of mock method calls, log the arguments as well.
+- Fix race condition in waiting for mock to get online on the bus, by avoiding
+  triggering D-Bus service activation with system-installed services.
+- Add "notification_daemon" mock template.
 
-0.2.2 (2012-11-27)
-------------------
- - tests: Suppress "nmcli and NetworkManager versions don't match" warning.
- - networkmanager template: Add DeviceState enum for easier specification of
-   states. Thanks Alberto Ruiz.
- - Fix deprecation warnings with PyGObject 3.7.x.
+## [0.2.2] - 2012-11-27
+- tests: Suppress "nmcli and NetworkManager versions don't match" warning.
+- networkmanager template: Add DeviceState enum for easier specification of
+  states. Thanks Alberto Ruiz.
+- Fix deprecation warnings with PyGObject 3.7.x.
 
-0.2.1 (2012-11-15)
-------------------
- - Fix tests to skip instead of fail if NetworkManager or upower are not
-   installed.
+## [0.2.1] - 2012-11-15
+- Fix tests to skip instead of fail if NetworkManager or upower are not
+  installed.
 
-0.2.0 (2012-11-15)
-------------------
- - Turn dbusmock from a module into a package. This is transparent for API
-   users, but necessary for adding future subpackages and also makes the code
-   more maintainable.
- - Run pyflakes and pep8 during test suite, if available.
- - Add support for templates: You can now call AddTemplate() on the
-   org.freedesktop.DBus.Mock interface to load a template into the mock, or in
-   Python, start a server process with loading a template with
-   DBusTestCase.spawn_server_template(). Templates set up the common structure
-   of these services (their main objects, properties, and methods) so that you
-   do not need to carry around this common code, and only need to set up the
-   particular properties and specific D-Bus objects that you need. These
-   templates can be parameterized for common customizations, and they can
-   provide additional convenience methods on the org.freedesktop.DBus.Mock
-   interface to provide more abstract functionality like "add a battery".
- - Add a first simple "upower" template with convenience methods to add AC and
-   battery objects, and change tests/test_upower.py to use it.
- - Add a first "networkmanager" template with convenience methods to add
-   Ethernet/WiFi devices and access points. Thanks Iftikhar Ahmad!
- - Add symbol dbusmock.MOCK_IFACE for 'org.freedesktop.DBus.Mock'.
- - Add test cases for command line invocation (python3 -m dbusmock ...).
+## [0.2.0] - 2012-11-15
+- Turn dbusmock from a module into a package. This is transparent for API
+  users, but necessary for adding future subpackages and also makes the code
+  more maintainable.
+- Run pyflakes and pep8 during test suite, if available.
+- Add support for templates: You can now call AddTemplate() on the
+  org.freedesktop.DBus.Mock interface to load a template into the mock, or in
+  Python, start a server process with loading a template with
+  DBusTestCase.spawn_server_template(). Templates set up the common structure
+  of these services (their main objects, properties, and methods) so that you
+  do not need to carry around this common code, and only need to set up the
+  particular properties and specific D-Bus objects that you need. These
+  templates can be parameterized for common customizations, and they can
+  provide additional convenience methods on the org.freedesktop.DBus.Mock
+  interface to provide more abstract functionality like "add a battery".
+- Add a first simple "upower" template with convenience methods to add AC and
+  battery objects, and change tests/test_upower.py to use it.
+- Add a first "networkmanager" template with convenience methods to add
+  Ethernet/WiFi devices and access points. Thanks Iftikhar Ahmad!
+- Add symbol dbusmock.MOCK_IFACE for 'org.freedesktop.DBus.Mock'.
+- Add test cases for command line invocation (python3-m dbusmock ...).
 
-0.1.3 (2012-11-03)
-------------------
- - Ship NEWS in release tarballs.
+## [0.1.3] - 2012-11-03
+- Ship NEWS in release tarballs.
 
-0.1.2 (2012-10-10)
-------------------
- - dbusmock.py, EmitSignal(): Convert arguments to the right data types
-   according to the signature.
- - dbusmock.py, method calls: Convert arguments to the right data types
-   according to the signature.
- - tests/test_api.py: Check proper handling of signature vs. argument list
-   length and/or type mismatch. (LP: #1064836)
- - tests/test_upower.py: Add test for handling "DeviceChanged" signal.
- - setup.py: Get version from NEWS file.
+## [0.1.2] - 2012-10-10
+- dbusmock.py, EmitSignal(): Convert arguments to the right data types
+  according to the signature.
+- dbusmock.py, method calls: Convert arguments to the right data types
+  according to the signature.
+- tests/test_api.py: Check proper handling of signature vs. argument list
+  length and/or type mismatch. (LP: #1064836)
+- tests/test_upower.py: Add test for handling "DeviceChanged" signal.
+- setup.py: Get version from NEWS file.
 
-0.1.1 (2012-10-04)
-------------------
- - setup.py: Use README.rst as long description.
- - setup.py: Add download URL.
- - tests/test_consolekit.py: Skip test if ck-list-sessions is not installed.
- - setup.py: Import "multiprocessing" to work around "'NoneType' object
-   is not callable" error when running "setup.py test" with python 2.7.
+## [0.1.1] - 2012-10-04
+- setup.py: Use README.rst as long description.
+- setup.py: Add download URL.
+- tests/test_consolekit.py: Skip test if ck-list-sessions is not installed.
+- setup.py: Import "multiprocessing" to work around "'NoneType' object
+  is not callable" error when running "setup.py test" with python 2.7.
 
-0.1 (2012-10-04)
-----------------
- - tests/test_api.py: Add tests for adding existing objects.
- - dbusmock.py: Also put first (main) object into the global objects map.
- - dbusmock.py: Document global objects map in AddMethod().
- - tests/test_upower.py: Silence "No ... property" warnings; the test does not
-   create them all.
- - dbusmock.py: Fix stopping of local D-Bus daemons for test subclasses.
- - dbusmock.py, stop_dbus(): Wait for local D-Bus to be killed, and avoid
-   getting SIGTERMed ourselves.
- - dbusmock.py: Add AddProperties() method to conveniently add several
-   properties to one interface at once. Update upower test case to use this.
- - dbusmock.py: Add EmitSignal() method to emit an arbitrary signal on any
-   interface.
- - Make code compatible with Python 2.7 as well. (LP: #1060278)
+## [0.1] - 2012-10-04
+- tests/test_api.py: Add tests for adding existing objects.
+- dbusmock.py: Also put first (main) object into the global objects map.
+- dbusmock.py: Document global objects map in AddMethod().
+- tests/test_upower.py: Silence "No ... property" warnings; the test does not
+  create them all.
+- dbusmock.py: Fix stopping of local D-Bus daemons for test subclasses.
+- dbusmock.py, stop_dbus(): Wait for local D-Bus to be killed, and avoid
+  getting SIGTERMed ourselves.
+- dbusmock.py: Add AddProperties() method to conveniently add several
+  properties to one interface at once. Update upower test case to use this.
+- dbusmock.py: Add EmitSignal() method to emit an arbitrary signal on any
+  interface.
+- Make code compatible with Python 2.7 as well. (LP: #1060278)
 
-0.0.3 (2012-10-01)
-------------------
- - tests/test_api.py: Add tests for GetAll()
- - wait_for_bus_object(): Poll for Introspect() instead of GetAll(), as some
-   services such as gnome-session don't implement GetAll() properly.
- - Rename "dbus_mock" module to "dbusmock", to be more consistent with the
-   project name and Python module name conventions.
- - Support adding properties to different interfaces.
- - Support adding methods to different interfaces.
+## [0.0.3] - 2012-10-01
+- tests/test_api.py: Add tests for GetAll()
+- wait_for_bus_object(): Poll for Introspect() instead of GetAll(), as some
+  services such as gnome-session don't implement GetAll() properly.
+- Rename "dbus_mock" module to "dbusmock", to be more consistent with the
+  project name and Python module name conventions.
+- Support adding properties to different interfaces.
+- Support adding methods to different interfaces.
 
-0.0.2 (2012-10-01)
-------------------
- - setup.py: Add categories.
+## [0.0.2] - 2012-10-01
+- setup.py: Add categories.
 
-0.0.1 (2012-09-28)
-------------------
+## [0.0.1] - 2012-09-28
 Initial release.
