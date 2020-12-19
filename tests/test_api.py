@@ -114,10 +114,7 @@ assert args[3] == %s
         # check that it's logged correctly
         with open(self.mock_log.name, "rb") as f:
             log = f.read()
-            if sys.version_info[0] >= 3:
-                self.assertRegex(log, b'^[0-9.]+ Do -1 \\["/foo"\\] 5 "a\\xe2\\x99\\xa5b"$')
-            else:
-                self.assertRegex(log, r'^[0-9.]+ Do -1 \["/foo"\] 5 "a\\xe2\\x99\\xa5b"$')
+            self.assertRegex(log, b'^[0-9.]+ Do -1 \\["/foo"\\] 5 "a\\xe2\\x99\\xa5b"$')
 
     def test_dict_arg(self):
         '''dictionary argument'''

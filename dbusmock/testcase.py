@@ -252,13 +252,3 @@ class DBusTestCase(unittest.TestCase):
                         dbus_interface=MOCK_IFACE)
 
         return (daemon, obj)
-
-
-# Python 2 backwards compatibility
-if sys.version_info[0] < 3:
-    import re
-
-    def assertRegex(self, value, pattern):
-        if not re.search(pattern, value):
-            raise self.failureException('%r not found in %s' % (pattern, value))
-    DBusTestCase.assertRegex = assertRegex

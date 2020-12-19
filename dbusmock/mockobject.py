@@ -33,11 +33,6 @@ objects = {}
 MOCK_IFACE = 'org.freedesktop.DBus.Mock'
 OBJECT_MANAGER_IFACE = 'org.freedesktop.DBus.ObjectManager'
 
-# stubs to keep code compatible with Python 2 and 3
-if sys.version_info[0] >= 3:
-    long = int
-    unicode = str
-
 
 def load_module(name):
     if os.path.exists(name) and os.path.splitext(name)[1] == '.py':
@@ -584,12 +579,10 @@ class DBusMockObject(dbus.service.Object):
         def format_arg(a):
             if isinstance(a, dbus.Boolean):
                 return str(bool(a))
-            if isinstance(a, dbus.Byte) or isinstance(a, int) or isinstance(a, long):
+            if isinstance(a, dbus.Byte) or isinstance(a, int) or isinstance(a, int):
                 return str(int(a))
             if isinstance(a, str):
                 return '"' + str(a) + '"'
-            if isinstance(a, unicode):  # Python 2 only
-                return '"' + repr(a.encode('UTF-8'))[1:-1] + '"'
             if isinstance(a, list):
                 return '[' + ', '.join([format_arg(x) for x in a]) + ']'
             if isinstance(a, dict):
