@@ -1,3 +1,8 @@
+## [0.20.0] - UNRELEASED
+- NetworkManager template: Handle NetworkingEnable
+- NetworkManager template: AddConnectionUnsaved
+- Drop support for Python 2
+
 ## [0.19] - 2020-01-09
 - NetworkManager template: Add "StateReason" property and active connection ID
 - Add low-memory-monitor template
