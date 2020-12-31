@@ -12,7 +12,6 @@ services, but no devices. You can specify non-default capabilities in
 # of the license.
 
 __author__ = 'Martin Pitt'
-__email__ = 'martin.pitt@ubuntu.com'
 __copyright__ = '(c) 2012 Canonical Ltd.'
 
 BUS_NAME = 'org.freedesktop.Notifications'

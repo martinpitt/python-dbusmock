@@ -7,7 +7,6 @@
 # of the license.
 
 __author__ = 'Martin Pitt'
-__email__ = 'martin.pitt@ubuntu.com'
 __copyright__ = '(c) 2013 Canonical Ltd.'
 
 

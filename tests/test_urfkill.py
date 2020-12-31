@@ -7,7 +7,6 @@
 # of the license.
 
 __author__ = 'Jussi Pakkanen'
-__email__ = 'jussi.pakkanen@canonical.com'
 __copyright__ = '(c) 2015 Canonical Ltd.'
 
 import unittest

@@ -7,7 +7,6 @@
 # of the license.
 
 __author__ = 'Bastien Nocera'
-__email__ = 'hadess@hadess.net'
 __copyright__ = '(c) 2019 Red Hat Inc.'
 
 import unittest

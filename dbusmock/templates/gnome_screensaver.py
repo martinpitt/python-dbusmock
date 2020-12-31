@@ -11,7 +11,6 @@ org.gnome.ScreenSaver object.
 # of the license.
 
 __author__ = 'Bastien Nocera'
-__email__ = 'hadess@hadess.net'
 __copyright__ = '(c) 2013 Red Hat Inc.'
 
 BUS_NAME = 'org.gnome.ScreenSaver'

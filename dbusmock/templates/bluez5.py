@@ -16,7 +16,6 @@ This supports BlueZ 5 only.
 # of the license.
 
 __author__ = 'Philip Withnall'
-__email__ = 'philip.withnall@collabora.co.uk'
 __copyright__ = '(c) 2013 Collabora Ltd.'
 
 import dbus

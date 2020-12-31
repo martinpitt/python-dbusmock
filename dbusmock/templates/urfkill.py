@@ -12,7 +12,6 @@ such as urfkill in "parameters".
 # of the license.
 
 __author__ = 'Jussi Pakkanen'
-__email__ = 'jussi.pakkanen@canonical.com'
 __copyright__ = '(C) 2015 Canonical ltd'
 
 import dbus
