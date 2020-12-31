@@ -18,6 +18,7 @@ __copyright__ = '(c) 2012 Canonical Ltd.'
 import dbus
 import uuid
 import binascii
+from dataclasses import dataclass
 
 from dbusmock import MOCK_IFACE
 import dbusmock
@@ -38,6 +39,7 @@ SYSTEM_BUS = True
 IS_OBJECT_MANAGER = True
 
 
+@dataclass(frozen=True)
 class NMState:
     '''Global state
 
@@ -53,6 +55,7 @@ class NMState:
     NM_STATE_CONNECTED_GLOBAL = 70
 
 
+@dataclass(frozen=True)
 class NMConnectivityState:
     '''Connectvity state
 
@@ -65,6 +68,7 @@ class NMConnectivityState:
     NM_CONNECTIVITY_FULL = 4
 
 
+@dataclass(frozen=True)
 class NMActiveConnectionState:
     '''Active connection state
 
@@ -77,6 +81,7 @@ class NMActiveConnectionState:
     NM_ACTIVE_CONNECTION_STATE_DEACTIVATED = 4
 
 
+@dataclass(frozen=True)
 class InfrastructureMode:
     '''Infrastructure mode
 
@@ -95,6 +100,7 @@ class InfrastructureMode:
     }
 
 
+@dataclass(frozen=True)
 class DeviceState:
     '''Device states
 
@@ -115,6 +121,7 @@ class DeviceState:
     FAILED = 120
 
 
+@dataclass(frozen=True)
 class NM80211ApSecurityFlags:
     '''Security flags
 
@@ -140,6 +147,7 @@ class NM80211ApSecurityFlags:
     }
 
 
+@dataclass(frozen=True)
 class NM80211ApFlags:
     '''Device flags
 
