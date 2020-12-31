@@ -46,13 +46,14 @@ class StaticCodeTests(unittest.TestCase):
 
     @unittest.skipUnless(pylint, 'pylint not installed')
     def test_pylint(self):   # pylint: disable=no-self-use
-        subprocess.check_call([pylint, 'setup.py'] + glob.glob('dbusmock/*.py'))
+        subprocess.check_call([pylint, '--score=n', 'setup.py'] + glob.glob('dbusmock/*.py'))
         # signatures/arguments are not determined by us, docstrings are a bit pointless, and code repetition
         # is impractical to avoid (e.g. bluez4 and bluez5)
-        subprocess.check_call([pylint, '--disable=missing-function-docstring,R0801',
+        subprocess.check_call([pylint, '--score=n', '--disable=missing-function-docstring,R0801',
                                '--disable=too-many-arguments,too-many-instance-attributes',
                                'dbusmock/templates/'])
-        subprocess.check_call([pylint, '--disable=missing-module-docstring,missing-class-docstring,missing-function-docstring',
+        subprocess.check_call([pylint, '--score=n',
+                               '--disable=missing-module-docstring,missing-class-docstring,missing-function-docstring',
                                '--disable=too-many-public-methods,R0801', 'tests/'])
 
 
