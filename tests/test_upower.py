@@ -9,12 +9,13 @@
 __author__ = 'Martin Pitt'
 __copyright__ = '(c) 2012 Canonical Ltd.'
 
-import unittest
-import sys
-import subprocess
-import time
-import os
 import fcntl
+import os
+import shutil
+import subprocess
+import sys
+import time
+import unittest
 
 import dbus
 
@@ -23,19 +24,17 @@ import dbusmock
 UP_DEVICE_LEVEL_UNKNOWN = 0
 UP_DEVICE_LEVEL_NONE = 1
 
-p = subprocess.Popen(['which', 'upower'], stdout=subprocess.PIPE)
-p.communicate()
-have_upower = (p.returncode == 0)
+have_upower = shutil.which('upower')
 
 if have_upower:
     p = subprocess.Popen(['upower', '--version'], stdout=subprocess.PIPE,
                          universal_newlines=True)
-    out = p.communicate()[0]
+    version_out = p.communicate()[0]
     try:
-        upower_client_version = out.splitlines()[0].split()[-1]
+        upower_client_version = version_out.splitlines()[0].split()[-1]
         assert p.returncode == 0
     except IndexError:
-        # FIXME: this happens in environments without a system D-Bus; upower
+        # this happens in environments without a system D-Bus; upower
         # 0.9 still prints the client version, 0.99 just crashes
         upower_client_version = '0.99'
 else:
@@ -47,9 +46,9 @@ class TestUPower(dbusmock.DBusTestCase):
     '''Test mocking upowerd'''
 
     @classmethod
-    def setUpClass(klass):
-        klass.start_system_bus()
-        klass.dbus_con = klass.get_dbus(True)
+    def setUpClass(cls):
+        cls.start_system_bus()
+        cls.dbus_con = cls.get_dbus(True)
 
     def setUp(self):
         (self.p_mock, self.obj_upower) = self.spawn_server_template(
@@ -159,9 +158,9 @@ class TestUPower0(dbusmock.DBusTestCase):
     '''Test mocking upowerd with 0.x API'''
 
     @classmethod
-    def setUpClass(klass):
-        klass.start_system_bus()
-        klass.dbus_con = klass.get_dbus(True)
+    def setUpClass(cls):
+        cls.start_system_bus()
+        cls.dbus_con = cls.get_dbus(True)
 
     def setUp(self):
         (self.p_mock, self.obj_upower) = self.spawn_server_template(
@@ -220,9 +219,9 @@ class TestUPower1(dbusmock.DBusTestCase):
     '''Test mocking upowerd with 1.0 API'''
 
     @classmethod
-    def setUpClass(klass):
-        klass.start_system_bus()
-        klass.dbus_con = klass.get_dbus(True)
+    def setUpClass(cls):
+        cls.start_system_bus()
+        cls.dbus_con = cls.get_dbus(True)
 
     def setUp(self):
         (self.p_mock, self.obj_upower) = self.spawn_server_template(

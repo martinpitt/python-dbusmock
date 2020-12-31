@@ -12,11 +12,13 @@ __copyright__ = '(c) 2019 Red Hat Inc.'
 import unittest
 import sys
 import subprocess
-import dbus
-import dbus.mainloop.glib
-import dbusmock
 import fcntl
 import os
+
+import dbus
+import dbus.mainloop.glib
+
+import dbusmock
 
 dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 
@@ -25,9 +27,9 @@ class TestLowMemoryMonitor(dbusmock.DBusTestCase):
     '''Test mocking low-memory-monitor'''
 
     @classmethod
-    def setUpClass(klass):
-        klass.start_system_bus()
-        klass.dbus_con = klass.get_dbus(True)
+    def setUpClass(cls):
+        cls.start_system_bus()
+        cls.dbus_con = cls.get_dbus(True)
 
     def setUp(self):
         (self.p_mock, self.obj_lmm) = self.spawn_server_template(

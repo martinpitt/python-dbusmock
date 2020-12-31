@@ -42,7 +42,7 @@ def _run_test_command(prog, command):
     cmd = []
     cmd.append(prog)
 
-    if type(command) is str:
+    if isinstance(command, str):
         cmd.append(command)
     else:
         cmd.extend(command)
@@ -71,10 +71,10 @@ class TestBlueZ4(dbusmock.DBusTestCase):
     '''Test mocking bluetoothd'''
 
     @classmethod
-    def setUpClass(klass):
-        klass.start_system_bus()
-        klass.dbus_con = klass.get_dbus(True)
-        (klass.p_mock, klass.obj_bluez) = klass.spawn_server_template(
+    def setUpClass(cls):
+        cls.start_system_bus()
+        cls.dbus_con = cls.get_dbus(True)
+        (cls.p_mock, cls.obj_bluez) = cls.spawn_server_template(
             'bluez4', {}, stdout=subprocess.PIPE)
 
     def setUp(self):
@@ -84,7 +84,7 @@ class TestBlueZ4(dbusmock.DBusTestCase):
 
     def test_no_adapters(self):
         # Check for adapters.
-        out, err = _run_test_command('bluez-test-adapter', 'list')
+        err = _run_test_command('bluez-test-adapter', 'list')[1]
         expected = "dbus.exceptions.DBusException: " \
             + "org.bluez.Error.NoSuchAdapter: No such adapter."
         self.assertIn(expected, err)
@@ -103,7 +103,7 @@ class TestBlueZ4(dbusmock.DBusTestCase):
         self.assertEqual(str(address), '00:01:02:03:04:05')
 
         # Check for the adapter.
-        out, err = _run_test_command('bluez-test-adapter', 'list')
+        out = _run_test_command('bluez-test-adapter', 'list')[0]
         self.assertIn('    Name = ' + system_name, out)
         self.assertIn('    Alias = ' + system_name, out)
         self.assertIn('    Powered = 1', out)
@@ -117,7 +117,7 @@ class TestBlueZ4(dbusmock.DBusTestCase):
         self.assertEqual(path, '/org/bluez/' + adapter_name)
 
         # Check for devices.
-        out, err = _run_test_command('bluez-test-device', 'list')
+        out = _run_test_command('bluez-test-device', 'list')[0]
         self.assertListEqual([], out)
 
     def test_one_device(self):
@@ -136,10 +136,10 @@ class TestBlueZ4(dbusmock.DBusTestCase):
                          address.replace(':', '_'))
 
         # Check for the device.
-        out, err = _run_test_command('bluez-test-device', 'list')
+        out = _run_test_command('bluez-test-device', 'list')[0]
         self.assertIn(address + ' ' + alias, out)
 
-        out, err = _run_test_command('bluez-test-device', ['name', address])
+        out = _run_test_command('bluez-test-device', ['name', address])[0]
         self.assertIn(alias, out)
 
         device = self.dbus_con.get_object('org.bluez', path)

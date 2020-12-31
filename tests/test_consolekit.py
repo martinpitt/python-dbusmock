@@ -23,9 +23,9 @@ import dbusmock
                      'ck-list-sessions not installed')
 class TestConsoleKit(dbusmock.DBusTestCase):
     @classmethod
-    def setUpClass(klass):
-        klass.start_system_bus()
-        klass.dbus_con = klass.get_dbus(True)
+    def setUpClass(cls):
+        cls.start_system_bus()
+        cls.dbus_con = cls.get_dbus(True)
 
     def setUp(self):
         self.p_mock = self.spawn_server('org.freedesktop.ConsoleKit',

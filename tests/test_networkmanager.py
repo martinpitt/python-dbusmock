@@ -12,13 +12,14 @@ __copyright__ = '(c) 2012 Canonical Ltd.'
 import unittest
 import sys
 import subprocess
-import dbus
-import dbus.mainloop.glib
-import dbusmock
 import os
 import re
 
 from gi.repository import GLib
+import dbus
+import dbus.mainloop.glib
+
+import dbusmock
 
 from dbusmock.templates.networkmanager import DeviceState
 from dbusmock.templates.networkmanager import NM80211ApSecurityFlags
@@ -41,23 +42,23 @@ class TestNetworkManager(dbusmock.DBusTestCase):
     '''Test mocking NetworkManager'''
 
     @classmethod
-    def setUpClass(klass):
-        klass.start_system_bus()
-        klass.dbus_con = klass.get_dbus(True)
+    def setUpClass(cls):
+        cls.start_system_bus()
+        cls.dbus_con = cls.get_dbus(True)
 
         os.environ['G_DEBUG'] = 'fatal-warnings,fatal-criticals'
 
         # prepare environment which avoids translations
-        klass.lang_env = os.environ.copy()
+        cls.lang_env = os.environ.copy()
         try:
-            del klass.lang_env['LANG']
+            del cls.lang_env['LANG']
         except KeyError:
             pass
         try:
-            del klass.lang_env['LANGUAGE']
+            del cls.lang_env['LANGUAGE']
         except KeyError:
             pass
-        klass.lang_env['LC_MESSAGES'] = 'C'
+        cls.lang_env['LC_MESSAGES'] = 'C'
 
     def setUp(self):
         (self.p_mock, self.obj_networkmanager) = self.spawn_server_template(
@@ -449,7 +450,7 @@ class TestNetworkManager(dbusmock.DBusTestCase):
         caught = []
         ml = GLib.MainLoop()
 
-        def catch(*args, **kwargs):
+        def catch(*_, **kwargs):
             if (kwargs['interface'] == 'org.freedesktop.NetworkManager.Settings.Connection' and
                     kwargs['member'] == 'Updated'):
                 caught.append(kwargs['path'])

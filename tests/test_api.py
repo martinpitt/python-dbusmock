@@ -15,13 +15,14 @@ import os
 import tempfile
 import subprocess
 import time
+import importlib.util
 
 import dbus
 import dbus.mainloop.glib
 
-import dbusmock
-
 from gi.repository import GLib
+
+import dbusmock
 
 dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 
@@ -33,9 +34,9 @@ class TestAPI(dbusmock.DBusTestCase):
     '''Test dbus-mock API'''
 
     @classmethod
-    def setUpClass(klass):
-        klass.start_session_bus()
-        klass.dbus_con = klass.get_dbus()
+    def setUpClass(cls):
+        cls.start_session_bus()
+        cls.dbus_con = cls.get_dbus()
 
     def setUp(self):
         self.mock_log = tempfile.NamedTemporaryFile()
@@ -548,7 +549,7 @@ assert args[2] == 5
         loop = GLib.MainLoop()
         caught_signals = []
 
-        def method_called(method, args, **kwargs):
+        def method_called(method, args, **_):
             caught_signals.append((method, args))
             loop.quit()
 
@@ -588,9 +589,9 @@ class TestTemplates(dbusmock.DBusTestCase):
     '''Test template API'''
 
     @classmethod
-    def setUpClass(klass):
-        klass.start_session_bus()
-        klass.start_system_bus()
+    def setUpClass(cls):
+        cls.start_session_bus()
+        cls.start_system_bus()
 
     def test_local(self):
         '''Load a local template *.py file'''
@@ -615,12 +616,7 @@ def load(mock, parameters):
             # ensure that we don't use/write any .pyc files, they are dangerous
             # in a world-writable directory like /tmp
             self.assertFalse(os.path.exists(my_template.name + 'c'))
-            try:
-                from importlib.util import cache_from_source
-                self.assertFalse(os.path.exists(cache_from_source(my_template.name)))
-            except ImportError:
-                # python < 3.4
-                pass
+            self.assertFalse(os.path.exists(importlib.util.cache_from_source(my_template.name)))
 
         self.assertEqual(dbus_ultimate.Answer(), 42)
 
@@ -773,8 +769,8 @@ class TestSubclass(dbusmock.DBusTestCase):
     '''Test subclassing DBusMockObject'''
 
     @classmethod
-    def setUpClass(klass):
-        klass.start_session_bus()
+    def setUpClass(cls):
+        cls.start_session_bus()
 
     def test_ctor(self):
         '''Override DBusMockObject constructor'''
@@ -788,7 +784,7 @@ class TestSubclass(dbusmock.DBusTestCase):
                 self.AddMethod('', 'Ping', '', 'i', 'ret = 42')
 
         m = MyMock()
-        self.assertEqual(m.Ping(), 42)
+        self.assertEqual(m.Ping(), 42)  # pylint: disable=no-member
 
     def test_none_props(self):
         '''object with None properties argument'''
@@ -802,7 +798,7 @@ class TestSubclass(dbusmock.DBusTestCase):
                 self.AddMethod('', 'Ping', '', 'i', 'ret = 42')
 
         m = MyMock()
-        self.assertEqual(m.Ping(), 42)
+        self.assertEqual(m.Ping(), 42)  # pylint: disable=no-member
         self.assertEqual(m.GetAll('org.test.MyMockI'), {})
 
         m.AddProperty('org.test.MyMockI', 'blurb', 5)

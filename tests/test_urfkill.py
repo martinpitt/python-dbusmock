@@ -20,13 +20,20 @@ import dbus
 import dbusmock
 
 
+def _get_urfkill_objects():
+    bus = dbus.SystemBus()
+    remote_object = bus.get_object('org.freedesktop.URfkill', '/org/freedesktop/URfkill')
+    iface = dbus.Interface(remote_object, 'org.freedesktop.URfkill')
+    return (remote_object, iface)
+
+
 class TestURfkill(dbusmock.DBusTestCase):
     '''Test mocked URfkill'''
 
     @classmethod
-    def setUpClass(klass):
-        klass.start_system_bus()
-        klass.dbus_con = klass.get_dbus(True)
+    def setUpClass(cls):
+        cls.start_system_bus()
+        cls.dbus_con = cls.get_dbus(True)
 
     def setUp(self):
         (self.p_mock, self.obj_urfkill) = self.spawn_server_template(
@@ -41,14 +48,8 @@ class TestURfkill(dbusmock.DBusTestCase):
         self.p_mock.terminate()
         self.p_mock.wait()
 
-    def get_urfkill_objects(self):
-        bus = dbus.SystemBus()
-        remote_object = bus.get_object('org.freedesktop.URfkill', '/org/freedesktop/URfkill')
-        iface = dbus.Interface(remote_object, 'org.freedesktop.URfkill')
-        return (remote_object, iface)
-
     def test_mainobject(self):
-        (remote_object, iface) = self.get_urfkill_objects()
+        (remote_object, iface) = _get_urfkill_objects()
         self.assertFalse(iface.IsFlightMode())
         propiface = dbus.Interface(remote_object, 'org.freedesktop.DBus.Properties')
         version = propiface.Get('org.freedesktop.URfkill', 'DaemonVersion')
@@ -66,7 +67,7 @@ class TestURfkill(dbusmock.DBusTestCase):
 
     def test_block(self):
         bus = dbus.SystemBus()
-        (remote_object, iface) = self.get_urfkill_objects()
+        (_, iface) = _get_urfkill_objects()
 
         property_object = bus.get_object('org.freedesktop.URfkill', '/org/freedesktop/URfkill/WLAN')
         propiface = dbus.Interface(property_object, 'org.freedesktop.DBus.Properties')
@@ -83,7 +84,7 @@ class TestURfkill(dbusmock.DBusTestCase):
 
     def test_flightmode(self):
         bus = dbus.SystemBus()
-        (remote_object, iface) = self.get_urfkill_objects()
+        (_, iface) = _get_urfkill_objects()
 
         property_object = bus.get_object('org.freedesktop.URfkill', '/org/freedesktop/URfkill/WLAN')
         propiface = dbus.Interface(property_object, 'org.freedesktop.DBus.Properties')
@@ -100,7 +101,7 @@ class TestURfkill(dbusmock.DBusTestCase):
     def test_flightmode_restore(self):
         # An interface that was blocked remains blocked once flightmode is removed.
         bus = dbus.SystemBus()
-        (remote_object, iface) = self.get_urfkill_objects()
+        (_, iface) = _get_urfkill_objects()
 
         property_object = bus.get_object('org.freedesktop.URfkill', '/org/freedesktop/URfkill/WLAN')
         propiface = dbus.Interface(property_object, 'org.freedesktop.DBus.Properties')

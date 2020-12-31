@@ -22,9 +22,9 @@ class TestGnomeScreensaver(dbusmock.DBusTestCase):
     '''Test mocking gnome-screensaver'''
 
     @classmethod
-    def setUpClass(klass):
-        klass.start_session_bus()
-        klass.dbus_con = klass.get_dbus(False)
+    def setUpClass(cls):
+        cls.start_session_bus()
+        cls.dbus_con = cls.get_dbus(False)
 
     def setUp(self):
         (self.p_mock, self.obj_ss) = self.spawn_server_template(

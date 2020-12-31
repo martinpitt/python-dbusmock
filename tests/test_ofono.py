@@ -28,10 +28,10 @@ class TestOfono(dbusmock.DBusTestCase):
     '''Test mocking ofonod'''
 
     @classmethod
-    def setUpClass(klass):
-        klass.start_system_bus()
-        klass.dbus_con = klass.get_dbus(True)
-        (klass.p_mock, klass.obj_ofono) = klass.spawn_server_template(
+    def setUpClass(cls):
+        cls.start_system_bus()
+        cls.dbus_con = cls.get_dbus(True)
+        (cls.p_mock, cls.obj_ofono) = cls.spawn_server_template(
             'ofono', {}, stdout=subprocess.PIPE)
 
     def setUp(self):

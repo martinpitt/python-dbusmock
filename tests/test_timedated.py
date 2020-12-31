@@ -30,9 +30,9 @@ class TestTimedated(dbusmock.DBusTestCase):
     '''Test mocking timedated'''
 
     @classmethod
-    def setUpClass(klass):
-        klass.start_system_bus()
-        klass.dbus_con = klass.get_dbus(True)
+    def setUpClass(cls):
+        cls.start_system_bus()
+        cls.dbus_con = cls.get_dbus(True)
 
     def setUp(self):
         (self.p_mock, _) = self.spawn_server_template(
@@ -48,7 +48,7 @@ class TestTimedated(dbusmock.DBusTestCase):
             self.p_mock.terminate()
             self.p_mock.wait()
 
-    def run_timedatectl(self):
+    def run_timedatectl(self):  # pylint: disable=no-self-use
         return subprocess.check_output(['timedatectl'],
                                        universal_newlines=True)
 

@@ -10,6 +10,7 @@ __author__ = 'Martin Pitt'
 __copyright__ = '(c) 2012 Canonical Ltd.'
 
 import unittest
+import shutil
 import sys
 import subprocess
 
@@ -18,20 +19,18 @@ import dbus
 import dbusmock
 
 
-p = subprocess.Popen(['which', 'upower'], stdout=subprocess.PIPE)
-p.communicate()
-have_upower = (p.returncode == 0)
+have_upower = shutil.which('upower')
 
 
 class TestCLI(dbusmock.DBusTestCase):
     '''Test running dbusmock from the command line'''
 
     @classmethod
-    def setUpClass(klass):
-        klass.start_system_bus()
-        klass.start_session_bus()
-        klass.system_con = klass.get_dbus(True)
-        klass.session_con = klass.get_dbus()
+    def setUpClass(cls):
+        cls.start_system_bus()
+        cls.start_session_bus()
+        cls.system_con = cls.get_dbus(True)
+        cls.session_con = cls.get_dbus()
 
     def setUp(self):
         self.p_mock = None

@@ -34,25 +34,26 @@ class StaticCodeTests(unittest.TestCase):
     @unittest.skipUnless(pyflakes, 'pyflakes3 not installed')
     def test_pyflakes(self):
         flakes = subprocess.Popen([pyflakes, '.'], stdout=subprocess.PIPE, universal_newlines=True)
-        (out, err) = flakes.communicate()
+        out = flakes.communicate()[0]
         self.assertEqual(flakes.returncode, 0, out)
 
     @unittest.skipUnless(pycodestyle, 'pycodestyle not installed')
     def test_codestyle(self):
         pep8 = subprocess.Popen([pycodestyle, '--max-line-length=130', '--ignore=E124,E402,E731,W504', '.'],
                                 stdout=subprocess.PIPE, universal_newlines=True)
-        (out, err) = pep8.communicate()
+        out = pep8.communicate()[0]
         self.assertEqual(pep8.returncode, 0, out)
 
     @unittest.skipUnless(pylint, 'pylint not installed')
-    def test_pylint(self):
-        # FIXME: Only test a subset of files until they all get fixed
+    def test_pylint(self):   # pylint: disable=no-self-use
         subprocess.check_call([pylint, 'setup.py'] + glob.glob('dbusmock/*.py'))
         # signatures/arguments are not determined by us, docstrings are a bit pointless, and code repetition
         # is impractical to avoid (e.g. bluez4 and bluez5)
         subprocess.check_call([pylint, '--disable=missing-function-docstring,R0801',
                                '--disable=too-many-arguments,too-many-instance-attributes',
                                'dbusmock/templates/'])
+        subprocess.check_call([pylint, '--disable=missing-module-docstring,missing-class-docstring,missing-function-docstring',
+                               '--disable=too-many-public-methods,R0801', 'tests/'])
 
 
 if __name__ == '__main__':

@@ -19,9 +19,9 @@ import os
 import dbus
 import dbus.mainloop.glib
 
-import dbusmock
-
 from gi.repository import GLib
+
+import dbusmock
 
 dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 
@@ -86,10 +86,10 @@ class TestBlueZ5(dbusmock.DBusTestCase):
     '''Test mocking bluetoothd'''
 
     @classmethod
-    def setUpClass(klass):
-        klass.start_system_bus()
-        klass.dbus_con = klass.get_dbus(True)
-        (klass.p_mock, klass.obj_bluez) = klass.spawn_server_template(
+    def setUpClass(cls):
+        cls.start_system_bus()
+        cls.dbus_con = cls.get_dbus(True)
+        (cls.p_mock, cls.obj_bluez) = cls.spawn_server_template(
             'bluez5', {}, stdout=subprocess.PIPE)
 
     def setUp(self):
@@ -196,10 +196,10 @@ class TestBlueZObex(dbusmock.DBusTestCase):
     '''Test mocking obexd'''
 
     @classmethod
-    def setUpClass(klass):
-        klass.start_session_bus()
-        klass.start_system_bus()
-        klass.dbus_con = klass.get_dbus(True)
+    def setUpClass(cls):
+        cls.start_session_bus()
+        cls.start_system_bus()
+        cls.dbus_con = cls.get_dbus(True)
 
     def setUp(self):
         # bluetoothd
@@ -272,7 +272,7 @@ class TestBlueZObex(dbusmock.DBusTestCase):
         GLib.timeout_add(5000, ml.quit)
         ml.run()
 
-        out, err = process.communicate()
+        out = process.communicate()[0]
 
         lines = out.split('\n')
         lines = filter(lambda line: line != '', lines)

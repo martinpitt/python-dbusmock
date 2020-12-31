@@ -29,14 +29,14 @@ class TestLogind(dbusmock.DBusTestCase):
     '''Test mocking logind'''
 
     @classmethod
-    def setUpClass(klass):
-        klass.start_system_bus()
-        klass.dbus_con = klass.get_dbus(True)
+    def setUpClass(cls):
+        cls.start_system_bus()
+        cls.dbus_con = cls.get_dbus(True)
 
         if have_loginctl:
             out = subprocess.check_output(['loginctl', '--version'],
                                           universal_newlines=True)
-            klass.version = re.search(r'(\d+)', out.splitlines()[0]).group(1)
+            cls.version = re.search(r'(\d+)', out.splitlines()[0]).group(1)
 
     def setUp(self):
         self.p_mock = None

@@ -31,9 +31,9 @@ class TestNotificationDaemon(dbusmock.DBusTestCase):
     '''Test mocking notification-daemon'''
 
     @classmethod
-    def setUpClass(klass):
-        klass.start_session_bus()
-        klass.dbus_con = klass.get_dbus(False)
+    def setUpClass(cls):
+        cls.start_session_bus()
+        cls.dbus_con = cls.get_dbus(False)
 
     def setUp(self):
         (self.p_mock, self.obj_daemon) = self.spawn_server_template(
@@ -70,20 +70,20 @@ class TestNotificationDaemon(dbusmock.DBusTestCase):
             'org.freedesktop.Notifications')
 
         # with input ID 0 it should generate new IDs
-        id = notify_proxy.Notify('test', 0, '', 'summary', 'body', [], {}, -1)
-        self.assertEqual(id, 1)
-        id = notify_proxy.Notify('test', 0, '', 'summary', 'body', [], {}, -1)
-        self.assertEqual(id, 2)
+        id_ = notify_proxy.Notify('test', 0, '', 'summary', 'body', [], {}, -1)
+        self.assertEqual(id_, 1)
+        id_ = notify_proxy.Notify('test', 0, '', 'summary', 'body', [], {}, -1)
+        self.assertEqual(id_, 2)
 
         # an existing ID should just be bounced back
-        id = notify_proxy.Notify('test', 4, '', 'summary', 'body', [], {}, -1)
-        self.assertEqual(id, 4)
-        id = notify_proxy.Notify('test', 1, '', 'summary', 'body', [], {}, -1)
-        self.assertEqual(id, 1)
+        id_ = notify_proxy.Notify('test', 4, '', 'summary', 'body', [], {}, -1)
+        self.assertEqual(id_, 4)
+        id_ = notify_proxy.Notify('test', 1, '', 'summary', 'body', [], {}, -1)
+        self.assertEqual(id_, 1)
 
         # the previous doesn't forget the counter
-        id = notify_proxy.Notify('test', 0, '', 'summary', 'body', [], {}, -1)
-        self.assertEqual(id, 3)
+        id_ = notify_proxy.Notify('test', 0, '', 'summary', 'body', [], {}, -1)
+        self.assertEqual(id_, 3)
 
     def test_close(self):
         '''CloseNotification() and NotificationClosed() signal'''
@@ -92,16 +92,16 @@ class TestNotificationDaemon(dbusmock.DBusTestCase):
             self.dbus_con.get_object('org.freedesktop.Notifications', '/org/freedesktop/Notifications'),
             'org.freedesktop.Notifications')
 
-        id = notify_proxy.Notify('test', 0, '', 'summary', 'body', [], {}, -1)
-        self.assertEqual(id, 1)
+        id_ = notify_proxy.Notify('test', 0, '', 'summary', 'body', [], {}, -1)
+        self.assertEqual(id_, 1)
 
         # known notification, should send a signal
-        notify_proxy.CloseNotification(id)
+        notify_proxy.CloseNotification(id_)
         log = self.p_mock.stdout.read()
         self.assertRegex(log, b'[0-9.]+ emit .*NotificationClosed 1 1\n')
 
         # unknown notification, don't send a signal
-        notify_proxy.CloseNotification(id + 1)
+        notify_proxy.CloseNotification(id_ + 1)
         log = self.p_mock.stdout.read()
         self.assertNotIn(b'NotificationClosed', log)
 
