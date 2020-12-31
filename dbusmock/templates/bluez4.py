@@ -18,7 +18,6 @@ __authors__ = ['Mathieu Trudel-Lapierre <mathieu.trudel-lapierre@canonical.com>'
                'Philip Withnall <philip.withnall@collabora.co.uk>']
 __copyright__ = '(c) 2013 Collabora Ltd.'
 __copyright__ = '(c) 2014 Canonical Ltd.'
-__license__ = 'LGPL 3+'
 
 import dbus
 

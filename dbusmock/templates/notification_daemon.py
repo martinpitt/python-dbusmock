@@ -14,7 +14,6 @@ services, but no devices. You can specify non-default capabilities in
 __author__ = 'Martin Pitt'
 __email__ = 'martin.pitt@ubuntu.com'
 __copyright__ = '(c) 2012 Canonical Ltd.'
-__license__ = 'LGPL 3+'
 
 BUS_NAME = 'org.freedesktop.Notifications'
 MAIN_OBJ = '/org/freedesktop/Notifications'

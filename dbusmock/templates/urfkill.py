@@ -14,7 +14,6 @@ such as urfkill in "parameters".
 __author__ = 'Jussi Pakkanen'
 __email__ = 'jussi.pakkanen@canonical.com'
 __copyright__ = '(C) 2015 Canonical ltd'
-__license__ = 'LGPL 3+'
 
 import dbus
 

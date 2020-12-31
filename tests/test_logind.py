@@ -9,7 +9,6 @@
 __author__ = 'Martin Pitt'
 __email__ = 'martin.pitt@ubuntu.com'
 __copyright__ = '(c) 2013 Canonical Ltd.'
-__license__ = 'LGPL 3+'
 
 import unittest
 import os

@@ -10,7 +10,6 @@
 __author__ = 'Martin Pitt'
 __email__ = 'martin.pitt@ubuntu.com'
 __copyright__ = '(c) 2012 Canonical Ltd.'
-__license__ = 'LGPL 3+'
 __version__ = '0.20.0'
 
 from dbusmock.mockobject import (DBusMockObject, MOCK_IFACE,

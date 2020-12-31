@@ -13,7 +13,6 @@ org.gnome.ScreenSaver object.
 __author__ = 'Bastien Nocera'
 __email__ = 'hadess@hadess.net'
 __copyright__ = '(c) 2013 Red Hat Inc.'
-__license__ = 'LGPL 3+'
 
 BUS_NAME = 'org.gnome.ScreenSaver'
 MAIN_OBJ = '/org/gnome/ScreenSaver'

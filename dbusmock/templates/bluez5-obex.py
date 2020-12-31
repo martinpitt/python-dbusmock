@@ -18,7 +18,6 @@ This supports BlueZ 5 only.
 __author__ = 'Philip Withnall'
 __email__ = 'philip.withnall@collabora.co.uk'
 __copyright__ = '(c) 2013 Collabora Ltd.'
-__license__ = 'LGPL 3+'
 
 import dbus
 import tempfile

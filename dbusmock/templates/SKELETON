@@ -14,7 +14,6 @@ such as CHANGEME in "parameters".
 __author__ = 'CHANGEME'
 __email__ = 'CHANGEME'
 __copyright__ = 'CHANGEME'
-__license__ = 'LGPL 3+'
 
 import dbus
 

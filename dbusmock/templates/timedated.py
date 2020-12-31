@@ -14,7 +14,6 @@ org.freedesktop.timedate object. You can specify D-Bus property values like
 __author__ = 'Iain Lane'
 __email__ = 'iain.lane@canonical.com'
 __copyright__ = '(c) 2013 Canonical Ltd.'
-__license__ = 'LGPL 3+'
 
 import dbus
 
