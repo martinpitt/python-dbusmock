@@ -15,10 +15,11 @@ property such as 'NetworkingEnabled', or 'WirelessEnabled' etc. in
 __author__ = 'Iftikhar Ahmad'
 __copyright__ = '(c) 2012 Canonical Ltd.'
 
-import dbus
 import uuid
 import binascii
 from dataclasses import dataclass
+
+import dbus
 
 from dbusmock import MOCK_IFACE
 import dbusmock
@@ -195,15 +196,15 @@ def add_and_activate_connection(self, conn_conf, dev, ap):
     return (wifi_conn, active_conn)
 
 
-def get_device_by_ip_iface(self, iface):
+def get_device_by_ip_iface(_self, iface):
     NM = dbusmock.get_object(MANAGER_OBJ)
     for dev_path in NM.GetDevices():
         dev_obj = dbusmock.get_object(dev_path)
         interface = dev_obj.Get(DEVICE_IFACE, 'Interface')
         if interface == iface:
             return dev_path
-    else:
-        return None
+
+    return None
 
 
 def set_networking_enabled(self, networking_enabled):
@@ -275,7 +276,7 @@ def load(mock, parameters):
 
 @dbus.service.method(MOCK_IFACE,
                      in_signature='sssv', out_signature='')
-def SetProperty(self, path, iface, name, value):
+def SetProperty(_self, path, iface, name, value):
     obj = dbusmock.get_object(path)
     obj.Set(iface, name, value)
     obj.EmitSignal(iface, 'PropertiesChanged', 'a{sv}', [{name: value}])
@@ -302,7 +303,7 @@ def SetNetworkingEnabled(self, networking_enabled):
 
 @dbus.service.method(MOCK_IFACE,
                      in_signature='ss', out_signature='')
-def SetDeviceActive(self, device_path, active_connection_path):
+def SetDeviceActive(_self, device_path, active_connection_path):
     dev_obj = dbusmock.get_object(device_path)
     dev_obj.Set(DEVICE_IFACE, 'ActiveConnection', dbus.ObjectPath(active_connection_path))
     old_state = dev_obj.Get(DEVICE_IFACE, 'State')
@@ -314,7 +315,7 @@ def SetDeviceActive(self, device_path, active_connection_path):
 
 @dbus.service.method(MOCK_IFACE,
                      in_signature='s', out_signature='')
-def SetDeviceDisconnected(self, device_path):
+def SetDeviceDisconnected(_self, device_path):
     dev_obj = dbusmock.get_object(device_path)
     dev_obj.Set(DEVICE_IFACE, 'ActiveConnection', dbus.ObjectPath('/'))
     old_state = dev_obj.Get(DEVICE_IFACE, 'State')
@@ -490,7 +491,7 @@ def AddAccessPoint(self, dev_path, ap_name, ssid, hw_address,
 
 @dbus.service.method(MOCK_IFACE,
                      in_signature='ssss', out_signature='s')
-def AddWiFiConnection(self, dev_path, connection_name, ssid_name, key_mgmt):
+def AddWiFiConnection(self, dev_path, connection_name, ssid_name, _key_mgmt):
     '''Add an available connection to an existing WiFi device and access point.
 
     You have to specify WiFi Device path, Connection object name,
@@ -584,7 +585,7 @@ def AddWiFiConnection(self, dev_path, connection_name, ssid_name, key_mgmt):
     main_connections.append(connection_path)
     settings_obj.Set(SETTINGS_IFACE, 'Connections', main_connections)
 
-    settings_obj.EmitSignal(SETTINGS_IFACE, 'NewConnection', 'o', [ap_path])
+    settings_obj.EmitSignal(SETTINGS_IFACE, 'NewConnection', 'o', [ap_path])  # pylint: disable=undefined-loop-variable
 
     return connection_path
 

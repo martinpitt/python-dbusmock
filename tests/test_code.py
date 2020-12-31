@@ -48,6 +48,11 @@ class StaticCodeTests(unittest.TestCase):
     def test_pylint(self):
         # FIXME: Only test a subset of files until they all get fixed
         subprocess.check_call([pylint, 'setup.py'] + glob.glob('dbusmock/*.py'))
+        # signatures/arguments are not determined by us, docstrings are a bit pointless, and code repetition
+        # is impractical to avoid (e.g. bluez4 and bluez5)
+        subprocess.check_call([pylint, '--disable=missing-function-docstring,R0801',
+                               '--disable=too-many-arguments,too-many-instance-attributes',
+                               'dbusmock/templates/'])
 
 
 if __name__ == '__main__':

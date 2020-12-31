@@ -25,7 +25,7 @@ MAIN_IFACE = 'org.freedesktop.PolicyKit1.Authority'
 SYSTEM_BUS = True
 
 
-def load(mock, parameters):
+def load(mock, _parameters):
     mock.AddMethod(MAIN_IFACE,
                    'CheckAuthorization',
                    '(sa{sv})sa{ss}us',

@@ -36,7 +36,7 @@ DEVICE_IFACE = 'org.bluez.Device'
 AUDIO_IFACE = 'org.bluez.Audio'
 
 
-def load(mock, parameters):
+def load(mock, _parameters):
     mock.AddObject('/org/bluez', AGENT_MANAGER_IFACE, {}, [
         ('Release', '', '', ''),
     ])
@@ -151,30 +151,29 @@ def StopDiscovery(self):
 
 @dbus.service.method(MANAGER_IFACE,
                      in_signature='', out_signature='o')
-def DefaultAdapter(self):
+def DefaultAdapter(_self):
     '''Retrieve the default adapter
     '''
     default_adapter = None
 
-    for obj in mockobject.objects.keys():
+    for obj in mockobject.objects:
         if obj.startswith('/org/bluez/') and 'dev_' not in obj:
             default_adapter = obj
 
     if default_adapter:
         return dbus.ObjectPath(default_adapter, variant_level=1)
-    else:
-        raise dbus.exceptions.DBusException(
-            'No such adapter.', name='org.bluez.Error.NoSuchAdapter')
+    raise dbus.exceptions.DBusException(
+        'No such adapter.', name='org.bluez.Error.NoSuchAdapter')
 
 
 @dbus.service.method(MANAGER_IFACE,
                      in_signature='', out_signature='ao')
-def ListAdapters(self):
+def ListAdapters(_self):
     '''List all known adapters
     '''
     adapters = []
 
-    for obj in mockobject.objects.keys():
+    for obj in mockobject.objects:
         if obj.startswith('/org/bluez/') and 'dev_' not in obj:
             adapters.append(dbus.ObjectPath(obj, variant_level=1))
 
@@ -270,12 +269,12 @@ def AddDevice(self, adapter_device_name, device_address, alias):
 
 @dbus.service.method(ADAPTER_IFACE,
                      in_signature='', out_signature='ao')
-def ListDevices(self):
+def ListDevices(_self):
     '''List all known devices
     '''
     devices = []
 
-    for obj in mockobject.objects.keys():
+    for obj in mockobject.objects:
         if obj.startswith('/org/bluez/') and 'dev_' in obj:
             devices.append(dbus.ObjectPath(obj, variant_level=1))
 
@@ -284,10 +283,10 @@ def ListDevices(self):
 
 @dbus.service.method(ADAPTER_IFACE,
                      in_signature='s', out_signature='o')
-def FindDevice(self, address):
+def FindDevice(_self, address):
     '''Find a specific device by bluetooth address.
     '''
-    for obj in mockobject.objects.keys():
+    for obj in mockobject.objects:
         if obj.startswith('/org/bluez/') and 'dev_' in obj:
             o = mockobject.objects[obj]
             if o.props[DEVICE_IFACE]['Address'] \
@@ -300,7 +299,7 @@ def FindDevice(self, address):
 
 @dbus.service.method(ADAPTER_IFACE,
                      in_signature='sos', out_signature='o')
-def CreatePairedDevice(self, device_address, agent, capability):
+def CreatePairedDevice(self, device_address, _agent, _capability):
     '''Convenience method to mark an existing device as paired.
     '''
     device_name = 'dev_' + device_address.replace(':', '_').upper()
@@ -346,7 +345,7 @@ def CreatePairedDevice(self, device_address, agent, capability):
 
 @dbus.service.method(DEVICE_IFACE,
                      in_signature='s', out_signature='a{us}')
-def DiscoverServices(self, pattern):
+def DiscoverServices(self, _pattern):
 
     device = mockobject.objects[self.path]
 

@@ -35,7 +35,7 @@ _parameters = {}
 
 
 def load(mock, parameters):
-    global _parameters
+    global _parameters  # pylint: disable=global-statement
     mock.modems = []  # object paths
     mock.modem_serial_counter = 0
     mock.imsi_counter = 0
@@ -60,7 +60,7 @@ def load(mock, parameters):
 
 @dbus.service.method(dbusmock.MOCK_IFACE,
                      in_signature='sa{sv}', out_signature='s')
-def AddModem(self, name, properties):
+def AddModem(self, name, _properties):
     '''Convenience method to add a modem
 
     You have to specify a device name which must be a valid part of an object
@@ -190,7 +190,8 @@ def add_voice_call_api(mock):
 
 @dbus.service.method('org.ofono.VoiceCallManager',
                      in_signature='ss', out_signature='s')
-def Dial(self, number, hide_callerid):
+def Dial(self, number, _hide_callerid):
+    # pylint: disable=protected-access # _object_path
     path = self._object_path + '/voicecall%02i' % (len(self.calls) + 1)
     self.AddObject(path, 'org.ofono.VoiceCall',
                    {
@@ -293,7 +294,8 @@ def add_netreg_api(mock):
     mock.AddMethods('org.ofono.NetworkRegistration', [
         ('GetProperties', '', 'a{sv}', 'ret = self.GetAll("org.ofono.NetworkRegistration")'),
         ('SetProperty', 'sv', '', 'self.Set("%(i)s", args[0], args[1]); '
-         'self.EmitSignal("%(i)s", "PropertyChanged", "sv", [args[0], args[1]])' % {'i': 'org.ofono.NetworkRegistration'}),
+         'self.EmitSignal("%(i)s", "PropertyChanged", "sv", [args[0], args[1]])' % {
+             'i': 'org.ofono.NetworkRegistration'}),
         ('Register', '', '', ''),
         ('GetOperators', '', 'a(oa{sv})', get_all_operators(mock)),
         ('Scan', '', 'a(oa{sv})', get_all_operators(mock)),

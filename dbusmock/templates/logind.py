@@ -14,8 +14,8 @@ like "CanSuspend" or the return value of Inhibit() in "parameters".
 __author__ = 'Martin Pitt'
 __copyright__ = '(c) 2013 Canonical Ltd.'
 
-import dbus
 import os
+import dbus
 
 from dbusmock import MOCK_IFACE, mockobject
 
@@ -82,7 +82,7 @@ def load(mock, parameters):
 @dbus.service.method(MAIN_IFACE,
                      in_signature='',
                      out_signature='a(uso)')
-def ListUsers(self):
+def ListUsers(_):
     users = []
     for k, obj in mockobject.objects.items():
         if '/user/' in k:
@@ -94,7 +94,7 @@ def ListUsers(self):
 @dbus.service.method(MAIN_IFACE,
                      in_signature='',
                      out_signature='a(susso)')
-def ListSessions(self):
+def ListSessions(_):
     sessions = []
     for k, obj in mockobject.objects.items():
         if '/session/' in k:

@@ -36,7 +36,7 @@ NETWORK_SERVER_IFACE = 'org.bluez.Network1'
 DEVICE_IFACE = 'org.bluez.Device1'
 
 
-def load(mock, parameters):
+def load(mock, _parameters):
     mock.AddObject('/org/bluez', AGENT_MANAGER_IFACE, {}, [
         ('RegisterAgent', 'os', '', ''),
         ('RequestDefaultAgent', 'o', '', ''),
@@ -186,7 +186,7 @@ def AddDevice(self, adapter_device_name, device_address, alias):
 
 @dbus.service.method(BLUEZ_MOCK_IFACE,
                      in_signature='ssi', out_signature='')
-def PairDevice(self, adapter_device_name, device_address, class_=5898764):
+def PairDevice(_self, adapter_device_name, device_address, class_=5898764):
     '''Convenience method to mark an existing device as paired.
 
     You have to specify a device address which must be a valid Bluetooth
@@ -263,7 +263,7 @@ def PairDevice(self, adapter_device_name, device_address, class_=5898764):
 
 @dbus.service.method(BLUEZ_MOCK_IFACE,
                      in_signature='ss', out_signature='')
-def BlockDevice(self, adapter_device_name, device_address):
+def BlockDevice(_self, adapter_device_name, device_address):
     '''Convenience method to mark an existing device as blocked.
 
     You have to specify a device address which must be a valid Bluetooth
@@ -308,7 +308,7 @@ def BlockDevice(self, adapter_device_name, device_address):
 
 @dbus.service.method(BLUEZ_MOCK_IFACE,
                      in_signature='ss', out_signature='')
-def ConnectDevice(self, adapter_device_name, device_address):
+def ConnectDevice(_self, adapter_device_name, device_address):
     '''Convenience method to mark an existing device as connected.
 
     You have to specify a device address which must be a valid Bluetooth
@@ -354,7 +354,7 @@ def ConnectDevice(self, adapter_device_name, device_address):
 
 @dbus.service.method(BLUEZ_MOCK_IFACE,
                      in_signature='ss', out_signature='')
-def DisconnectDevice(self, adapter_device_name, device_address):
+def DisconnectDevice(_self, adapter_device_name, device_address):
     '''Convenience method to mark an existing device as disconnected.
 
     You have to specify a device address which must be a valid Bluetooth

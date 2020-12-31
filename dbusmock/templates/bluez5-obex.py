@@ -18,9 +18,10 @@ This supports BlueZ 5 only.
 __author__ = 'Philip Withnall'
 __copyright__ = '(c) 2013 Collabora Ltd.'
 
-import dbus
 import tempfile
 import os
+
+import dbus
 
 from dbusmock import OBJECT_MANAGER_IFACE, mockobject
 
@@ -38,7 +39,7 @@ TRANSFER_IFACE = 'org.bluez.obex.Transfer1'
 TRANSFER_MOCK_IFACE = 'org.bluez.obex.transfer1.Mock'
 
 
-def load(mock, parameters):
+def load(mock, _parameters):
     mock.AddObject('/org/bluez/obex', AGENT_MANAGER_IFACE, {}, [
         ('RegisterAgent', 'os', '', ''),
         ('UnregisterAgent', 'o', '', ''),
@@ -103,7 +104,7 @@ def CreateSession(self, destination, args):
         # Currently a no-op
         ('ListFilterFields', '', 'as', 'ret = dbus.Array(signature="(s)")'),
         ('PullAll', 'sa{sv}', 'sa{sv}', PullAll),
-        ('GetSize', '', 'q', 'ret = 0'),  # TODO
+        ('GetSize', '', 'q', 'ret = 0'),
     ])
 
     manager = mockobject.objects['/']
@@ -227,7 +228,7 @@ def PullAll(self, target_file, filters):
 
 
 @dbus.service.signal(OBEX_MOCK_IFACE, signature='sa{sv}s')
-def TransferCreated(self, path, filters, transfer_filename):
+def TransferCreated(_self, _path, _filters, _transfer_filename):
     '''Mock signal emitted when a new Transfer object is created.
 
     This is not part of the BlueZ OBEX interface; it is purely for use by test
@@ -251,7 +252,6 @@ def TransferCreated(self, path, filters, transfer_filename):
     transfer file. However, that means adding a dependency on an inotify
     package, which seems a little much.
     '''
-    pass
 
 
 @dbus.service.method(TRANSFER_MOCK_IFACE,

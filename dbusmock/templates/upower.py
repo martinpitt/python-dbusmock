@@ -192,7 +192,7 @@ def AddChargingBattery(self, device_name, model_name, percentage, seconds_to_ful
 
 @dbus.service.method(MOCK_IFACE,
                      in_signature='uuddddxxbsu', out_signature='')
-def SetupDisplayDevice(self, type, state, percentage, energy, energy_full,
+def SetupDisplayDevice(self, _type, state, percentage, energy, energy_full,
                        energy_rate, time_to_empty, time_to_full, is_present,
                        icon_name, warning_level):
     '''Convenience method to configure DisplayDevice properties
@@ -210,7 +210,7 @@ def SetupDisplayDevice(self, type, state, percentage, energy, energy_full,
 
     display_props = mockobject.objects[self.p_display_dev]
     display_props.Set(DEVICE_IFACE, 'Type',
-                      dbus.UInt32(type))
+                      dbus.UInt32(_type))
     display_props.Set(DEVICE_IFACE, 'State',
                       dbus.UInt32(state))
     display_props.Set(DEVICE_IFACE, 'Percentage',

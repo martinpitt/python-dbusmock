@@ -48,7 +48,7 @@ def load(mock, parameters):
 
 @dbus.service.method(MOCK_IFACE,
                      in_signature='ss', out_signature='s')
-def AddCHANGEME(self, device_name, CHANGEME)
+def AddCHANGEME(self, device_name, _CHANGEME):
     '''Convenience method to add a CHANGEME object
 
     You have to specify a ...

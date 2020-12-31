@@ -19,7 +19,7 @@ MAIN_IFACE = 'org.gnome.ScreenSaver'
 SYSTEM_BUS = False
 
 
-def load(mock, parameters):
+def load(mock, _parameters):
     mock.AddMethods(MAIN_IFACE, [
         ('GetActive', '', 'b', 'ret = self.is_active'),
         ('GetActiveTime', '', 'u', 'ret = 1'),

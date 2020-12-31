@@ -25,7 +25,7 @@ MAIN_IFACE = 'org.freedesktop.LowMemoryMonitor'
 SYSTEM_BUS = True
 
 
-def load(mock, parameters):
+def load(mock, _parameters):
     # Loaded!
     mock.loaded = True
 
