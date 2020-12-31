@@ -1,0 +1,9 @@
+[FORMAT]
+max-line-length=120
+
+[DESIGN]
+max-args=7
+max-public-methods=25
+
+[MESSAGES CONTROL]
+disable=invalid-name

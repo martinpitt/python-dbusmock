@@ -11,17 +11,16 @@ __author__ = 'Martin Pitt'
 __copyright__ = '(c) 2012 Canonical Ltd.'
 
 import argparse
-
-import dbus.service
+import json
+import sys
 
 import dbusmock.mockobject
 import dbusmock.testcase
 
-import json
-import sys
-
 
 def parse_args():
+    '''Parse command line arguments'''
+
     parser = argparse.ArgumentParser(description='mock D-Bus object')
     parser.add_argument('-s', '--system', action='store_true',
                         help='put object(s) on system bus (default: session bus)')
@@ -40,19 +39,20 @@ def parse_args():
     parser.add_argument('-p', '--parameters',
                         help='JSON dictionary of parameters to pass to the template')
 
-    args = parser.parse_args()
+    arguments = parser.parse_args()
 
-    if args.template:
-        if args.name or args.path or args.interface:
+    if arguments.template:
+        if arguments.name or arguments.path or arguments.interface:
             parser.error('--template and specifying NAME/PATH/INTERFACE are mutually exclusive')
     else:
-        if not args.name or not args.path or not args.interface:
+        if not arguments.name or not arguments.path or not arguments.interface:
             parser.error('Not using a template, you must specify NAME, PATH, and INTERFACE')
 
-    return args
+    return arguments
 
 
 if __name__ == '__main__':
+    import dbus.service
     import dbus.mainloop.glib
     from gi.repository import GLib
 

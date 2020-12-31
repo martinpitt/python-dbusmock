@@ -3,7 +3,7 @@ set -eux
 # install build dependencies
 # FIXME: s/which/type in tests
 dnf -y install which python3-setuptools python3-nose python3-gobject-base \
-    python3-dbus dbus-x11 python3-pycodestyle python3-pyflakes \
+    python3-dbus dbus-x11 python3-pycodestyle python3-pyflakes python3-pylint \
     upower NetworkManager bluez libnotify polkit
 
 # systemd's tools otherwise fail on "not been booted with systemd"

@@ -11,19 +11,19 @@ __author__ = 'Martin Pitt'
 __copyright__ = '(c) 2012 Canonical Ltd.'
 
 import copy
-import time
-import sys
-import types
-import importlib
 import imp
-from xml.etree import ElementTree
-
-# we do not use this ourselves, but mock methods often want to use this
+import importlib
 import os
-os  # pyflakes
+import sys
+import time
+import types
+from xml.etree import ElementTree
 
 import dbus
 import dbus.service
+
+# we do not use this ourselves, but mock methods often want to use this
+os  # pyflakes pylint: disable=pointless-statement
 
 # global path -> DBusMockObject mapping
 objects = {}
@@ -33,16 +33,54 @@ OBJECT_MANAGER_IFACE = 'org.freedesktop.DBus.ObjectManager'
 
 
 def load_module(name):
+    '''Load a mock template Python module from dbusmock/templates/'''
+
     if os.path.exists(name) and os.path.splitext(name)[1] == '.py':
         mod = imp.new_module(os.path.splitext(os.path.basename(name))[0])
         with open(name) as f:
-            exec(f.read(), mod.__dict__, mod.__dict__)
+            exec(f.read(), mod.__dict__, mod.__dict__)  # pylint: disable=exec-used
         return mod
 
     return importlib.import_module('dbusmock.templates.' + name)
 
 
-class DBusMockObject(dbus.service.Object):
+def _format_args(args):
+    '''Format a D-Bus argument tuple into an appropriate logging string'''
+
+    def format_arg(a):
+        if isinstance(a, dbus.Boolean):
+            return str(bool(a))
+        if isinstance(a, (dbus.Byte, int)):
+            return str(int(a))
+        if isinstance(a, str):
+            return '"' + str(a) + '"'
+        if isinstance(a, list):
+            return '[' + ', '.join([format_arg(x) for x in a]) + ']'
+        if isinstance(a, dict):
+            fmta = '{'
+            first = True
+            for k, v in a.items():
+                if first:
+                    first = False
+                else:
+                    fmta += ', '
+                fmta += format_arg(k) + ': ' + format_arg(v)
+            return fmta + '}'
+
+        # fallback
+        return repr(a)
+
+    s = ''
+    for a in args:
+        if s:
+            s += ' '
+        s += format_arg(a)
+    if s:
+        s = ' ' + s
+    return s
+
+
+class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-attributes
     '''Mock D-Bus object
 
     This can be configured to have arbitrary methods (including code execution)
@@ -132,14 +170,14 @@ class DBusMockObject(dbus.service.Object):
             interface_name = self.interface
         try:
             return self.GetAll(interface_name)[property_name]
-        except KeyError:
+        except KeyError as e:
             raise dbus.exceptions.DBusException(
                 'no such property ' + property_name,
-                name=self.interface + '.UnknownProperty')
+                name=self.interface + '.UnknownProperty') from e
 
     @dbus.service.method(dbus.PROPERTIES_IFACE,
                          in_signature='s', out_signature='a{sv}')
-    def GetAll(self, interface_name, *args, **kwargs):
+    def GetAll(self, interface_name, *_, **__):
         '''Standard D-Bus API for getting all property values'''
 
         self.log('GetAll ' + interface_name)
@@ -148,26 +186,26 @@ class DBusMockObject(dbus.service.Object):
             interface_name = self.interface
         try:
             return self.props[interface_name]
-        except KeyError:
+        except KeyError as e:
             raise dbus.exceptions.DBusException(
                 'no such interface ' + interface_name,
-                name=self.interface + '.UnknownInterface')
+                name=self.interface + '.UnknownInterface') from e
 
     @dbus.service.method(dbus.PROPERTIES_IFACE,
                          in_signature='ssv', out_signature='')
-    def Set(self, interface_name, property_name, value, *args, **kwargs):
+    def Set(self, interface_name, property_name, value, *_, **__):
         '''Standard D-Bus API for setting a property value'''
 
         self.log('Set %s.%s%s' % (interface_name,
                                   property_name,
-                                  self.format_args((value,))))
+                                  _format_args((value,))))
 
         try:
             iface_props = self.props[interface_name]
-        except KeyError:
+        except KeyError as e:
             raise dbus.exceptions.DBusException(
                 'no such interface ' + interface_name,
-                name=self.interface + '.UnknownInterface')
+                name=self.interface + '.UnknownInterface') from e
 
         if property_name not in iface_props:
             raise dbus.exceptions.DBusException(
@@ -236,7 +274,7 @@ class DBusMockObject(dbus.service.Object):
     @dbus.service.method(MOCK_IFACE,
                          in_signature='s',
                          out_signature='')
-    def RemoveObject(self, path):
+    def RemoveObject(self, path):  # pylint: disable=no-self-use
         '''Remove a D-Bus object from the mock
 
         As with AddObject, this will *not* emit the InterfacesRemoved signal if
@@ -245,10 +283,10 @@ class DBusMockObject(dbus.service.Object):
         try:
             objects[path].remove_from_connection()
             del objects[path]
-        except KeyError:
+        except KeyError as e:
             raise dbus.exceptions.DBusException(
                 'object %s does not exist' % path,
-                name='org.freedesktop.DBus.Mock.NameError')
+                name='org.freedesktop.DBus.Mock.NameError') from e
 
     @dbus.service.method(MOCK_IFACE,
                          in_signature='', out_signature='')
@@ -314,6 +352,8 @@ class DBusMockObject(dbus.service.Object):
               When specifying '', the method will not do anything (except
               logging) and return None.
         '''
+        # pylint: disable=protected-access
+
         if not interface:
             interface = self.interface
         n_args = len(dbus.Signature(in_sig))
@@ -369,19 +409,15 @@ class DBusMockObject(dbus.service.Object):
         '''
         if not interface:
             interface = self.interface
-        try:
-            self.props[interface][name]
+        if name in self.props.get(interface, {}):
             raise dbus.exceptions.DBusException(
                 'property %s already exists' % name,
                 name=self.interface + '.PropertyExists')
-        except KeyError:
-            # this is what we expect
-            pass
 
         # copy.copy removes one level of variant-ness, which means that the
         # types get exported in introspection data correctly, but we can't do
         # this for container types.
-        if not (isinstance(value, dbus.Dictionary) or isinstance(value, dbus.Array)):
+        if not isinstance(value, (dbus.Dictionary, dbus.Array)):
             value = copy.copy(value)
 
         self.props.setdefault(interface, {})[name] = value
@@ -434,6 +470,7 @@ class DBusMockObject(dbus.service.Object):
 
         # pick out all D-Bus service methods and add them to our interface
         for symbol in dir(module):
+            # pylint: disable=protected-access
             fn = getattr(module, symbol)
             if ('_dbus_interface' in dir(fn) and ('_dbus_is_signal' not in dir(fn) or not fn._dbus_is_signal)):
                 # for dbus-python compatibility, add methods as callables
@@ -468,6 +505,7 @@ class DBusMockObject(dbus.service.Object):
         args: variant array with signal arguments; must match order and type in
               "signature"
         '''
+        # pylint: disable=protected-access
         if not interface:
             interface = self.interface
 
@@ -480,7 +518,7 @@ class DBusMockObject(dbus.service.Object):
         m.append(signature=signature, *args)
         args = m.get_args_list()
 
-        fn = lambda self, *args: self.log('emit %s.%s%s' % (interface, name, self.format_args(args)))
+        fn = lambda self, *args: self.log('emit %s.%s%s' % (interface, name, _format_args(args)))
         fn.__name__ = str(name)
         dbus_fn = dbus.service.signal(interface)(fn)
         dbus_fn._dbus_signature = signature
@@ -524,21 +562,24 @@ class DBusMockObject(dbus.service.Object):
         that a particular method was called with particular arguments, as an
         alternative to reading the mock's log or GetCalls().
         '''
-        pass
 
     def object_manager_emit_added(self, path):
+        '''Emit ObjectManager.InterfacesAdded signal'''
+
         if self.object_manager is not None:
             self.object_manager.EmitSignal(OBJECT_MANAGER_IFACE, 'InterfacesAdded',
                                            'oa{sa{sv}}', [dbus.ObjectPath(path),
                                                           objects[path].props])
 
     def object_manager_emit_removed(self, path):
+        '''Emit ObjectManager.InterfacesRemoved signal'''
+
         if self.object_manager is not None:
             self.object_manager.EmitSignal(OBJECT_MANAGER_IFACE, 'InterfacesRemoved',
                                            'oas', [dbus.ObjectPath(path),
                                                    objects[path].props])
 
-    def mock_method(self, interface, dbus_method, in_signature, *args, **kwargs):
+    def mock_method(self, interface, dbus_method, in_signature, *args, **_):
         '''Master mock method.
 
         This gets "instantiated" in AddMethod(). Execute the code snippet of
@@ -555,7 +596,7 @@ class DBusMockObject(dbus.service.Object):
         m.append(signature=in_signature, *args)
         args = m.get_args_list()
 
-        self.log(dbus_method + self.format_args(args))
+        self.log(dbus_method + _format_args(args))
         self.call_log.append((int(time.time()), str(dbus_method), args))
         self.MethodCalled(dbus_method, args)
 
@@ -565,46 +606,13 @@ class DBusMockObject(dbus.service.Object):
         code = self.methods[interface][dbus_method][2]
         if code and isinstance(code, types.FunctionType):
             return code(self, *args)
-        elif code:
+        if code:
             loc = locals().copy()
-            exec(code, globals(), loc)
+            exec(code, globals(), loc)  # pylint: disable=exec-used
             if 'ret' in loc:
                 return loc['ret']
 
-    def format_args(self, args):
-        '''Format a D-Bus argument tuple into an appropriate logging string.'''
-
-        def format_arg(a):
-            if isinstance(a, dbus.Boolean):
-                return str(bool(a))
-            if isinstance(a, dbus.Byte) or isinstance(a, int) or isinstance(a, int):
-                return str(int(a))
-            if isinstance(a, str):
-                return '"' + str(a) + '"'
-            if isinstance(a, list):
-                return '[' + ', '.join([format_arg(x) for x in a]) + ']'
-            if isinstance(a, dict):
-                fmta = '{'
-                first = True
-                for k, v in a.items():
-                    if first:
-                        first = False
-                    else:
-                        fmta += ', '
-                    fmta += format_arg(k) + ': ' + format_arg(v)
-                return fmta + '}'
-
-            # fallback
-            return repr(a)
-
-        s = ''
-        for a in args:
-            if s:
-                s += ' '
-            s += format_arg(a)
-        if s:
-            s = ' ' + s
-        return s
+        return None
 
     def log(self, msg):
         '''Log a message, prefixed with a timestamp.
@@ -630,6 +638,9 @@ class DBusMockObject(dbus.service.Object):
         This wraps dbus-python's Introspect() method to include the dynamic
         methods and properties.
         '''
+        # _dbus_class_table is an indirect private member of dbus.service.Object that pylint fails to see
+        # pylint: disable=no-member
+
         # temporarily add our dynamic methods
         cls = self.__class__.__module__ + '.' + self.__class__.__name__
         orig_interfaces = self._dbus_class_table[cls]
@@ -675,7 +686,7 @@ class DBusMockObject(dbus.service.Object):
 
 # Overwrite dbus-python's _method_lookup(), as that offers no way to have the
 # same method name on different interfaces
-orig_method_lookup = dbus.service._method_lookup
+orig_method_lookup = dbus.service._method_lookup  # pylint: disable=protected-access
 
 
 def _dbusmock_method_lookup(obj, method_name, dbus_interface):
@@ -686,7 +697,7 @@ def _dbusmock_method_lookup(obj, method_name, dbus_interface):
         return orig_method_lookup(obj, method_name, dbus_interface)
 
 
-dbus.service._method_lookup = _dbusmock_method_lookup
+dbus.service._method_lookup = _dbusmock_method_lookup  # pylint: disable=protected-access
 
 
 #

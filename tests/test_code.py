@@ -12,6 +12,7 @@ __copyright__ = '(c) 2012 Canonical Ltd.'
 import sys
 import unittest
 import subprocess
+import glob
 
 try:
     pycodestyle = subprocess.check_output(['/bin/bash', '-ec', 'type -p pycodestyle-3 || type -p pycodestyle']).strip()
@@ -22,6 +23,11 @@ try:
     pyflakes = subprocess.check_output(['/bin/bash', '-ec', 'type -p pyflakes-3 || type -p pyflakes3']).strip()
 except subprocess.CalledProcessError:
     pyflakes = None
+
+try:
+    pylint = subprocess.check_output(['/bin/bash', '-ec', 'type -p pylint-3 || type -p pylint']).strip()
+except subprocess.CalledProcessError:
+    pylint = None
 
 
 class StaticCodeTests(unittest.TestCase):
@@ -37,6 +43,11 @@ class StaticCodeTests(unittest.TestCase):
                                 stdout=subprocess.PIPE, universal_newlines=True)
         (out, err) = pep8.communicate()
         self.assertEqual(pep8.returncode, 0, out)
+
+    @unittest.skipUnless(pylint, 'pylint not installed')
+    def test_pylint(self):
+        # FIXME: Only test a subset of files until they all get fixed
+        subprocess.check_call([pylint, 'setup.py'] + glob.glob('dbusmock/*.py'))
 
 
 if __name__ == '__main__':

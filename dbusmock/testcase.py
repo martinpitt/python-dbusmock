@@ -1,4 +1,3 @@
-# coding: UTF-8
 '''unittest.TestCase convenience methods for DBusMocks'''
 
 # This program is free software; you can redistribute it and/or modify it under
@@ -37,16 +36,16 @@ class DBusTestCase(unittest.TestCase):
     system_bus_pid = None
 
     @classmethod
-    def start_session_bus(klass):
+    def start_session_bus(cls):
         '''Set up a private local session bus
 
         This gets stopped automatically in tearDownClass().
         '''
-        (DBusTestCase.session_bus_pid, addr) = klass.start_dbus()
+        (DBusTestCase.session_bus_pid, addr) = cls.start_dbus()
         os.environ['DBUS_SESSION_BUS_ADDRESS'] = addr
 
     @classmethod
-    def start_system_bus(klass):
+    def start_system_bus(cls):
         '''Set up a private local system bus
 
         This gets stopped automatically in tearDownClass().
@@ -70,24 +69,24 @@ class DBusTestCase(unittest.TestCase):
 </busconfig>
 ''')
             c.flush()
-            (DBusTestCase.system_bus_pid, addr) = klass.start_dbus(conf=c.name)
+            (DBusTestCase.system_bus_pid, addr) = cls.start_dbus(conf=c.name)
         os.environ['DBUS_SYSTEM_BUS_ADDRESS'] = addr
 
     @classmethod
-    def tearDownClass(klass):
+    def tearDownClass(cls):
         '''Stop private session/system buses'''
 
         if DBusTestCase.session_bus_pid is not None:
-            klass.stop_dbus(DBusTestCase.session_bus_pid)
+            cls.stop_dbus(DBusTestCase.session_bus_pid)
             del os.environ['DBUS_SESSION_BUS_ADDRESS']
             DBusTestCase.session_bus_pid = None
         if DBusTestCase.system_bus_pid is not None:
-            klass.stop_dbus(DBusTestCase.system_bus_pid)
+            cls.stop_dbus(DBusTestCase.system_bus_pid)
             del os.environ['DBUS_SYSTEM_BUS_ADDRESS']
             DBusTestCase.system_bus_pid = None
 
     @classmethod
-    def start_dbus(klass, conf=None):
+    def start_dbus(cls, conf=None):
         '''Start a D-Bus daemon
 
         Return (pid, address) pair.
@@ -109,7 +108,7 @@ class DBusTestCase(unittest.TestCase):
             return (int(lines[0]), lines[1])
 
     @classmethod
-    def stop_dbus(klass, pid):
+    def stop_dbus(cls, pid):
         '''Stop a D-Bus daemon
 
         Normally you do not need to call this directly. When you use
@@ -117,14 +116,13 @@ class DBusTestCase(unittest.TestCase):
         automatically stopped in tearDownClass().
         '''
         signal.signal(signal.SIGTERM, signal.SIG_IGN)
-        for timeout in range(50):
+        for _ in range(50):
             try:
                 os.kill(pid, signal.SIGTERM)
             except OSError as e:
                 if e.errno == errno.ESRCH:
                     break
-                else:
-                    raise
+                raise
             time.sleep(0.1)
         else:
             sys.stderr.write('ERROR: timed out waiting for bus process to terminate\n')
@@ -133,7 +131,7 @@ class DBusTestCase(unittest.TestCase):
         signal.signal(signal.SIGTERM, signal.SIG_DFL)
 
     @classmethod
-    def get_dbus(klass, system_bus=False):
+    def get_dbus(cls, system_bus=False):
         '''Get dbus.bus.BusConnection() object
 
         This is preferrable to dbus.SystemBus() and dbus.SessionBus() as those
@@ -142,23 +140,21 @@ class DBusTestCase(unittest.TestCase):
         if system_bus:
             if os.environ.get('DBUS_SYSTEM_BUS_ADDRESS'):
                 return dbus.bus.BusConnection(os.environ['DBUS_SYSTEM_BUS_ADDRESS'])
-            else:
-                return dbus.SystemBus()
-        else:
-            if os.environ.get('DBUS_SESSION_BUS_ADDRESS'):
-                return dbus.bus.BusConnection(os.environ['DBUS_SESSION_BUS_ADDRESS'])
-            else:
-                return dbus.SessionBus()
+            return dbus.SystemBus()
+
+        if os.environ.get('DBUS_SESSION_BUS_ADDRESS'):
+            return dbus.bus.BusConnection(os.environ['DBUS_SESSION_BUS_ADDRESS'])
+        return dbus.SessionBus()
 
     @classmethod
-    def wait_for_bus_object(klass, dest, path, system_bus=False, timeout=600):
+    def wait_for_bus_object(cls, dest, path, system_bus=False, timeout=600):
         '''Wait for an object to appear on D-Bus
 
         Raise an exception if object does not appear within one minute. You can
         change the timeout with the "timeout" keyword argument which specifies
         deciseconds.
         '''
-        bus = klass.get_dbus(system_bus)
+        bus = cls.get_dbus(system_bus)
 
         last_exc = None
         # we check whether the name is owned first, to avoid race conditions
@@ -175,7 +171,6 @@ class DBusTestCase(unittest.TestCase):
                     last_exc = e
                     if '.UnknownInterface' in str(e):
                         break
-                    pass
 
             timeout -= 1
             time.sleep(0.1)
@@ -183,7 +178,7 @@ class DBusTestCase(unittest.TestCase):
             assert timeout > 0, 'timed out waiting for D-Bus object %s: %s' % (path, last_exc)
 
     @classmethod
-    def spawn_server(klass, name, path, interface, system_bus=False, stdout=None):
+    def spawn_server(cls, name, path, interface, system_bus=False, stdout=None):
         '''Run a DBusMockObject instance in a separate process
 
         The daemon will terminate automatically when the D-Bus that it connects
@@ -205,12 +200,12 @@ class DBusTestCase(unittest.TestCase):
         daemon = subprocess.Popen(argv, stdout=stdout)
 
         # wait for daemon to start up
-        klass.wait_for_bus_object(name, path, system_bus)
+        cls.wait_for_bus_object(name, path, system_bus)
 
         return daemon
 
     @classmethod
-    def spawn_server_template(klass, template, parameters=None, stdout=None):
+    def spawn_server_template(cls, template, parameters=None, stdout=None):
         '''Run a D-Bus mock template instance in a separate process
 
         This starts a D-Bus mock process and loads the given template with
@@ -239,10 +234,10 @@ class DBusTestCase(unittest.TestCase):
         else:
             interface_name = module.MAIN_IFACE
 
-        daemon = klass.spawn_server(module.BUS_NAME, module.MAIN_OBJ,
-                                    interface_name, module.SYSTEM_BUS, stdout)
+        daemon = cls.spawn_server(module.BUS_NAME, module.MAIN_OBJ,
+                                  interface_name, module.SYSTEM_BUS, stdout)
 
-        bus = klass.get_dbus(module.SYSTEM_BUS)
+        bus = cls.get_dbus(module.SYSTEM_BUS)
         obj = bus.get_object(module.BUS_NAME, module.MAIN_OBJ)
         if not parameters:
             parameters = dbus.Dictionary({}, signature='sv')

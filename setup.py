@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+'''python-dbusmock - Mock D-Bus objects for testing'''
 
 import setuptools
 
