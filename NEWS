@@ -1,3 +1,8 @@
+## [0.21.0] - UNRELEASED
+- Add type annotations to the whole API
+- Drop obsolete ConsoleKit and bluez4 templates/tests
+- upower template: Drop support for 0.9 API
+
 ## [0.20.0] - 2020-12-19
 - NetworkManager template: Handle NetworkingEnable
 - NetworkManager template: AddConnectionUnsaved
