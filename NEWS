@@ -1,4 +1,4 @@
-## [0.21.0] - UNRELEASED
+## [0.21.0] - 2021-01-01
 - Add type annotations to the whole API
 - Drop obsolete ConsoleKit and bluez4 templates/tests
 - upower template: Drop support for 0.9 API
