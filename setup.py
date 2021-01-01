@@ -6,8 +6,8 @@ import setuptools
 with open('README.rst') as f:
     readme = f.read()
 
-with open('NEWS', 'rb') as f:
-    version = f.readline().split(b'[')[1].split(b']')[0].decode()
+with open('NEWS', 'r') as f:
+    version = f.readline().split('[')[1].split(']')[0]
 
 setuptools.setup(
     name='python-dbusmock',
