@@ -9,14 +9,16 @@
 __author__ = 'Martin Pitt'
 __copyright__ = '(c) 2012 Canonical Ltd.'
 
+import glob
+import shutil
+import subprocess
 import sys
 import unittest
-import subprocess
-import glob
 
 pycodestyle = shutil.which('pycodestyle-3') or shutil.which('pycodestyle')
 pyflakes = shutil.which('pyflakes-3') or shutil.which('pyflakes3')
 pylint = shutil.which('pylint-3') or shutil.which('pylint')
+mypy = shutil.which('mypy')
 
 
 class StaticCodeTests(unittest.TestCase):
@@ -44,6 +46,10 @@ class StaticCodeTests(unittest.TestCase):
         subprocess.check_call([pylint, '--score=n',
                                '--disable=missing-module-docstring,missing-class-docstring,missing-function-docstring',
                                '--disable=too-many-public-methods,R0801', 'tests/'])
+
+    @unittest.skipUnless(mypy, 'mypy not installed')
+    def test_types(self):  # pylint: disable=no-self-use
+        subprocess.check_call(['mypy', '--no-error-summary', 'setup.py', 'dbusmock/', 'tests/'])
 
 
 if __name__ == '__main__':
