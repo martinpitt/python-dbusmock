@@ -17,6 +17,7 @@ import os
 import sys
 import time
 import types
+from typing import Optional, Dict, Any, List, Tuple, Sequence, KeysView
 from xml.etree import ElementTree
 
 import dbus
@@ -26,13 +27,20 @@ import dbus.service
 os  # pyflakes pylint: disable=pointless-statement
 
 # global path -> DBusMockObject mapping
-objects = {}
+objects: Dict[str, 'DBusMockObject'] = {}
 
 MOCK_IFACE = 'org.freedesktop.DBus.Mock'
 OBJECT_MANAGER_IFACE = 'org.freedesktop.DBus.ObjectManager'
 
 
-def load_module(name):
+PropsType = Dict[str, Any]
+# (in_signature, out_signature, code, dbus_wrapper_fn)
+MethodType = Tuple[str, str, str, str]
+# (timestamp, method_name, call_args)
+CallLogType = Tuple[int, str, Sequence[Any]]
+
+
+def load_module(name: str):
     '''Load a mock template Python module from dbusmock/templates/'''
 
     if os.path.exists(name) and os.path.splitext(name)[1] == '.py':
@@ -88,8 +96,8 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
     that you can control the mock from any programming language.
     '''
 
-    def __init__(self, bus_name, path, interface, props, logfile=None,
-                 is_object_manager=False):
+    def __init__(self, bus_name: str, path: str, interface: str, props: PropsType,
+                 logfile: Optional[str] = None, is_object_manager: bool = False) -> None:
         '''Create a new DBusMockObject
 
         bus_name: A dbus.service.BusName instance where the object will be put on
@@ -115,28 +123,25 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
         self.path = path
         self.interface = interface
         self.is_object_manager = is_object_manager
-        self.object_manager = None
+        self.object_manager: Optional[DBusMockObject] = None
 
-        self._template = None
-        self._template_parameters = None
+        self._template: Optional[str] = None
+        self._template_parameters: Optional[PropsType] = None
 
-        if logfile:
-            self.logfile = open(logfile, 'wb')
-        else:
-            self.logfile = None
+        self.logfile = open(logfile, 'wb') if logfile else None
         self.is_logfile_owner = True
-        self.call_log = []
+        self.call_log: List[CallLogType] = []
 
         if props is None:
             props = {}
 
         self._reset(props)
 
-    def __del__(self):
+    def __del__(self) -> None:
         if self.logfile and self.is_logfile_owner:
             self.logfile.close()
 
-    def _set_up_object_manager(self):
+    def _set_up_object_manager(self) -> None:
         '''Set up this mock object as a D-Bus ObjectManager.'''
         if self.path == '/':
             cond = 'k != \'/\''
@@ -149,19 +154,19 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
                        '  for k in objects.keys() if ' + cond + '}')
         self.object_manager = self
 
-    def _reset(self, props):
+    def _reset(self, props: PropsType) -> None:
         # interface -> name -> value
         self.props = {self.interface: props}
 
         # interface -> name -> (in_signature, out_signature, code, dbus_wrapper_fn)
-        self.methods = {self.interface: {}}
+        self.methods: Dict[str, Dict[str, MethodType]] = {self.interface: {}}
 
         if self.is_object_manager:
             self._set_up_object_manager()
 
     @dbus.service.method(dbus.PROPERTIES_IFACE,
                          in_signature='ss', out_signature='v')
-    def Get(self, interface_name, property_name):
+    def Get(self, interface_name: str, property_name: str) -> Any:
         '''Standard D-Bus API for getting a property value'''
 
         self.log('Get %s.%s' % (interface_name, property_name))
@@ -177,7 +182,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
 
     @dbus.service.method(dbus.PROPERTIES_IFACE,
                          in_signature='s', out_signature='a{sv}')
-    def GetAll(self, interface_name, *_, **__):
+    def GetAll(self, interface_name: str, *_, **__) -> PropsType:
         '''Standard D-Bus API for getting all property values'''
 
         self.log('GetAll ' + interface_name)
@@ -193,7 +198,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
 
     @dbus.service.method(dbus.PROPERTIES_IFACE,
                          in_signature='ssv', out_signature='')
-    def Set(self, interface_name, property_name, value, *_, **__):
+    def Set(self, interface_name: str, property_name: str, value: Any, *_, **__) -> None:
         '''Standard D-Bus API for setting a property value'''
 
         self.log('Set %s.%s%s' % (interface_name,
@@ -225,7 +230,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
     @dbus.service.method(MOCK_IFACE,
                          in_signature='ssa{sv}a(ssss)',
                          out_signature='')
-    def AddObject(self, path, interface, properties, methods):
+    def AddObject(self, path: str, interface: str, properties: PropsType, methods: List[MethodType]) -> None:
         '''Add a new D-Bus object to the mock
 
         path: D-Bus object path
@@ -274,7 +279,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
     @dbus.service.method(MOCK_IFACE,
                          in_signature='s',
                          out_signature='')
-    def RemoveObject(self, path):  # pylint: disable=no-self-use
+    def RemoveObject(self, path: str) -> None:  # pylint: disable=no-self-use
         '''Remove a D-Bus object from the mock
 
         As with AddObject, this will *not* emit the InterfacesRemoved signal if
@@ -290,7 +295,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
 
     @dbus.service.method(MOCK_IFACE,
                          in_signature='', out_signature='')
-    def Reset(self):
+    def Reset(self) -> None:
         '''Reset the mock object state.
 
         Remove all mock objects from the bus and tidy up so the state is as if
@@ -324,7 +329,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
     @dbus.service.method(MOCK_IFACE,
                          in_signature='sssss',
                          out_signature='')
-    def AddMethod(self, interface, name, in_sig, out_sig, code):
+    def AddMethod(self, interface, name: str, in_sig: str, out_sig: str, code: str) -> None:
         '''Add a method to this object
 
         interface: D-Bus interface to add this to. For convenience you can
@@ -383,7 +388,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
     @dbus.service.method(MOCK_IFACE,
                          in_signature='sa(ssss)',
                          out_signature='')
-    def AddMethods(self, interface, methods):
+    def AddMethods(self, interface: str, methods: List[MethodType]) -> None:
         '''Add several methods to this object
 
         interface: D-Bus interface to add this to. For convenience you can
@@ -398,7 +403,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
     @dbus.service.method(MOCK_IFACE,
                          in_signature='ssv',
                          out_signature='')
-    def AddProperty(self, interface, name, value):
+    def AddProperty(self, interface: str, name: str, value: Any) -> None:
         '''Add property to this object
 
         interface: D-Bus interface to add this to. For convenience you can
@@ -425,7 +430,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
     @dbus.service.method(MOCK_IFACE,
                          in_signature='sa{sv}',
                          out_signature='')
-    def AddProperties(self, interface, properties):
+    def AddProperties(self, interface: str, properties: PropsType) -> None:
         '''Add several properties to this object
 
         interface: D-Bus interface to add this to. For convenience you can
@@ -439,7 +444,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
     @dbus.service.method(MOCK_IFACE,
                          in_signature='sa{sv}',
                          out_signature='')
-    def AddTemplate(self, template, parameters):
+    def AddTemplate(self, template: str, parameters: PropsType) -> None:
         '''Load a template into the mock.
 
         python-dbusmock ships a set of standard mocks for common system
@@ -492,7 +497,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
     @dbus.service.method(MOCK_IFACE,
                          in_signature='sssav',
                          out_signature='')
-    def EmitSignal(self, interface, name, signature, args):
+    def EmitSignal(self, interface: str, name: str, signature: str, args: List[Any]) -> None:
         '''Emit a signal from the object.
 
         interface: D-Bus interface to send the signal from. For convenience you
@@ -529,7 +534,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
     @dbus.service.method(MOCK_IFACE,
                          in_signature='',
                          out_signature='a(tsav)')
-    def GetCalls(self):
+    def GetCalls(self) -> List[CallLogType]:
         '''List all the logged calls since the last call to ClearCalls().
 
         Return a list of (timestamp, method_name, args_list) tuples.
@@ -539,7 +544,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
     @dbus.service.method(MOCK_IFACE,
                          in_signature='s',
                          out_signature='a(tav)')
-    def GetMethodCalls(self, method):
+    def GetMethodCalls(self, method: str) -> List[Tuple[int, Sequence[Any]]]:
         '''List all the logged calls of a particular method.
 
         Return a list of (timestamp, args_list) tuples.
@@ -549,7 +554,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
     @dbus.service.method(MOCK_IFACE,
                          in_signature='',
                          out_signature='')
-    def ClearCalls(self):
+    def ClearCalls(self) -> None:
         '''Empty the log of mock call signatures.'''
 
         self.call_log = []
@@ -563,7 +568,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
         alternative to reading the mock's log or GetCalls().
         '''
 
-    def object_manager_emit_added(self, path):
+    def object_manager_emit_added(self, path: str) -> None:
         '''Emit ObjectManager.InterfacesAdded signal'''
 
         if self.object_manager is not None:
@@ -571,7 +576,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
                                            'oa{sa{sv}}', [dbus.ObjectPath(path),
                                                           objects[path].props])
 
-    def object_manager_emit_removed(self, path):
+    def object_manager_emit_removed(self, path: str) -> None:
         '''Emit ObjectManager.InterfacesRemoved signal'''
 
         if self.object_manager is not None:
@@ -579,7 +584,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
                                            'oas', [dbus.ObjectPath(path),
                                                    objects[path].props])
 
-    def mock_method(self, interface, dbus_method, in_signature, *args, **_):
+    def mock_method(self, interface: str, dbus_method: str, in_signature: str, *args, **_) -> Any:
         '''Master mock method.
 
         This gets "instantiated" in AddMethod(). Execute the code snippet of
@@ -614,7 +619,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
 
         return None
 
-    def log(self, msg):
+    def log(self, msg: str) -> None:
         '''Log a message, prefixed with a timestamp.
 
         If a log file was specified in the constructor, it is written there,
@@ -632,7 +637,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
                          out_signature='s',
                          path_keyword='object_path',
                          connection_keyword='connection')
-    def Introspect(self, object_path, connection):
+    def Introspect(self, object_path: str, connection: dbus.connection.Connection) -> str:
         '''Return XML description of this object's interfaces, methods and signals.
 
         This wraps dbus-python's Introspect() method to include the dynamic
@@ -646,9 +651,9 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
         orig_interfaces = self._dbus_class_table[cls]
 
         mock_interfaces = orig_interfaces.copy()
-        for interface, methods in self.methods.items():
+        for iface, methods in self.methods.items():
             for method in methods:
-                mock_interfaces.setdefault(interface, {})[method] = self.methods[interface][method][3]
+                mock_interfaces.setdefault(iface, {})[method] = self.methods[iface][method][3]
         self._dbus_class_table[cls] = mock_interfaces
 
         xml = dbus.service.Object.Introspect(self, object_path, connection)
@@ -705,13 +710,13 @@ dbus.service._method_lookup = _dbusmock_method_lookup  # pylint: disable=protect
 #
 
 
-def get_objects():
+def get_objects() -> KeysView[str]:
     '''Return all existing object paths'''
 
     return objects.keys()
 
 
-def get_object(path):
+def get_object(path) -> DBusMockObject:
     '''Return object for a given object path'''
 
     return objects[path]
