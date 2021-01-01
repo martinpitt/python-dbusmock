@@ -9,19 +9,18 @@
 __author__ = 'Iain Lane'
 __copyright__ = '(c) 2013 Canonical Ltd.'
 
-import unittest
 import os
-import sys
+import shutil
 import subprocess
+import sys
+import unittest
 
 import dbusmock
 
 # timedatectl keeps changing its CLI output
 TIMEDATECTL_NTP_LABEL = '(NTP enabled|synchronized|systemd-timesyncd.service active)'
 
-p = subprocess.Popen(['which', 'timedatectl'], stdout=subprocess.PIPE)
-p.communicate()
-have_timedatectl = (p.returncode == 0)
+have_timedatectl = shutil.which('timedatectl')
 
 
 @unittest.skipUnless(have_timedatectl, 'timedatectl not installed')

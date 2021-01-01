@@ -10,11 +10,13 @@
 __author__ = 'Philip Withnall'
 __copyright__ = '(c) 2013 Collabora Ltd.'
 
-import unittest
-import sys
-import subprocess
-import time
+
 import os
+import shutil
+import subprocess
+import sys
+import time
+import unittest
 
 import dbus
 import dbus.mainloop.glib
@@ -25,13 +27,8 @@ import dbusmock
 
 dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 
-p = subprocess.Popen(['which', 'bluetoothctl'], stdout=subprocess.PIPE)
-p.communicate()
-have_bluetoothctl = (p.returncode == 0)
-
-p = subprocess.Popen(['which', 'pbap-client'], stdout=subprocess.PIPE)
-p.communicate()
-have_pbap_client = (p.returncode == 0)
+have_bluetoothctl = shutil.which('bluetoothctl')
+have_pbap_client = shutil.which('pbap-client')
 
 
 def _run_bluetoothctl(command):

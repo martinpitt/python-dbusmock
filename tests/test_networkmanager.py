@@ -9,11 +9,12 @@
 __author__ = 'Iftikhar Ahmad'
 __copyright__ = '(c) 2012 Canonical Ltd.'
 
-import unittest
-import sys
-import subprocess
 import os
 import re
+import shutil
+import subprocess
+import sys
+import unittest
 
 from gi.repository import GLib
 import dbus
@@ -32,9 +33,7 @@ from dbusmock.templates.networkmanager import (CSETTINGS_IFACE, MANAGER_IFACE,
 
 dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 
-p = subprocess.Popen(['which', 'nmcli'], stdout=subprocess.PIPE)
-p.communicate()
-have_nmcli = (p.returncode == 0)
+have_nmcli = shutil.which('nmcli')
 
 
 @unittest.skipUnless(have_nmcli, 'nmcli not installed')

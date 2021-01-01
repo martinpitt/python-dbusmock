@@ -9,18 +9,17 @@
 __author__ = 'Martin Pitt'
 __copyright__ = '(c) 2013 Canonical Ltd.'
 
-import unittest
-import sys
+import shutil
 import subprocess
+import sys
+import unittest
 
 import dbus
 
 import dbusmock
 
 
-p = subprocess.Popen(['which', 'pkcheck'], stdout=subprocess.PIPE)
-p.communicate()
-have_pkcheck = (p.returncode == 0)
+have_pkcheck = shutil.which('pkcheck')
 
 
 @unittest.skipUnless(have_pkcheck, 'pkcheck not installed')

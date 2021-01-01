@@ -9,18 +9,16 @@
 __author__ = 'Martin Pitt'
 __copyright__ = '(c) 2013 Canonical Ltd.'
 
-import unittest
 import os
-import sys
 import re
+import shutil
 import subprocess
+import sys
+import unittest
 
 import dbusmock
 
-
-p = subprocess.Popen(['which', 'loginctl'], stdout=subprocess.PIPE)
-p.communicate()
-have_loginctl = (p.returncode == 0)
+have_loginctl = shutil.which('loginctl')
 
 
 @unittest.skipUnless(have_loginctl, 'loginctl not installed')
