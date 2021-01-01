@@ -14,20 +14,9 @@ import unittest
 import subprocess
 import glob
 
-try:
-    pycodestyle = subprocess.check_output(['/bin/bash', '-ec', 'type -p pycodestyle-3 || type -p pycodestyle']).strip()
-except subprocess.CalledProcessError:
-    pycodestyle = None
-
-try:
-    pyflakes = subprocess.check_output(['/bin/bash', '-ec', 'type -p pyflakes-3 || type -p pyflakes3']).strip()
-except subprocess.CalledProcessError:
-    pyflakes = None
-
-try:
-    pylint = subprocess.check_output(['/bin/bash', '-ec', 'type -p pylint-3 || type -p pylint']).strip()
-except subprocess.CalledProcessError:
-    pylint = None
+pycodestyle = shutil.which('pycodestyle-3') or shutil.which('pycodestyle')
+pyflakes = shutil.which('pyflakes-3') or shutil.which('pyflakes3')
+pylint = shutil.which('pylint-3') or shutil.which('pylint')
 
 
 class StaticCodeTests(unittest.TestCase):
