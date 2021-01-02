@@ -234,15 +234,14 @@ def load(mock, parameters):
                      'WirelessHardwareEnabled': parameters.get('WirelessHardwareEnabled', True),
                      'WwanEnabled': parameters.get('WwanEnabled', False),
                      'WwanHardwareEnabled': parameters.get('WwanHardwareEnabled', True)}
-    manager_methods = [('GetDevices', '', 'ao',
-                                      'ret = [k for k in objects.keys() if "/Devices" in k]'),
+    manager_methods = [('GetDevices', '', 'ao', 'ret = [k for k in objects.keys() if "/Devices" in k]'),
                        ('GetPermissions', '', 'a{ss}', 'ret = {}'),
                        ('state', '', 'u', "ret = self.Get('%s', 'State')" % MANAGER_IFACE),
                        ('CheckConnectivity', '', 'u', "ret = self.Get('%s', 'Connectivity')" % MANAGER_IFACE),
                        ('ActivateConnection', 'ooo', 'o', "ret = self.activate_connection(self, args[0], args[1], args[2])"),
                        ('DeactivateConnection', 'o', '', "self.deactivate_connection(self, args[0])"),
-                       ('AddAndActivateConnection', 'a{sa{sv}}oo', 'oo', "ret = self.add_and_activate_connection("
-                                                    "self, args[0], args[1], args[2])"),
+                       ('AddAndActivateConnection', 'a{sa{sv}}oo', 'oo',
+                        'ret = self.add_and_activate_connection(self, args[0], args[1], args[2])'),
                        ('GetDeviceByIpIface', 's', 'o', 'ret = self.get_device_by_ip_iface(self, args[0])'),
                        ('Enable', 'b', '', 'self.set_networking_enabled(self, args[0])')]
 
