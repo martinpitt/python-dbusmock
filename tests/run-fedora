@@ -12,7 +12,6 @@ mkdir -p /run/systemd/system
 useradd build
 su -s /bin/sh - build << EOF
 set -ex
-cp -r $(pwd) /tmp/source
-cd /tmp/source
-python3 setup.py test
+cd /source
+PYTHONPATH=. nosetests -v --nocapture
 EOF
