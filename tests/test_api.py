@@ -51,6 +51,8 @@ class TestAPI(dbusmock.DBusTestCase):
         self.dbus_props = dbus.Interface(self.obj_test, dbus.PROPERTIES_IFACE)
 
     def tearDown(self):
+        if self.p_mock.stdout:
+            self.p_mock.stdout.close()
         self.p_mock.terminate()
         self.p_mock.wait()
 

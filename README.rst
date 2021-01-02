@@ -73,6 +73,7 @@ is how you would set up a mock upower in your test case:
           self.dbus_upower_mock.AddMethod('', 'Suspend', '', '', '')
 
       def tearDown(self):
+          self.p_mock.stdout.close()
           self.p_mock.terminate()
           self.p_mock.wait()
 

@@ -71,6 +71,7 @@ class TestNetworkManager(dbusmock.DBusTestCase):
             SETTINGS_IFACE)
 
     def tearDown(self):
+        self.p_mock.stdout.close()
         self.p_mock.terminate()
         self.p_mock.wait()
 

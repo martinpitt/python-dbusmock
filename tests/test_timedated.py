@@ -44,6 +44,7 @@ class TestTimedated(dbusmock.DBusTestCase):
 
     def tearDown(self):
         if self.p_mock:
+            self.p_mock.stdout.close()
             self.p_mock.terminate()
             self.p_mock.wait()
 
