@@ -1,3 +1,10 @@
+## [0.22.0] - UNRELEASED
+- NetworkManager template: Fix connecting to wifi
+- NetworkManager template: Add Reload() method
+- tests: Replace nose test runner with standard unittest
+- setup.py: Drop deprecated `test_suite`, run tests through
+  `python3 -m unittest` directly
+
 ## [0.21.0] - 2021-01-01
 - Add type annotations to the whole API
 - Drop obsolete ConsoleKit and bluez4 templates/tests
