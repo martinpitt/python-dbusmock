@@ -20,7 +20,6 @@ setuptools.setup(
     download_url='https://pypi.python.org/pypi/python-dbusmock/',
     license='LGPL 3+',
     packages=['dbusmock', 'dbusmock.templates'],
-    test_suite='nose.collector',
 
     classifiers=[
         'Programming Language :: Python',

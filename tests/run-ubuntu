@@ -11,7 +11,7 @@ apt-get install -y eatmydata
 eatmydata apt-get -y --purge dist-upgrade
 
 # install build dependencies
-eatmydata apt-get install --no-install-recommends -y python3-all python3-setuptools python3-nose python3-dbus python3-gi gir1.2-glib-2.0 \
+eatmydata apt-get install --no-install-recommends -y python3-all python3-setuptools python3-dbus python3-gi gir1.2-glib-2.0 \
     pyflakes3 pycodestyle \
     dbus libnotify-bin upower network-manager bluez ofono ofono-scripts
 
@@ -24,7 +24,7 @@ su -s /bin/sh - build << EOF
 set -ex
 cp -r $(pwd) /tmp/source
 cd /tmp/source
-./setup.py test
+python3 -m unittest -v
 
 # massively parallel test to check for races
 for i in \$(seq 100); do

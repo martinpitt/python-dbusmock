@@ -277,3 +277,7 @@ Development
 python-dbusmock is hosted on github:
 
   https://github.com/martinpitt/python-dbusmock
+
+Run the unit tests with
+
+    python3 -m unittest

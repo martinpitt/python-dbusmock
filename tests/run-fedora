@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eux
 # install build dependencies
-dnf -y install python3-setuptools python3-nose python3-gobject-base \
+dnf -y install python3-setuptools python3-gobject-base \
     python3-dbus dbus-x11 python3-pycodestyle python3-pyflakes python3-pylint python3-mypy \
     upower NetworkManager bluez libnotify polkit
 
@@ -13,5 +13,5 @@ useradd build
 su -s /bin/sh - build << EOF
 set -ex
 cd /source
-PYTHONPATH=. nosetests -v --nocapture
+python3 -m unittest -v
 EOF
