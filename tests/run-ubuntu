@@ -35,6 +35,3 @@ wait
 
 ./setup.py sdist
 EOF
-
-# copy release tarball to outside; for bind mounts only
-[ ! -d /source ] || cp -r /tmp/source/dist /source/

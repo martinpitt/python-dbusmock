@@ -8,4 +8,4 @@ else
     RUNC="sudo docker"
 fi
 
-$RUNC run --interactive --rm --volume `pwd`:/source --workdir /source docker.io/"$IMAGE" /bin/sh tests/run-${IMAGE%:*}
+$RUNC run --interactive --rm --volume `pwd`:/source:ro --workdir /source docker.io/"$IMAGE" /bin/sh tests/run-${IMAGE%:*}
