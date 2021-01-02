@@ -188,7 +188,10 @@ def add_and_activate_connection(self, conn_conf, dev, ap):
     name = ap.rsplit('/', 1)[1]
     RemoveWifiConnection(self, dev, '/org/freedesktop/NetworkManager/Settings/' + name)
 
-    raw_ssid = ''.join([chr(byte) for byte in conn_conf["802-11-wireless"]["ssid"]])
+    try:
+        raw_ssid = ''.join([chr(byte) for byte in conn_conf["802-11-wireless"]["ssid"]])
+    except KeyError:
+        raw_ssid = dbusmock.get_object(ap).props['org.freedesktop.NetworkManager.AccessPoint']['Ssid'].decode()
     wifi_conn = dbus.ObjectPath(AddWiFiConnection(self, dev, name, raw_ssid, ""))
 
     active_conn = activate_connection(self, wifi_conn, dev, ap)

@@ -148,11 +148,12 @@ class TestNetworkManager(dbusmock.DBusTestCase):
                                      '00:23:F8:7E:12:BB',
                                      InfrastructureMode.NM_802_11_MODE_ADHOC,
                                      2425, 5400, 82,
-                                     NM80211ApSecurityFlags.NM_802_11_AP_SEC_KEY_MGMT_PSK)
+                                     NM80211ApSecurityFlags.NM_802_11_AP_SEC_NONE)
         self.dbusmock.AddAccessPoint(wifi, 'Mock_AP3', 'AP_3',
                                      '00:23:F8:7E:12:BC',
                                      InfrastructureMode.NM_802_11_MODE_INFRA,
-                                     2425, 5400, 82, 0x400)
+                                     2425, 5400, 82,
+                                     NM80211ApSecurityFlags.NM_802_11_AP_SEC_KEY_MGMT_PSK)
         out = self.read_device()
         aps = self.read_device_wifi()
         self.assertRegex(out, r'wlan0.*\sconnected')
@@ -163,6 +164,15 @@ class TestNetworkManager(dbusmock.DBusTestCase):
         res = subprocess.run(['nmcli', 'dev', 'wifi', 'connect', 'nonexisting'], check=False, capture_output=True)
         self.assertNotEqual(res.returncode, 0)
         self.assertRegex(res.stderr, b'No network.*nonexisting')
+        self.assertRegex(self.read_device(), r'wlan0.*\sconnected\s+--')
+
+        # connect to existing wifi with password
+        subprocess.check_call(['nmcli', 'dev', 'wifi', 'connect', 'AP_3', 'password', 's3kr1t'])
+        self.assertRegex(self.read_device(), r'wlan0.*\sconnected\s+AP_3')
+
+        # connect to existing wifi without password
+        subprocess.check_call(['nmcli', 'dev', 'wifi', 'connect', 'AP_1'])
+        self.assertRegex(self.read_device(), r'wlan0.*\sconnected\s+AP_1')
 
     def test_two_wifi_with_accesspoints(self):
         wifi1 = self.dbusmock.AddWiFiDevice('mock_WiFi1', 'wlan0',
