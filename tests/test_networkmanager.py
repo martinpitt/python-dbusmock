@@ -159,6 +159,11 @@ class TestNetworkManager(dbusmock.DBusTestCase):
         self.assertRegex(aps, r'AP_1.*\sAd-Hoc')
         self.assertRegex(aps, r'AP_3.*\sInfra')
 
+        # connect to non-existing wifi
+        res = subprocess.run(['nmcli', 'dev', 'wifi', 'connect', 'nonexisting'], check=False, capture_output=True)
+        self.assertNotEqual(res.returncode, 0)
+        self.assertRegex(res.stderr, b'No network.*nonexisting')
+
     def test_two_wifi_with_accesspoints(self):
         wifi1 = self.dbusmock.AddWiFiDevice('mock_WiFi1', 'wlan0',
                                             DeviceState.ACTIVATED)
