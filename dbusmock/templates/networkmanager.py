@@ -243,6 +243,7 @@ def load(mock, parameters):
                        ('AddAndActivateConnection', 'a{sa{sv}}oo', 'oo',
                         'ret = self.add_and_activate_connection(self, args[0], args[1], args[2])'),
                        ('GetDeviceByIpIface', 's', 'o', 'ret = self.get_device_by_ip_iface(self, args[0])'),
+                       ('Reload', 'u', '', ''),
                        ('Enable', 'b', '', 'self.set_networking_enabled(self, args[0])')]
 
     mock.AddObject(MANAGER_OBJ,
