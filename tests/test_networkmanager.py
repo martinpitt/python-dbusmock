@@ -101,7 +101,7 @@ class TestNetworkManager(dbusmock.DBusTestCase):
                                        universal_newlines=True)
 
     def read_device_wifi(self):
-        return subprocess.check_output(['nmcli', '--nocheck', 'dev', 'wifi'],
+        return subprocess.check_output(['nmcli', '--nocheck', 'dev', 'wifi', 'list', '--rescan', 'no'],
                                        env=self.lang_env,
                                        universal_newlines=True)
 
