@@ -1,4 +1,4 @@
-## [0.22.0] - UNRELEASED
+## [0.22.0] - 2021-01-02
 - NetworkManager template: Fix connecting to wifi
 - NetworkManager template: Add Reload() method
 - tests: Replace nose test runner with standard unittest
