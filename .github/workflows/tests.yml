@@ -24,4 +24,5 @@ jobs:
 
       - name: Run unit tests
         # run as root; current Ubuntu podman breaks user networking ("could not find slirp4netns")
-        run: sudo tests/run ${{ matrix.scenario }}
+        # disable seccomp profile: https://bugzilla.redhat.com/show_bug.cgi?id=1900021
+        run: sudo RUNC_OPTIONS=--security-opt=seccomp=unconfined tests/run ${{ matrix.scenario }}
