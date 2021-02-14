@@ -11,6 +11,7 @@ jobs:
       fail-fast: false
       matrix:
         scenario:
+          - docker.io/debian:unstable
           - docker.io/ubuntu:devel
           - docker.io/ubuntu:rolling
           - docker.io/ubuntu:latest
