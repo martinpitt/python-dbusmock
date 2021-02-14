@@ -11,11 +11,11 @@ jobs:
       fail-fast: false
       matrix:
         scenario:
-          - ubuntu:devel
-          - ubuntu:rolling
-          - ubuntu:latest
-          - fedora:latest
-          - fedora:rawhide
+          - docker.io/ubuntu:devel
+          - docker.io/ubuntu:rolling
+          - docker.io/ubuntu:latest
+          - registry.fedoraproject.org/fedora:latest
+          - registry.fedoraproject.org/fedora:rawhide
 
     timeout-minutes: 30
     steps:
