@@ -18,6 +18,7 @@ This supports BlueZ 5 only.
 __author__ = 'Philip Withnall'
 __copyright__ = '(c) 2013 Collabora Ltd.'
 
+import os
 import dbus
 
 from dbusmock import OBJECT_MANAGER_IFACE, mockobject
@@ -123,6 +124,18 @@ def AddAdapter(self, device_name, system_name):
     return path
 
 
+@dbus.service.method(DEVICE_IFACE,
+                     in_signature='', out_signature='')
+def Pair(device):
+    if device.paired:
+        raise dbus.exceptions.DBusException(
+            'Device already paired',
+            name='org.bluez.Error.AlreadyExists')
+    device_address = device.props[DEVICE_IFACE]['Address']
+    adapter_device_name = os.path.basename(device.props[DEVICE_IFACE]['Adapter'])
+    device.PairDevice(adapter_device_name, device_address)
+
+
 @dbus.service.method(BLUEZ_MOCK_IFACE,
                      in_signature='sss', out_signature='s')
 def AddDevice(self, adapter_device_name, device_address, alias):
@@ -171,8 +184,10 @@ def AddDevice(self, adapter_device_name, device_address, alias):
                        ('ConnectProfile', 's', '', ''),
                        ('Disconnect', '', '', ''),
                        ('DisconnectProfile', 's', '', ''),
-                       ('Pair', '', '', ''),
+                       ('Pair', '', '', Pair),
                    ])
+    device = mockobject.objects[path]
+    device.paired = False
 
     manager = mockobject.objects['/']
     manager.EmitSignal(OBJECT_MANAGER_IFACE, 'InterfacesAdded',
@@ -214,6 +229,7 @@ def PairDevice(_self, adapter_device_name, device_address, class_=5898764):
             name=BLUEZ_MOCK_IFACE + '.NoSuchDevice')
 
     device = mockobject.objects[device_path]
+    device.paired = True
 
     # Based off pairing with an Android phone.
     uuids = [
