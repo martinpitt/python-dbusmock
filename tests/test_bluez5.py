@@ -205,7 +205,7 @@ class TestBlueZObex(dbusmock.DBusTestCase):
         self.dbusmock_bluez = dbus.Interface(self.obj_bluez, 'org.bluez.Mock')
 
         # obexd
-        (self.p_mock, self.obj_obex) = self.spawn_server_template(
+        (self.p_mock_obex, self.obj_obex) = self.spawn_server_template(
             'bluez5-obex', {}, stdout=subprocess.PIPE)
         self.dbusmock = dbus.Interface(self.obj_obex, dbusmock.MOCK_IFACE)
         self.dbusmock_obex = dbus.Interface(self.obj_obex,
@@ -215,6 +215,10 @@ class TestBlueZObex(dbusmock.DBusTestCase):
         self.p_mock.stdout.close()
         self.p_mock.terminate()
         self.p_mock.wait()
+
+        self.p_mock_obex.stdout.close()
+        self.p_mock_obex.terminate()
+        self.p_mock_obex.wait()
 
     def test_everything(self):
         # Set up an adapter and device.
