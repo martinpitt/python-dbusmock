@@ -37,11 +37,60 @@ NETWORK_SERVER_IFACE = 'org.bluez.Network1'
 DEVICE_IFACE = 'org.bluez.Device1'
 
 
+@dbus.service.method(AGENT_MANAGER_IFACE,
+                     in_signature='os', out_signature='')
+def RegisterAgent(manager, agent_path, capability):
+    all_caps = ['DisplayOnly', 'DisplayYesNo', 'KeyboardOnly',
+                'NoInputNoOutput', 'KeyboardDisplay']
+
+    if agent_path in manager.agent_paths:
+        raise dbus.exceptions.DBusException(
+            'Another agent is already registered ' + manager.agent_path,
+            name='org.bluez.Error.AlreadyExists')
+
+    if capability not in all_caps:
+        raise dbus.exceptions.DBusException(
+            'Unsupported capability ' + capability,
+            name='org.bluez.Error.InvalidArguments')
+
+    if not manager.default_agent:
+        manager.default_agent = agent_path
+    manager.agent_paths += [agent_path]
+    manager.capabilities[agent_path] = capability
+
+
+@dbus.service.method(AGENT_MANAGER_IFACE,
+                     in_signature='o', out_signature='')
+def UnregisterAgent(manager, agent_path):
+    if agent_path not in manager.agent_paths:
+        raise dbus.exceptions.DBusException(
+            'Agent not registered ' + agent_path,
+            name='org.bluez.Error.DoesNotExist')
+
+    manager.agent_paths.remove(agent_path)
+    del manager.capabilities[agent_path]
+    if manager.default_agent == agent_path:
+        if len(manager.agent_paths) > 0:
+            manager.default_agent = manager.agent_paths[-1]
+        else:
+            manager.default_agent = None
+
+
+@dbus.service.method(AGENT_MANAGER_IFACE,
+                     in_signature='o', out_signature='')
+def RequestDefaultAgent(manager, agent_path):
+    if agent_path not in manager.agent_paths:
+        raise dbus.exceptions.DBusException(
+            'Agent not registered ' + agent_path,
+            name='org.bluez.Error.DoesNotExist')
+    manager.default_agent = agent_path
+
+
 def load(mock, _parameters):
     mock.AddObject('/org/bluez', AGENT_MANAGER_IFACE, {}, [
-        ('RegisterAgent', 'os', '', ''),
-        ('RequestDefaultAgent', 'o', '', ''),
-        ('UnregisterAgent', 'o', '', ''),
+        ('RegisterAgent', 'os', '', RegisterAgent),
+        ('RequestDefaultAgent', 'o', '', RequestDefaultAgent),
+        ('UnregisterAgent', 'o', '', UnregisterAgent),
     ])
 
     bluez = mockobject.objects['/org/bluez']
