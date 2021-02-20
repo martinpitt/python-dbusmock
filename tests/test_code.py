@@ -18,7 +18,7 @@ import unittest
 pycodestyle = shutil.which('pycodestyle-3') or shutil.which('pycodestyle')
 pyflakes = shutil.which('pyflakes-3') or shutil.which('pyflakes3')
 pylint = shutil.which('pylint-3') or shutil.which('pylint')
-mypy = shutil.which('mypy')
+mypy = subprocess.call(['python3', '-m', 'mypy', '--version'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) == 0
 
 
 class StaticCodeTests(unittest.TestCase):
@@ -49,7 +49,7 @@ class StaticCodeTests(unittest.TestCase):
 
     @unittest.skipUnless(mypy, 'mypy not installed')
     def test_types(self):  # pylint: disable=no-self-use
-        subprocess.check_call(['mypy', '--no-error-summary', 'setup.py', 'dbusmock/', 'tests/'])
+        subprocess.check_call([sys.executable, '-m', 'mypy', '--no-error-summary', 'setup.py', 'dbusmock/', 'tests/'])
 
 
 if __name__ == '__main__':
