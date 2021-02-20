@@ -13,5 +13,8 @@ useradd build
 su -s /bin/sh - build << EOF
 set -ex
 cd /source
-python3 -m unittest -v
+python3 -m unittest -v || {
+  [ -z "$DEBUG" ] || sleep infinity
+  exit 1
+}
 EOF
