@@ -32,6 +32,12 @@ def load(mock, _parameters):
                    '(bba{ss})',
                    '''ret = (args[1] in self.allowed or self.allow_unknown, False, {'test': 'test'})''')
 
+    mock.AddMethod(MAIN_IFACE,
+                   'RegisterAuthenticationAgent',
+                   '(sa{sv})ss',
+                   '',
+                   '')
+
     mock.AddProperties(MAIN_IFACE,
                        dbus.Dictionary({
                            'BackendName': 'local',
