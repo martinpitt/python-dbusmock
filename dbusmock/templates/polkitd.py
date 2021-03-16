@@ -13,8 +13,9 @@ which actions are allowed.
 # of the license.
 
 __author__ = 'Martin Pitt'
-__copyright__ = '(c) 2013 Canonical Ltd.'
+__copyright__ = '(c) 2013-2021 Canonical Ltd.'
 
+import time
 import dbus
 
 from dbusmock import MOCK_IFACE
@@ -36,15 +37,26 @@ def load(mock, _parameters):
     # default state
     mock.allow_unknown = False
     mock.allowed = []
+    mock.delay = 0
+    mock.simulate_hang = False
+    mock.hanging_actions = []
+    mock.hanging_calls = []
 
 
 @dbus.service.method(MAIN_IFACE,
                      in_signature='(sa{sv})sa{ss}us',
-                     out_signature='(bba{ss})')
+                     out_signature='(bba{ss})',
+                     async_callbacks=('ok_cb', '_err_cb'))
 def CheckAuthorization(self, _subject, action_id, _details, _flags,
-                       _cancellation_id):
+                       _cancellation_id, ok_cb, _err_cb):
+    time.sleep(self.delay)
     allowed = action_id in self.allowed or self.allow_unknown
-    return (allowed, False, {'test': 'test'})
+    ret = (allowed, False, {'test': 'test'})
+
+    if self.simulate_hang or action_id in self.hanging_actions:
+        self.hanging_calls.append((ok_cb, ret))
+    else:
+        ok_cb(ret)
 
 
 @dbus.service.method(MAIN_IFACE, in_signature='(sa{sv})ss')
@@ -67,3 +79,35 @@ def SetAllowed(self, actions):
     '''Set allowed actions'''
 
     self.allowed = actions
+
+
+@dbus.service.method(MOCK_IFACE, in_signature='d', out_signature='')
+def SetDelay(self, delay):
+    '''Makes the CheckAuthorization() method to delay'''
+    self.delay = delay
+
+
+@dbus.service.method(MOCK_IFACE, in_signature='b', out_signature='')
+def SimulateHang(self, hang):
+    '''Makes the CheckAuthorization() method to hang'''
+    self.simulate_hang = hang
+
+
+@dbus.service.method(MOCK_IFACE, in_signature='as', out_signature='')
+def SimulateHangActions(self, actions):
+    '''Makes the CheckAuthorization() method to hang on such actions'''
+    self.hanging_actions = actions
+
+
+@dbus.service.method(MOCK_IFACE, in_signature='', out_signature='')
+def ReleaseHangingCalls(self):
+    '''Calls all the hanging callbacks'''
+    for (cb, ret) in self.hanging_calls:
+        cb(ret)
+    self.hanging_calls = []
+
+
+@dbus.service.method(MOCK_IFACE, in_signature='', out_signature='b')
+def HaveHangingCalls(self):
+    '''Check if we've hangling calls'''
+    return len(self.hanging_calls)
