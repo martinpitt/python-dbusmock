@@ -15,10 +15,11 @@ import sys
 import unittest
 
 import dbus
+import dbus.mainloop.glib
 
 import dbusmock
 
-
+dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 have_pkcheck = shutil.which('pkcheck')
 
 
@@ -56,11 +57,65 @@ class TestPolkit(dbusmock.DBusTestCase):
         self.check_action('org.freedesktop.test.slap', True)
         self.check_action('org.freedesktop.test.wobble', False)
 
-    def check_action(self, action, expect_allow):
-        pkcheck = subprocess.Popen(['pkcheck', '--action-id', action, '--process', '123'],
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.STDOUT,
-                                   universal_newlines=True)
+    def test_hanging_call(self):
+        self.dbusmock.SimulateHang(True)
+        self.assertFalse(self.dbusmock.HaveHangingCalls())
+        pkcheck = self.check_action_run('org.freedesktop.test.frobnicate')
+        with self.assertRaises(subprocess.TimeoutExpired):
+            pkcheck.wait(0.8)
+
+        self.assertTrue(self.dbusmock.HaveHangingCalls())
+        pkcheck.stdout.close()
+        pkcheck.kill()
+        pkcheck.wait()
+
+    def test_hanging_call_return(self):
+        self.dbusmock.SetAllowed(['org.freedesktop.test.frobnicate'])
+        self.dbusmock.SimulateHangActions(['org.freedesktop.test.frobnicate',
+                                           'org.freedesktop.test.slap'])
+        self.assertFalse(self.dbusmock.HaveHangingCalls())
+
+        frobnicate_pkcheck = self.check_action_run(
+            'org.freedesktop.test.frobnicate')
+        slap_pkcheck = self.check_action_run('org.freedesktop.test.slap')
+
+        with self.assertRaises(subprocess.TimeoutExpired):
+            frobnicate_pkcheck.wait(0.3)
+        with self.assertRaises(subprocess.TimeoutExpired):
+            slap_pkcheck.wait(0.3)
+
+        self.assertTrue(self.dbusmock.HaveHangingCalls())
+        self.dbusmock.ReleaseHangingCalls()
+
+        self.check_action_result(frobnicate_pkcheck, True)
+        self.check_action_result(slap_pkcheck, False)
+
+    def test_delayed_call(self):
+        self.dbusmock.SetDelay(3)
+        pkcheck = self.check_action_run('org.freedesktop.test.frobnicate')
+        with self.assertRaises(subprocess.TimeoutExpired):
+            pkcheck.wait(0.8)
+        pkcheck.stdout.close()
+        pkcheck.kill()
+        pkcheck.wait()
+
+    def test_delayed_call_return(self):
+        self.dbusmock.SetDelay(1)
+        self.dbusmock.SetAllowed(['org.freedesktop.test.frobnicate'])
+        pkcheck = self.check_action_run('org.freedesktop.test.frobnicate')
+        with self.assertRaises(subprocess.TimeoutExpired):
+            pkcheck.wait(0.8)
+        self.check_action_result(pkcheck, True)
+
+    @staticmethod
+    def check_action_run(action):
+        return subprocess.Popen(['pkcheck', '--action-id',
+                                 action, '--process', '123'],
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.STDOUT,
+                                universal_newlines=True)
+
+    def check_action_result(self, pkcheck, expect_allow):
         out = pkcheck.communicate()[0]
         if expect_allow:
             self.assertEqual(pkcheck.returncode, 0)
@@ -68,6 +123,9 @@ class TestPolkit(dbusmock.DBusTestCase):
         else:
             self.assertNotEqual(pkcheck.returncode, 0)
             self.assertEqual(out, 'test=test\nNot authorized.\n')
+
+    def check_action(self, action, expect_allow):
+        self.check_action_result(self.check_action_run(action), expect_allow)
 
 
 if __name__ == '__main__':
