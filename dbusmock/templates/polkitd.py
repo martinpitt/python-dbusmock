@@ -26,18 +26,6 @@ SYSTEM_BUS = True
 
 
 def load(mock, _parameters):
-    mock.AddMethod(MAIN_IFACE,
-                   'CheckAuthorization',
-                   '(sa{sv})sa{ss}us',
-                   '(bba{ss})',
-                   '''ret = (args[1] in self.allowed or self.allow_unknown, False, {'test': 'test'})''')
-
-    mock.AddMethod(MAIN_IFACE,
-                   'RegisterAuthenticationAgent',
-                   '(sa{sv})ss',
-                   '',
-                   '')
-
     mock.AddProperties(MAIN_IFACE,
                        dbus.Dictionary({
                            'BackendName': 'local',
@@ -48,6 +36,20 @@ def load(mock, _parameters):
     # default state
     mock.allow_unknown = False
     mock.allowed = []
+
+
+@dbus.service.method(MAIN_IFACE,
+                     in_signature='(sa{sv})sa{ss}us',
+                     out_signature='(bba{ss})')
+def CheckAuthorization(self, _subject, action_id, _details, _flags,
+                       _cancellation_id):
+    allowed = action_id in self.allowed or self.allow_unknown
+    return (allowed, False, {'test': 'test'})
+
+
+@dbus.service.method(MAIN_IFACE, in_signature='(sa{sv})ss')
+def RegisterAuthenticationAgent(_self, _subject, _locale, _object_path):
+    pass
 
 
 @dbus.service.method(MOCK_IFACE, in_signature='b', out_signature='')
