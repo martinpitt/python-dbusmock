@@ -88,6 +88,36 @@ def _format_args(args):
     return s
 
 
+def _wrap_in_dbus_variant(value):
+    dbus_types = [
+        dbus.types.Array,
+        dbus.types.ByteArray,
+        dbus.types.Int16,
+        dbus.types.ObjectPath,
+        dbus.types.Struct,
+        dbus.types.UInt64,
+        dbus.types.Boolean,
+        dbus.types.Dictionary,
+        dbus.types.Int32,
+        dbus.types.Signature,
+        dbus.types.UInt16,
+        dbus.types.UnixFd,
+        dbus.types.Byte,
+        dbus.types.Double,
+        dbus.types.Int64,
+        dbus.types.String,
+        dbus.types.UInt32,
+    ]
+    if isinstance(value, dbus.String):
+        return dbus.String(str(value), variant_level=1)
+    if type(value) in dbus_types:
+        return type(value)(value.conjugate(), variant_level=1)
+    if isinstance(value, str):
+        return dbus.String(value, variant_level=1)
+    raise dbus.exceptions.DBusException(
+        'could not wrap type {}'.format(type(value)))
+
+
 class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-attributes
     '''Mock D-Bus object
 
@@ -400,6 +430,42 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
         for method in methods:
             self.AddMethod(interface, *method)
 
+    def _set_property(self, interface, name, value):
+        # copy.copy removes one level of variant-ness, which means that the
+        # types get exported in introspection data correctly, but we can't do
+        # this for container types.
+        if not isinstance(value, (dbus.Dictionary, dbus.Array)):
+            value = copy.copy(value)
+
+        self.props.setdefault(interface, {})[name] = value
+
+    @dbus.service.method(MOCK_IFACE,
+                         in_signature='sa{sv}',
+                         out_signature='')
+    def UpdateProperties(self, interface: str, properties: PropsType) -> None:
+        '''Update properties on this object and send a PropertiesChanged signal
+
+        interface: D-Bus interface to update this to. For convenience you can
+                   specify '' here to add the property to the object's main
+                   interface (as specified on construction).
+        properties: A property_name (string) → value map
+        '''
+        changed_props = {}
+
+        for name, value in properties.items():
+            if not interface:
+                interface = self.interface
+            if name not in self.props.get(interface, {}):
+                raise dbus.exceptions.DBusException(
+                    'property %s not found' % name,
+                    name=interface + '.NoSuchProperty')
+
+            self._set_property(interface, name, value)
+            changed_props[name] = _wrap_in_dbus_variant(value)
+
+        self.EmitSignal(dbus.PROPERTIES_IFACE, 'PropertiesChanged', 'sa{sv}as', [
+            interface, changed_props, []])
+
     @dbus.service.method(MOCK_IFACE,
                          in_signature='ssv',
                          out_signature='')
@@ -419,13 +485,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
                 'property %s already exists' % name,
                 name=self.interface + '.PropertyExists')
 
-        # copy.copy removes one level of variant-ness, which means that the
-        # types get exported in introspection data correctly, but we can't do
-        # this for container types.
-        if not isinstance(value, (dbus.Dictionary, dbus.Array)):
-            value = copy.copy(value)
-
-        self.props.setdefault(interface, {})[name] = value
+        self._set_property(interface, name, value)
 
     @dbus.service.method(MOCK_IFACE,
                          in_signature='sa{sv}',
