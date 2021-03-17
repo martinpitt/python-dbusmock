@@ -338,6 +338,43 @@ assert args[2] == 5
         self.assertEqual(self.dbus_props.Get('org.freedesktop.Test.Other', 'color'),
                          'yellow')
 
+        changed_props = []
+        ml = GLib.MainLoop()
+
+        def catch(*args, **kwargs):
+            if kwargs['interface'] != 'org.freedesktop.DBus.Properties':
+                return
+
+            self.assertEqual(kwargs['interface'], 'org.freedesktop.DBus.Properties')
+            self.assertEqual(kwargs['member'], 'PropertiesChanged')
+
+            [iface, changed, _invalidated] = args
+            self.assertEqual(iface, 'org.freedesktop.Test.Main')
+
+            changed_props.append(changed)
+            ml.quit()
+
+        match = self.dbus_con.add_signal_receiver(catch,
+                                                  interface_keyword='interface',
+                                                  path_keyword='path',
+                                                  member_keyword='member')
+
+        # change property using mock helper
+        self.dbus_mock.UpdateProperties('org.freedesktop.Test.Main', {
+            'version': 5,
+            'connected': False,
+        })
+
+        GLib.timeout_add(3000, ml.quit)
+        ml.run()
+
+        match.remove()
+
+        self.assertEqual(self.dbus_props.GetAll('org.freedesktop.Test.Main'),
+                         {'version': 5, 'connected': False})
+        self.assertEqual(changed_props,
+                         [{'version': 5, 'connected': False}])
+
     def test_introspection_methods(self):
         '''dynamically added methods appear in introspection'''
 
