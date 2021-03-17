@@ -15,6 +15,7 @@ import shutil
 import subprocess
 import sys
 import unittest
+import tracemalloc
 
 from gi.repository import GLib
 import dbus
@@ -31,6 +32,7 @@ from dbusmock.templates.networkmanager import NMConnectivityState
 from dbusmock.templates.networkmanager import (CSETTINGS_IFACE, MANAGER_IFACE,
                                                SETTINGS_OBJ, SETTINGS_IFACE)
 
+tracemalloc.start(25)
 dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 
 have_nmcli = shutil.which('nmcli')

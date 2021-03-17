@@ -13,12 +13,14 @@ import unittest
 import shutil
 import sys
 import subprocess
+import tracemalloc
 
 import dbus
 
 import dbusmock
 
 
+tracemalloc.start(25)
 have_upower = shutil.which('upower')
 
 

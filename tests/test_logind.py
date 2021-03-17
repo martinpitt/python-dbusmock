@@ -15,9 +15,11 @@ import shutil
 import subprocess
 import sys
 import unittest
+import tracemalloc
 
 import dbusmock
 
+tracemalloc.start(25)
 have_loginctl = shutil.which('loginctl')
 
 

@@ -17,6 +17,7 @@ import subprocess
 import sys
 import time
 import unittest
+import tracemalloc
 
 import dbus
 import dbus.mainloop.glib
@@ -25,6 +26,7 @@ from gi.repository import GLib
 
 import dbusmock
 
+tracemalloc.start(25)
 dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 
 have_bluetoothctl = shutil.which('bluetoothctl')

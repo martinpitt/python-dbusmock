@@ -16,6 +16,7 @@ import subprocess
 import sys
 import time
 import unittest
+import tracemalloc
 
 import dbus
 
@@ -24,6 +25,7 @@ import dbusmock
 UP_DEVICE_LEVEL_UNKNOWN = 0
 UP_DEVICE_LEVEL_NONE = 1
 
+tracemalloc.start(25)
 have_upower = shutil.which('upower')
 
 

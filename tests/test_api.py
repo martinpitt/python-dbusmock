@@ -16,6 +16,7 @@ import tempfile
 import subprocess
 import time
 import importlib.util
+import tracemalloc
 
 import dbus
 import dbus.mainloop.glib
@@ -24,6 +25,7 @@ from gi.repository import GLib
 
 import dbusmock
 
+tracemalloc.start(25)
 dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 
 # "a <heart> b" in py2/3 compatible unicode
