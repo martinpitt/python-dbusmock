@@ -361,7 +361,6 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
 
         if not interface:
             interface = self.interface
-        n_args = len(dbus.Signature(in_sig))
 
         # we need to have separate methods for dbus-python, so clone
         # mock_method(); using message_keyword with this dynamic approach fails
@@ -370,13 +369,20 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
         method = lambda self, *args, **kwargs: DBusMockObject.mock_method(
             self, interface, name, in_sig, *args, **kwargs)
 
-        # we cannot specify in_signature here, as that trips over a consistency
-        # check in dbus-python; we need to set it manually instead
-        dbus_method = dbus.service.method(interface,
-                                          out_signature=out_sig)(method)
-        dbus_method.__name__ = str(name)
-        dbus_method._dbus_in_signature = in_sig
-        dbus_method._dbus_args = ['arg%i' % i for i in range(1, n_args + 1)]
+        if isinstance(code, types.FunctionType) and hasattr(code, '_dbus_args'):
+            dbus_method = code
+            in_sig = dbus_method._dbus_in_signature  # type: ignore
+            out_sig = dbus_method._dbus_out_signature  # type: ignore
+        else:
+            # we cannot specify in_signature here, as that trips over a consistency
+            # check in dbus-python; we need to set it manually instead
+            n_args = len(dbus.Signature(in_sig))
+            dbus_args = ['arg%i' % i for i in range(1, n_args + 1)]
+            dbus_method = dbus.service.method(interface,
+                                              out_signature=out_sig)(method)
+            dbus_method.__name__ = str(name)
+            dbus_method._dbus_in_signature = in_sig  # type: ignore
+            dbus_method._dbus_args = dbus_args  # type: ignore
 
         # for convenience, add mocked methods on the primary interface as
         # callable methods
