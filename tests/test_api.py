@@ -669,6 +669,51 @@ def Answer(self):
     def test_local_nonexisting(self):
         self.assertRaises(ImportError, self.spawn_server_template, '/non/existing.py')
 
+    def test_explicit_bus_(self):
+        '''Explicitly set the bus for a template that does not specify SYSTEM_BUS'''
+
+        with tempfile.NamedTemporaryFile(prefix='answer_', suffix='.py') as my_template:
+            my_template.write(b'''import dbus
+BUS_NAME = 'universe.Ultimate'
+MAIN_OBJ = '/'
+MAIN_IFACE = 'universe.Ultimate'
+
+def load(mock, parameters):
+    mock.AddMethods(MAIN_IFACE, [('Answer', '', 'i', 'ret = 42')])
+''')
+            my_template.flush()
+            (p_mock, dbus_ultimate) = self.spawn_server_template(
+                my_template.name, stdout=subprocess.PIPE, system_bus=False)
+            self.addCleanup(p_mock.wait)
+            self.addCleanup(p_mock.terminate)
+            self.addCleanup(p_mock.stdout.close)
+
+        self.wait_for_bus_object('universe.Ultimate', '/')
+        self.assertEqual(dbus_ultimate.Answer(), 42)
+
+    def test_override_bus_(self):
+        '''Override the bus for a template'''
+
+        with tempfile.NamedTemporaryFile(prefix='answer_', suffix='.py') as my_template:
+            my_template.write(b'''import dbus
+BUS_NAME = 'universe.Ultimate'
+MAIN_OBJ = '/'
+MAIN_IFACE = 'universe.Ultimate'
+SYSTEM_BUS = True
+
+def load(mock, parameters):
+    mock.AddMethods(MAIN_IFACE, [('Answer', '', 'i', 'ret = 42')])
+''')
+            my_template.flush()
+            (p_mock, dbus_ultimate) = self.spawn_server_template(
+                my_template.name, stdout=subprocess.PIPE, system_bus=False)
+            self.addCleanup(p_mock.wait)
+            self.addCleanup(p_mock.terminate)
+            self.addCleanup(p_mock.stdout.close)
+
+        self.wait_for_bus_object('universe.Ultimate', '/')
+        self.assertEqual(dbus_ultimate.Answer(), 42)
+
     def test_object_manager(self):
         '''Template with ObjectManager API'''
 

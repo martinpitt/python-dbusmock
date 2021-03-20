@@ -206,12 +206,16 @@ class DBusTestCase(unittest.TestCase):
         return daemon
 
     @classmethod
-    def spawn_server_template(cls, template: str, parameters: Dict[str, Any] = None, stdout: int = None):
+    def spawn_server_template(cls, template: str, parameters: Dict[str, Any] = None, stdout: int = None, system_bus: bool = None):
         '''Run a D-Bus mock template instance in a separate process
 
         This starts a D-Bus mock process and loads the given template with
         (optional) parameters into it. For details about templates see
         dbusmock.DBusMockObject.AddTemplate().
+
+        Usually a template should specify SYSTEM_BUS = False/True to select whether it
+        gets loaded on the session or system bus. This can be overridden with the system_bus
+        parameter. For templates which don't set SYSTEM_BUS, this parameter has to be set.
 
         The daemon will terminate automatically when the D-Bus that it connects
         to goes down.  If that does not happen (e. g. you test on the actual
@@ -235,10 +239,13 @@ class DBusTestCase(unittest.TestCase):
         else:
             interface_name = module.MAIN_IFACE
 
-        daemon = cls.spawn_server(module.BUS_NAME, module.MAIN_OBJ,
-                                  interface_name, module.SYSTEM_BUS, stdout)
+        if system_bus is None:
+            system_bus = module.SYSTEM_BUS
 
-        bus = cls.get_dbus(module.SYSTEM_BUS)
+        daemon = cls.spawn_server(module.BUS_NAME, module.MAIN_OBJ,
+                                  interface_name, system_bus, stdout)
+
+        bus = cls.get_dbus(system_bus)
         obj = bus.get_object(module.BUS_NAME, module.MAIN_OBJ)
         if not parameters:
             parameters = dbus.Dictionary({}, signature='sv')

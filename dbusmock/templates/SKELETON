@@ -18,6 +18,8 @@ import dbus
 
 from dbusmock import MOCK_IFACE
 
+# False for session bus, True for system bus; if not present, the bus has to be
+# specified in the spawn_server_template() call
 SYSTEM_BUS = True  # CHANGEME
 BUS_NAME = 'org.freedesktop.CHANGEME'
 MAIN_OBJ = '/org/freedesktop/CHANGEME'
