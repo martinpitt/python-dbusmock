@@ -24,6 +24,8 @@ def parse_args():
     parser = argparse.ArgumentParser(description='mock D-Bus object')
     parser.add_argument('-s', '--system', action='store_true',
                         help="put object(s) on system bus (default: session bus or template's SYSTEM_BUS flag)")
+    parser.add_argument('--session', action='store_true',
+                        help="put object(s) on session bus (default without template; overrides template's SYSTEM_BUS flag)")
     parser.add_argument('-l', '--logfile', metavar='PATH',
                         help='path of log file')
     parser.add_argument('-t', '--template', metavar='NAME',
@@ -48,6 +50,9 @@ def parse_args():
         if not arguments.name or not arguments.path or not arguments.interface:
             parser.error('Not using a template, you must specify NAME, PATH, and INTERFACE')
 
+    if arguments.system and arguments.session:
+        parser.error('--system and --session are mutually exclusive')
+
     return arguments
 
 
@@ -59,12 +64,13 @@ if __name__ == '__main__':
     args = parse_args()
     dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 
+    system_bus = args.system
     if args.template:
         module = dbusmock.mockobject.load_module(args.template)
         args.name = module.BUS_NAME
         args.path = module.MAIN_OBJ
-        if not args.system:
-            args.system = module.SYSTEM_BUS
+        if not args.session and not args.system:
+            system_bus = module.SYSTEM_BUS
 
         if hasattr(module, 'IS_OBJECT_MANAGER'):
             args.is_object_manager = module.IS_OBJECT_MANAGER
@@ -77,7 +83,7 @@ if __name__ == '__main__':
             args.interface = module.MAIN_IFACE
 
     main_loop = GLib.MainLoop()
-    bus = dbusmock.testcase.DBusTestCase.get_dbus(args.system)
+    bus = dbusmock.testcase.DBusTestCase.get_dbus(system_bus)
 
     # quit mock when the bus is going down
     bus.add_signal_receiver(main_loop.quit, signal_name='Disconnected',

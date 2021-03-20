@@ -84,6 +84,24 @@ class TestCLI(dbusmock.DBusTestCase):
                                        universal_newlines=True)
         self.wait_for_bus_object('org.freedesktop.UPower', '/org/freedesktop/UPower', True)
 
+    def test_template_override_session(self):
+        # --system is redundant here, but should not break
+        self.p_mock = subprocess.Popen([sys.executable, '-m', 'dbusmock',
+                                        '--session', '-t', 'upower'],
+                                       stdout=subprocess.PIPE,
+                                       universal_newlines=True)
+        self.wait_for_bus_object('org.freedesktop.UPower', '/org/freedesktop/UPower')
+
+    def test_template_conflicting_bus(self):
+        with self.assertRaises(subprocess.CalledProcessError) as cm:
+            subprocess.check_output([sys.executable, '-m', 'dbusmock',
+                                     '--system', '--session', '-t', 'upower'],
+                                    stderr=subprocess.STDOUT,
+                                    universal_newlines=True)
+        err = cm.exception
+        self.assertEqual(err.returncode, 2)
+        self.assertRegex(err.output, '--system.*--session.*exclusive')
+
     def test_template_parameters(self):
         self.p_mock = subprocess.Popen([sys.executable, '-m', 'dbusmock',
                                         '-t', 'upower',
