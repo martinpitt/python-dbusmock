@@ -13,6 +13,7 @@ import unittest
 import shutil
 import sys
 import subprocess
+import tempfile
 import tracemalloc
 
 import dbus
@@ -119,6 +120,28 @@ class TestCLI(dbusmock.DBusTestCase):
         err = cm.exception
         self.assertEqual(err.returncode, 2)
         self.assertEqual(err.output, 'JSON parameters must be a dictionary\n')
+
+    def test_template_local(self):
+        with tempfile.NamedTemporaryFile(prefix='answer_', suffix='.py') as my_template:
+            my_template.write(b'''import dbus
+BUS_NAME = 'universe.Ultimate'
+MAIN_OBJ = '/'
+MAIN_IFACE = 'universe.Ultimate'
+SYSTEM_BUS = False
+
+def load(mock, parameters):
+    mock.AddMethods(MAIN_IFACE, [('Answer', '', 'i', 'ret = 42')])
+''')
+            my_template.flush()
+            self.p_mock = subprocess.Popen([sys.executable, '-m', 'dbusmock', '-t', my_template.name],
+                                           stdout=subprocess.PIPE,
+                                           universal_newlines=True)
+            # template specifies session bus
+            self.wait_for_bus_object('universe.Ultimate', '/', False)
+
+        obj = self.session_con.get_object('universe.Ultimate', '/')
+        if_u = dbus.Interface(obj, 'universe.Ultimate')
+        self.assertEqual(if_u.Answer(), 42)
 
     def test_object_manager(self):
         self.p_mock = subprocess.Popen([sys.executable, '-m', 'dbusmock',
