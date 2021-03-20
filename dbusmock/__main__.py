@@ -23,7 +23,7 @@ def parse_args():
 
     parser = argparse.ArgumentParser(description='mock D-Bus object')
     parser.add_argument('-s', '--system', action='store_true',
-                        help='put object(s) on system bus (default: session bus)')
+                        help="put object(s) on system bus (default: session bus or template's SYSTEM_BUS flag)")
     parser.add_argument('-l', '--logfile', metavar='PATH',
                         help='path of log file')
     parser.add_argument('-t', '--template', metavar='NAME',
@@ -63,7 +63,8 @@ if __name__ == '__main__':
         module = dbusmock.mockobject.load_module(args.template)
         args.name = module.BUS_NAME
         args.path = module.MAIN_OBJ
-        args.system = module.SYSTEM_BUS
+        if not args.system:
+            args.system = module.SYSTEM_BUS
 
         if hasattr(module, 'IS_OBJECT_MANAGER'):
             args.is_object_manager = module.IS_OBJECT_MANAGER

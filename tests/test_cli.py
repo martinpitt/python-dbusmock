@@ -143,6 +143,28 @@ def load(mock, parameters):
         if_u = dbus.Interface(obj, 'universe.Ultimate')
         self.assertEqual(if_u.Answer(), 42)
 
+    def test_template_override_system(self):
+        with tempfile.NamedTemporaryFile(prefix='answer_', suffix='.py') as my_template:
+            my_template.write(b'''import dbus
+BUS_NAME = 'universe.Ultimate'
+MAIN_OBJ = '/'
+MAIN_IFACE = 'universe.Ultimate'
+SYSTEM_BUS = False
+
+def load(mock, parameters):
+    mock.AddMethods(MAIN_IFACE, [('Answer', '', 'i', 'ret = 42')])
+''')
+            my_template.flush()
+            self.p_mock = subprocess.Popen([sys.executable, '-m', 'dbusmock', '--system', '-t', my_template.name],
+                                           stdout=subprocess.PIPE,
+                                           universal_newlines=True)
+            # template specifies session bus, but CLI overrides to system
+            self.wait_for_bus_object('universe.Ultimate', '/', True)
+
+        obj = self.system_con.get_object('universe.Ultimate', '/')
+        if_u = dbus.Interface(obj, 'universe.Ultimate')
+        self.assertEqual(if_u.Answer(), 42)
+
     def test_object_manager(self):
         self.p_mock = subprocess.Popen([sys.executable, '-m', 'dbusmock',
                                         '-m', 'com.example.Test', '/', 'TestIface'],
