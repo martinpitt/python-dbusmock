@@ -57,11 +57,12 @@ class TestCLI(dbusmock.DBusTestCase):
                                         '--system', 'com.example.Test', '/', 'TestIface'])
         self.wait_for_bus_object('com.example.Test', '/', True)
 
-    def test_template_system(self):
+    def test_template_upower(self):
         self.p_mock = subprocess.Popen([sys.executable, '-m', 'dbusmock',
-                                        '--system', '-t', 'upower'],
+                                        '-t', 'upower'],
                                        stdout=subprocess.PIPE,
                                        universal_newlines=True)
+        # template specifies system bus
         self.wait_for_bus_object('org.freedesktop.UPower', '/org/freedesktop/UPower', True)
 
         # check that it actually ran the template, if we have upower
@@ -74,9 +75,17 @@ class TestCLI(dbusmock.DBusTestCase):
             self.assertTrue('EnumerateDevices' in mock_out or 'GetAll' in mock_out,
                             mock_out)
 
+    def test_template_explicit_system(self):
+        # --system is redundant here, but should not break
+        self.p_mock = subprocess.Popen([sys.executable, '-m', 'dbusmock',
+                                        '--system', '-t', 'upower'],
+                                       stdout=subprocess.PIPE,
+                                       universal_newlines=True)
+        self.wait_for_bus_object('org.freedesktop.UPower', '/org/freedesktop/UPower', True)
+
     def test_template_parameters(self):
         self.p_mock = subprocess.Popen([sys.executable, '-m', 'dbusmock',
-                                        '--system', '-t', 'upower',
+                                        '-t', 'upower',
                                         '-p', '{"DaemonVersion": "0.99.0", "OnBattery": true}'],
                                        stdout=subprocess.PIPE,
                                        universal_newlines=True)
@@ -92,7 +101,7 @@ class TestCLI(dbusmock.DBusTestCase):
     def test_template_parameters_malformed_json(self):
         with self.assertRaises(subprocess.CalledProcessError) as cm:
             subprocess.check_output([sys.executable, '-m', 'dbusmock',
-                                     '--system', '-t', 'upower', '-p',
+                                     '-t', 'upower', '-p',
                                      '{"DaemonVersion: "0.99.0"}'],
                                     stderr=subprocess.STDOUT,
                                     universal_newlines=True)
@@ -103,7 +112,7 @@ class TestCLI(dbusmock.DBusTestCase):
     def test_template_parameters_not_dict(self):
         with self.assertRaises(subprocess.CalledProcessError) as cm:
             subprocess.check_output([sys.executable, '-m', 'dbusmock',
-                                     '--system', '-t', 'upower', '-p',
+                                     '-t', 'upower', '-p',
                                      '"banana"'],
                                     stderr=subprocess.STDOUT,
                                     universal_newlines=True)
