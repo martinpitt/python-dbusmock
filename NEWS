@@ -1,3 +1,13 @@
+## [0.23.0] - UNRELEASED
+- DBusMockObject: Add UpdateProperties() method (Thanks to Jonas Ådahl)
+- DBusTestCase: Add bus override argument to spawn_server_template, to use
+  templates on either system or session bus; add corresponding --session CLI
+  option
+- bluez template: Implement Pair() method on the Device interface and the
+  AgentManager1 interface (Thanks to Bastien Nocera)
+- polkit template: Implement RegisterAuthenticationAgent() (Thanks to Jonas Ådahl)
+- Add accountsservice template (Thanks to Marco Trevisan)
+
 ## [0.22.0] - 2021-01-02
 - NetworkManager template: Fix connecting to wifi
 - NetworkManager template: Add Reload() method
