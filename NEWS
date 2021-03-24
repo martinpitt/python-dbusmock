@@ -1,4 +1,4 @@
-## [0.23.0] - UNRELEASED
+## [0.23.0] - 2021-03-24
 - DBusMockObject: Add UpdateProperties() method (Thanks to Jonas Ådahl)
 - DBusTestCase: Add bus override argument to spawn_server_template, to use
   templates on either system or session bus; add corresponding --session CLI
