@@ -1,3 +1,6 @@
+## [0.23.1] - UNRELEASED
+- Fix tests for Python 3.10
+
 ## [0.23.0] - 2021-03-24
 - DBusMockObject: Add UpdateProperties() method (Thanks to Jonas Ådahl)
 - DBusTestCase: Add bus override argument to spawn_server_template, to use
