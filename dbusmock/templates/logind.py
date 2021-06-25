@@ -17,6 +17,7 @@ __copyright__ = '(c) 2013 Canonical Ltd.'
 import os
 import dbus
 
+from gi.repository import GLib
 from dbusmock import MOCK_IFACE, mockobject
 
 BUS_NAME = 'org.freedesktop.login1'
@@ -58,9 +59,6 @@ def load(mock, parameters):
         ('GetUser', 'u', 'o', 'ret = "/org/freedesktop/login1/user/%u" % args[0]'),
         ('KillUser', 'us', '', ''),
         ('TerminateUser', 'u', '', ''),
-
-        ('Inhibit', 'ssss', 'h', 'ret = %i' % parameters.get('Inhibit_fd', 3)),
-        ('ListInhibitors', '', 'a(ssssuu)', 'ret = []'),
     ])
 
     mock.AddProperties(MAIN_IFACE,
@@ -104,6 +102,41 @@ def ListSessions(_):
             seat = obj.Get('org.freedesktop.login1.Session', 'Seat')[0]
             sessions.append((session_id, uid, username, seat, k))
     return sessions
+
+
+@dbus.service.method(MAIN_IFACE,
+                     in_signature='ssss',
+                     out_signature='h')
+def Inhibit(_, what, who, why, mode):
+    if not hasattr(mockobject, "inhibitors"):
+        mockobject.inhibitors = list()
+
+    fd_r, fd_w = os.pipe()
+
+    inhibitor = (what, who, why, mode, 1000, 123456)
+    mockobject.inhibitors.append(inhibitor)
+
+    def inhibitor_dropped(fd, cond):
+        # pylint: disable=unused-argument
+        os.close(fd)
+        mockobject.inhibitors.remove(inhibitor)
+        return False
+
+    GLib.unix_fd_add_full(GLib.PRIORITY_HIGH, fd_r, GLib.IO_HUP, inhibitor_dropped)
+    GLib.idle_add(os.close, fd_w)
+
+    return fd_w
+
+
+@dbus.service.method(MAIN_IFACE,
+                     in_signature='',
+                     out_signature='a(ssssuu)')
+def ListInhibitors(_):
+    if not hasattr(mockobject, "inhibitors"):
+        mockobject.inhibitors = list()
+
+    return mockobject.inhibitors
+
 
 #
 # Convenience methods on the mock

@@ -113,6 +113,23 @@ class TestLogind(dbusmock.DBusTestCase):
         self.assertEqual(props['PreparingForSleep'], False)
         self.assertEqual(props['IdleSinceHint'], 0)
 
+    def test_inhibit(self):
+        (self.p_mock, obj_logind) = self.spawn_server_template('logind', {}, stdout=subprocess.PIPE)
+
+        # what, who, why, mode
+        fd = obj_logind.Inhibit('suspend', 'testcode', 'purpose', 'delay')
+
+        # Our inhibitor is held
+        out = subprocess.check_output(['systemd-inhibit'],
+                                      universal_newlines=True)
+        self.assertRegex(out, 'testcode +[0-9]+ +[^ ]* +[0-9]+ +[^ ]* +suspend purpose delay')
+
+        del fd
+        # No inhibitor is held
+        out = subprocess.check_output(['systemd-inhibit'],
+                                      universal_newlines=True)
+        self.assertRegex(out, 'No inhibitors')
+
 
 if __name__ == '__main__':
     # avoid writing to stderr
