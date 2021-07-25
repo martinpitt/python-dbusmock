@@ -1,9 +1,14 @@
 #!/bin/sh
 set -eux
 # install build dependencies
+source /etc/os-release
+if [ $VERSION_ID == 34 ]; then
+    dnf -y install dnf-plugins-core
+    dnf -y copr enable hadess/power-profiles-daemon # FIXME remove when using Fedora 35 or newer
+fi
 dnf -y install python3-setuptools python3-gobject-base \
     python3-dbus dbus-x11 python3-pycodestyle python3-pyflakes python3-pylint python3-pip \
-    upower NetworkManager bluez libnotify polkit
+    upower NetworkManager bluez libnotify polkit power-profiles-daemon
 
 # systemd's tools otherwise fail on "not been booted with systemd"
 mkdir -p /run/systemd/system
