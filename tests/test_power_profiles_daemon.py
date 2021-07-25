@@ -97,9 +97,17 @@ class TestPowerProfilesDaemon(dbusmock.DBusTestCase):
                                  'performance', '-r', 'running some game',
                                  '-i', 'com.game.Game', 'sleep', '60'],
                                 stdout=subprocess.PIPE)
-        time.sleep(0.3)
+        out = None
+        timeout = 2.0
+        while timeout > 0:
+            time.sleep(0.1)
+            timeout -= 0.1
+            out = self.run_powerprofilesctl_list_holds()
+            if out != '':
+                break
+        else:
+            self.fail('could not list holds')
 
-        out = self.run_powerprofilesctl_list_holds()
         self.assertEqual(out, 'Hold:\n'
                               '  Profile:         power-saver\n'
                               '  Application ID:'
