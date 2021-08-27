@@ -713,15 +713,15 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
 
         mock_interfaces = orig_interfaces.copy()
         for iface, methods in self.methods.items():
-            for method in methods:
-                mock_interfaces.setdefault(iface, {})[method] = self.methods[iface][method][3]
+            for method, impl in methods.items():
+                mock_interfaces.setdefault(iface, {})[method] = impl[3]
         self._dbus_class_table[cls] = mock_interfaces
 
         xml = dbus.service.Object.Introspect(self, object_path, connection)
 
         tree = ElementTree.fromstring(xml)
 
-        for name in self.props:
+        for name, name_props in self.props.items():
             # We might have properties for new interfaces we don't know about
             # yet. Try to find an existing <interface> node named after our
             # interface to append to, and create one if we can't.
@@ -730,7 +730,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
                 interface = ElementTree.Element("interface", {"name": name})
                 tree.append(interface)
 
-            for prop, val in self.props[name].items():
+            for prop, val in name_props.items():
                 if val is None:
                     # can't guess type from None, skip
                     continue
