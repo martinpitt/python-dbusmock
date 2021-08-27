@@ -185,10 +185,10 @@ def PullAll(self, target_file, filters):
     transfer_path = session_path + '/transfer' + str(transfer_id)
 
     # Create a new temporary file to transfer to.
-    temp_file = tempfile.NamedTemporaryFile(suffix='.vcf',
-                                            prefix='tmp-bluez5-obex-PullAll_',
-                                            delete=False)
-    filename = os.path.abspath(temp_file.name)
+    with tempfile.NamedTemporaryFile(suffix='.vcf',
+                                     prefix='tmp-bluez5-obex-PullAll_',
+                                     delete=False) as temp_file:
+        filename = os.path.abspath(temp_file.name)
 
     props = {
         'Status': dbus.String('queued', variant_level=1),

@@ -41,16 +41,15 @@ def _run_bluetoothctl(command):
 
     If bluetoothctl returns a non-zero exit code, raise an Exception.
     '''
-    process = subprocess.Popen(['bluetoothctl'], stdin=subprocess.PIPE,
-                               stdout=subprocess.PIPE,
-                               universal_newlines=True)
+    with subprocess.Popen(['bluetoothctl'], stdin=subprocess.PIPE,
+                          stdout=subprocess.PIPE,
+                          universal_newlines=True) as process:
+        time.sleep(0.5)  # give it time to query the bus
+        out, err = process.communicate(input='list\n' + command + '\nquit\n')
 
-    time.sleep(0.5)  # give it time to query the bus
-    out, err = process.communicate(input='list\n' + command + '\nquit\n')
-
-    # Ignore output on stderr unless bluetoothctl dies.
-    if process.returncode != 0:
-        raise Exception('bluetoothctl died with status ' + str(process.returncode) + ' and errors: ' + (err or ""))
+        # Ignore output on stderr unless bluetoothctl dies.
+        if process.returncode != 0:
+            raise Exception('bluetoothctl died with status ' + str(process.returncode) + ' and errors: ' + (err or ""))
 
     # Strip the prompt from the start of every line, then remove empty
     # lines.
@@ -268,15 +267,14 @@ class TestBlueZObex(dbusmock.DBusTestCase):
         # pbap-client and waits for it to terminate. Integrating
         # process.communicate() with the GLib main loop to avoid the timeout is
         # too difficult.
-        process = subprocess.Popen(['pbap-client', device_address],
-                                   stdout=subprocess.PIPE,
-                                   stderr=sys.stderr,
-                                   universal_newlines=True)
+        with subprocess.Popen(['pbap-client', device_address],
+                              stdout=subprocess.PIPE,
+                              stderr=sys.stderr,
+                              universal_newlines=True) as process:
+            GLib.timeout_add(5000, ml.quit)
+            ml.run()
 
-        GLib.timeout_add(5000, ml.quit)
-        ml.run()
-
-        out = process.communicate()[0]
+            out = process.communicate()[0]
 
         lines = out.split('\n')
         lines = filter(lambda line: line != '', lines)

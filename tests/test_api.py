@@ -41,6 +41,7 @@ class TestAPI(dbusmock.DBusTestCase):
         cls.dbus_con = cls.get_dbus()
 
     def setUp(self):
+        # pylint: disable=consider-using-with
         self.mock_log = tempfile.NamedTemporaryFile()
         self.p_mock = self.spawn_server('org.freedesktop.Test',
                                         '/',

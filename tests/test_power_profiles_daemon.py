@@ -78,6 +78,7 @@ class TestPowerProfilesDaemon(dbusmock.DBusTestCase):
         self.assertEqual(out, '')
 
         # 1 hold
+        # pylint: disable=consider-using-with
         cmd = subprocess.Popen(['powerprofilesctl', 'launch', '-p',
                                 'power-saver', '-r', 'g-s-d mock test',
                                 '-i', 'org.gnome.SettingsDaemon.Power',
@@ -93,6 +94,7 @@ class TestPowerProfilesDaemon(dbusmock.DBusTestCase):
                               '  Reason:          g-s-d mock test\n')
 
         # 2 holds
+        # pylint: disable=consider-using-with
         cmd2 = subprocess.Popen(['powerprofilesctl', 'launch', '-p',
                                  'performance', '-r', 'running some game',
                                  '-i', 'com.game.Game', 'sleep', '60'],

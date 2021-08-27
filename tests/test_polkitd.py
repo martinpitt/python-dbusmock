@@ -109,6 +109,7 @@ class TestPolkit(dbusmock.DBusTestCase):
 
     @staticmethod
     def check_action_run(action):
+        # pylint: disable=consider-using-with
         return subprocess.Popen(['pkcheck', '--action-id',
                                  action, '--process', '123'],
                                 stdout=subprocess.PIPE,

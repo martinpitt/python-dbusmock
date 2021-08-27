@@ -159,6 +159,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
         self._template: Optional[str] = None
         self._template_parameters: Optional[PropsType] = None
 
+        # pylint: disable=consider-using-with
         self.logfile = open(logfile, 'wb') if logfile else None
         self.is_logfile_owner = True
         self.call_log: List[CallLogType] = []

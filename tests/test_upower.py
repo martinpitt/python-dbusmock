@@ -88,20 +88,19 @@ class TestUPower(dbusmock.DBusTestCase):
         self.assertRegex(out, 'lid-is-present:\\s+yes')
         # print('--------- out --------\n%s\n------------' % out)
 
-        mon = subprocess.Popen(['upower', '--monitor-detail'],
-                               stdout=subprocess.PIPE,
-                               universal_newlines=True)
+        with subprocess.Popen(['upower', '--monitor-detail'],
+                              stdout=subprocess.PIPE,
+                              universal_newlines=True) as mon:
+            time.sleep(0.3)
+            self.dbusmock.SetDeviceProperties(path, {
+                'PowerSupply': dbus.Boolean(True, variant_level=1)
+            })
+            time.sleep(0.2)
 
-        time.sleep(0.3)
-        self.dbusmock.SetDeviceProperties(path, {
-            'PowerSupply': dbus.Boolean(True, variant_level=1)
-        })
-        time.sleep(0.2)
-
-        mon.terminate()
-        out = mon.communicate()[0]
-        self.assertRegex(out, 'device changed:\\s+' + path)
-        # print('--------- monitor out --------\n%s\n------------' % out)
+            mon.terminate()
+            out = mon.communicate()[0]
+            self.assertRegex(out, 'device changed:\\s+' + path)
+            # print('--------- monitor out --------\n%s\n------------' % out)
 
     def test_discharging_battery(self):
         path = self.dbusmock.AddDischargingBattery('mock_BAT', 'Mock Battery', 30.0, 1200)

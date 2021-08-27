@@ -23,20 +23,15 @@ mypy = subprocess.call(['python3', '-m', 'mypy', '--version'], stdout=subprocess
 
 class StaticCodeTests(unittest.TestCase):
     @unittest.skipUnless(pyflakes, 'pyflakes3 not installed')
-    def test_pyflakes(self):
-        flakes = subprocess.Popen([pyflakes, '.'], stdout=subprocess.PIPE, universal_newlines=True)
-        out = flakes.communicate()[0]
-        self.assertEqual(flakes.returncode, 0, out)
+    def test_pyflakes(self):  # pylint: disable=no-self-use
+        subprocess.check_call([pyflakes, '.'])
 
     @unittest.skipUnless(pycodestyle, 'pycodestyle not installed')
-    def test_codestyle(self):
-        pep8 = subprocess.Popen([pycodestyle, '--max-line-length=130', '--ignore=E124,E402,E731,W504', '.'],
-                                stdout=subprocess.PIPE, universal_newlines=True)
-        out = pep8.communicate()[0]
-        self.assertEqual(pep8.returncode, 0, out)
+    def test_codestyle(self):  # pylint: disable=no-self-use
+        subprocess.check_call([pycodestyle, '--max-line-length=130', '--ignore=E124,E402,E731,W504', '.'])
 
     @unittest.skipUnless(pylint, 'pylint not installed')
-    def test_pylint(self):   # pylint: disable=no-self-use
+    def test_pylint(self):  # pylint: disable=no-self-use
         subprocess.check_call([pylint, '--score=n', 'setup.py'] + glob.glob('dbusmock/*.py'))
         # signatures/arguments are not determined by us, docstrings are a bit pointless, and code repetition
         # is impractical to avoid (e.g. bluez4 and bluez5)

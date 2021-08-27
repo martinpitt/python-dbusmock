@@ -48,23 +48,24 @@ class TestCLI(dbusmock.DBusTestCase):
             self.p_mock.wait()
             self.p_mock = None
 
-    def test_session_bus(self):
-        self.p_mock = subprocess.Popen([sys.executable, '-m', 'dbusmock',
-                                        'com.example.Test', '/', 'TestIface'])
-        self.wait_for_bus_object('com.example.Test', '/')
-
-    def test_system_bus(self):
-        self.p_mock = subprocess.Popen([sys.executable, '-m', 'dbusmock',
-                                        '--system', 'com.example.Test', '/', 'TestIface'])
-        self.wait_for_bus_object('com.example.Test', '/', True)
-
-    def test_template_upower(self):
-        self.p_mock = subprocess.Popen([sys.executable, '-m', 'dbusmock',
-                                        '-t', 'upower'],
+    def start_mock(self, args, wait_name, wait_path, wait_system=False):
+        # pylint: disable=consider-using-with
+        self.p_mock = subprocess.Popen([sys.executable, '-m', 'dbusmock'] + args,
                                        stdout=subprocess.PIPE,
                                        universal_newlines=True)
-        # template specifies system bus
-        self.wait_for_bus_object('org.freedesktop.UPower', '/org/freedesktop/UPower', True)
+        self.wait_for_bus_object(wait_name, wait_path, wait_system)
+
+    def test_session_bus(self):
+        self.start_mock(['com.example.Test', '/', 'TestIface'],
+                        'com.example.Test', '/')
+
+    def test_system_bus(self):
+        self.start_mock(['--system', 'com.example.Test', '/', 'TestIface'],
+                        'com.example.Test', '/', True)
+
+    def test_template_upower(self):
+        self.start_mock(['-t', 'upower'],
+                        'org.freedesktop.UPower', '/org/freedesktop/UPower', True)
 
         # check that it actually ran the template, if we have upower
         if have_upower:
@@ -78,19 +79,12 @@ class TestCLI(dbusmock.DBusTestCase):
 
     def test_template_explicit_system(self):
         # --system is redundant here, but should not break
-        self.p_mock = subprocess.Popen([sys.executable, '-m', 'dbusmock',
-                                        '--system', '-t', 'upower'],
-                                       stdout=subprocess.PIPE,
-                                       universal_newlines=True)
-        self.wait_for_bus_object('org.freedesktop.UPower', '/org/freedesktop/UPower', True)
+        self.start_mock(['--system', '-t', 'upower'],
+                        'org.freedesktop.UPower', '/org/freedesktop/UPower', True)
 
     def test_template_override_session(self):
-        # --system is redundant here, but should not break
-        self.p_mock = subprocess.Popen([sys.executable, '-m', 'dbusmock',
-                                        '--session', '-t', 'upower'],
-                                       stdout=subprocess.PIPE,
-                                       universal_newlines=True)
-        self.wait_for_bus_object('org.freedesktop.UPower', '/org/freedesktop/UPower')
+        self.start_mock(['--session', '-t', 'upower'],
+                        'org.freedesktop.UPower', '/org/freedesktop/UPower', False)
 
     def test_template_conflicting_bus(self):
         with self.assertRaises(subprocess.CalledProcessError) as cm:
@@ -103,12 +97,8 @@ class TestCLI(dbusmock.DBusTestCase):
         self.assertRegex(err.output, '--system.*--session.*exclusive')
 
     def test_template_parameters(self):
-        self.p_mock = subprocess.Popen([sys.executable, '-m', 'dbusmock',
-                                        '-t', 'upower',
-                                        '-p', '{"DaemonVersion": "0.99.0", "OnBattery": true}'],
-                                       stdout=subprocess.PIPE,
-                                       universal_newlines=True)
-        self.wait_for_bus_object('org.freedesktop.UPower', '/org/freedesktop/UPower', True)
+        self.start_mock(['-t', 'upower', '-p', '{"DaemonVersion": "0.99.0", "OnBattery": true}'],
+                        'org.freedesktop.UPower', '/org/freedesktop/UPower', True)
 
         # check that it actually ran the template, if we have upower
         if have_upower:
@@ -151,11 +141,9 @@ def load(mock, parameters):
     mock.AddMethods(MAIN_IFACE, [('Answer', '', 'i', 'ret = 42')])
 ''')
             my_template.flush()
-            self.p_mock = subprocess.Popen([sys.executable, '-m', 'dbusmock', '-t', my_template.name],
-                                           stdout=subprocess.PIPE,
-                                           universal_newlines=True)
             # template specifies session bus
-            self.wait_for_bus_object('universe.Ultimate', '/', False)
+            self.start_mock(['-t', my_template.name],
+                            'universe.Ultimate', '/', False)
 
         obj = self.session_con.get_object('universe.Ultimate', '/')
         if_u = dbus.Interface(obj, 'universe.Ultimate')
@@ -173,21 +161,17 @@ def load(mock, parameters):
     mock.AddMethods(MAIN_IFACE, [('Answer', '', 'i', 'ret = 42')])
 ''')
             my_template.flush()
-            self.p_mock = subprocess.Popen([sys.executable, '-m', 'dbusmock', '--system', '-t', my_template.name],
-                                           stdout=subprocess.PIPE,
-                                           universal_newlines=True)
             # template specifies session bus, but CLI overrides to system
-            self.wait_for_bus_object('universe.Ultimate', '/', True)
+            self.start_mock(['--system', '-t', my_template.name],
+                            'universe.Ultimate', '/', True)
 
         obj = self.system_con.get_object('universe.Ultimate', '/')
         if_u = dbus.Interface(obj, 'universe.Ultimate')
         self.assertEqual(if_u.Answer(), 42)
 
     def test_object_manager(self):
-        self.p_mock = subprocess.Popen([sys.executable, '-m', 'dbusmock',
-                                        '-m', 'com.example.Test', '/', 'TestIface'],
-                                       stdout=subprocess.PIPE)
-        self.wait_for_bus_object('com.example.Test', '/')
+        self.start_mock(['-m', 'com.example.Test', '/', 'TestIface'],
+                        'com.example.Test', '/')
 
         obj = self.session_con.get_object('com.example.Test', '/')
         if_om = dbus.Interface(obj, dbusmock.OBJECT_MANAGER_IFACE)
@@ -199,23 +183,23 @@ def load(mock, parameters):
         self.assertEqual(if_om.GetManagedObjects(), {'/a/b': {'org.Test': {'name': 'foo'}}})
 
     def test_no_args(self):
-        p = subprocess.Popen([sys.executable, '-m', 'dbusmock'],
-                             stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                             universal_newlines=True)
-        (out, err) = p.communicate()
-        self.assertEqual(out, '')
-        self.assertIn('must specify NAME', err)
-        self.assertNotEqual(p.returncode, 0)
+        with subprocess.Popen([sys.executable, '-m', 'dbusmock'],
+                              stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                              universal_newlines=True) as p:
+            (out, err) = p.communicate()
+            self.assertEqual(out, '')
+            self.assertIn('must specify NAME', err)
+            self.assertNotEqual(p.returncode, 0)
 
     def test_help(self):
-        p = subprocess.Popen([sys.executable, '-m', 'dbusmock', '--help'],
-                             stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                             universal_newlines=True)
-        (out, err) = p.communicate()
-        self.assertEqual(err, '')
-        self.assertIn('INTERFACE', out)
-        self.assertIn('--system', out)
-        self.assertEqual(p.returncode, 0)
+        with subprocess.Popen([sys.executable, '-m', 'dbusmock', '--help'],
+                              stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                              universal_newlines=True) as p:
+            (out, err) = p.communicate()
+            self.assertEqual(err, '')
+            self.assertIn('INTERFACE', out)
+            self.assertIn('--system', out)
+            self.assertEqual(p.returncode, 0)
 
 
 if __name__ == '__main__':

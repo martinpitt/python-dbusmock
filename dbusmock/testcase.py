@@ -198,6 +198,7 @@ class DBusTestCase(unittest.TestCase):
         argv.append(path)
         argv.append(interface)
 
+        # pylint: disable=consider-using-with
         daemon = subprocess.Popen(argv, stdout=stdout)
 
         # wait for daemon to start up
