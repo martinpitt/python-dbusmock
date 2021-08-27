@@ -60,7 +60,7 @@ class DBusTestCase(unittest.TestCase):
   <type>system</type>
   <keep_umask/>
   <listen>unix:tmpdir=/tmp</listen>
-  <standard_system_servicedirs />
+  <!-- We do not add standard_system_servicedirs (i.e. we have *no* service directory). -->
 
   <policy context="default">
     <allow send_destination="*" eavesdrop="true"/>
