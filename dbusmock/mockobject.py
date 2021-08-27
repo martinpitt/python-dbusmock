@@ -11,7 +11,6 @@ __author__ = 'Martin Pitt'
 __copyright__ = '(c) 2012 Canonical Ltd.'
 
 import copy
-import imp
 import importlib
 import os
 import sys
@@ -44,7 +43,9 @@ def load_module(name: str):
     '''Load a mock template Python module from dbusmock/templates/'''
 
     if os.path.exists(name) and os.path.splitext(name)[1] == '.py':
-        mod = imp.new_module(os.path.splitext(os.path.basename(name))[0])
+        spec = importlib.util.spec_from_file_location(os.path.splitext(os.path.basename(name))[0], name)
+        assert spec
+        mod = importlib.util.module_from_spec(spec)
         with open(name) as f:
             exec(f.read(), mod.__dict__, mod.__dict__)  # pylint: disable=exec-used
         return mod
