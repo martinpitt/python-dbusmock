@@ -1,3 +1,8 @@
+## [0.24.0] - UNRELEASED
+- Add Add power-profiles-daemon template (Thanks Bastien Nocera)
+- logind: Implement Inhibit and ListInhibitors (Thanks to Benjamin Berg)
+- Fix new complaints from pylint 2.9
+
 ## [0.23.1] - 2021-06-15
 - Fix tests for Python 3.10
 
