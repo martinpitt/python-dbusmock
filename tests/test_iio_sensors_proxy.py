@@ -290,6 +290,7 @@ class TestIIOSensorsProxyMonitorSensorBase(TestIIOSensorsProxyBase):
 
     def start_monitor_sensor(self):
         self.assertIsNone(self.p_monitor_sensor)
+        # pylint: disable=consider-using-with
         self.p_monitor_sensor = subprocess.Popen(
             'monitor-sensor', stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         flags = fcntl.fcntl(self.p_monitor_sensor.stdout, fcntl.F_GETFL)
