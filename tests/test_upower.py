@@ -204,4 +204,4 @@ class TestUPower(dbusmock.DBusTestCase):
 
 if __name__ == '__main__':
     # avoid writing to stderr
-    unittest.main(testRunner=unittest.TextTestRunner(stream=sys.stdout, verbosity=2))
+    unittest.main(testRunner=unittest.TextTestRunner(stream=sys.stdout))

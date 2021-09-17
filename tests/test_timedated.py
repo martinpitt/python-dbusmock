@@ -87,4 +87,4 @@ class TestTimedated(dbusmock.DBusTestCase):
 if __name__ == '__main__':
     # avoid writing to stderr
     unittest.main(testRunner=unittest.TextTestRunner(
-        stream=sys.stdout, verbosity=2))
+        stream=sys.stdout))
