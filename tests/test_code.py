@@ -17,8 +17,16 @@ import unittest
 
 pycodestyle = shutil.which('pycodestyle-3') or shutil.which('pycodestyle')
 pyflakes = shutil.which('pyflakes-3') or shutil.which('pyflakes3')
-pylint = shutil.which('pylint-3') or shutil.which('pylint')
-mypy = subprocess.call(['python3', '-m', 'mypy', '--version'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) == 0
+
+if subprocess.call(['python3', '-m', 'pylint', '--version'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) == 0:
+    pylint = [sys.executable, '-m', 'pylint']
+else:
+    pylint = []
+
+if subprocess.call(['python3', '-m', 'mypy', '--version'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) == 0:
+    mypy = [sys.executable, '-m', 'mypy']
+else:
+    mypy = []
 
 
 class StaticCodeTests(unittest.TestCase):
@@ -32,19 +40,21 @@ class StaticCodeTests(unittest.TestCase):
 
     @unittest.skipUnless(pylint, 'pylint not installed')
     def test_pylint(self):  # pylint: disable=no-self-use
-        subprocess.check_call([pylint, '--score=n', 'setup.py'] + glob.glob('dbusmock/*.py'))
+        subprocess.check_call(pylint + ['setup.py'] + glob.glob('dbusmock/*.py'))
         # signatures/arguments are not determined by us, docstrings are a bit pointless, and code repetition
         # is impractical to avoid (e.g. bluez4 and bluez5)
-        subprocess.check_call([pylint, '--score=n', '--disable=missing-function-docstring,R0801',
+        subprocess.check_call(pylint +
+                              ['--score=n', '--disable=missing-function-docstring,R0801',
                                '--disable=too-many-arguments,too-many-instance-attributes',
                                'dbusmock/templates/'])
-        subprocess.check_call([pylint, '--score=n',
+        subprocess.check_call(pylint +
+                              ['--score=n',
                                '--disable=missing-module-docstring,missing-class-docstring,missing-function-docstring',
                                '--disable=too-many-public-methods,R0801', 'tests/'])
 
     @unittest.skipUnless(mypy, 'mypy not installed')
     def test_types(self):  # pylint: disable=no-self-use
-        subprocess.check_call([sys.executable, '-m', 'mypy', '--no-error-summary', 'setup.py', 'dbusmock/', 'tests/'])
+        subprocess.check_call(mypy + ['setup.py', 'dbusmock/', 'tests/'])
 
 
 if __name__ == '__main__':
