@@ -109,7 +109,7 @@ def ListSessions(_):
                      out_signature='h')
 def Inhibit(_, what, who, why, mode):
     if not hasattr(mockobject, "inhibitors"):
-        mockobject.inhibitors = list()
+        mockobject.inhibitors = []
 
     fd_r, fd_w = os.pipe()
 
@@ -133,7 +133,7 @@ def Inhibit(_, what, who, why, mode):
                      out_signature='a(ssssuu)')
 def ListInhibitors(_):
     if not hasattr(mockobject, "inhibitors"):
-        mockobject.inhibitors = list()
+        mockobject.inhibitors = []
 
     return mockobject.inhibitors
 

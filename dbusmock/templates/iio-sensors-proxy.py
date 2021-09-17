@@ -26,17 +26,17 @@ CAMEL_TO_SNAKE_CASE_RE = re.compile(r'(?<!^)(?=[A-Z])')
 
 def load(mock, parameters=None):
     mock.has_accelerometer = False
-    mock.accelerometer_owners = dict()
+    mock.accelerometer_owners = {}
     mock.accelerometer_orientation = 'undefined'
     mock.has_ambient_light = False
-    mock.ambient_light_owners = dict()
+    mock.ambient_light_owners = {}
     mock.light_level_unit = 'lux'
     mock.light_level = 0.0
     mock.has_proximity = False
     mock.proximity_near = False
-    mock.proximity_owners = dict()
+    mock.proximity_owners = {}
     mock.has_compass = False
-    mock.compass_owners = dict()
+    mock.compass_owners = {}
     mock.compass_heading = -1.0
 
     if parameters:
