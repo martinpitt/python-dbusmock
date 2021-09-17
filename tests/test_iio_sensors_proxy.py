@@ -324,7 +324,7 @@ class TestIIOSensorsProxyMonitorSensorBase(TestIIOSensorsProxyBase):
                     break
                 self.assertLessEqual(int(time.time() * 1000) - start_time,
                                      max_wait, msg='Timeout exceeded')
-            self.assertEqual(output.decode('utf-8'), '{}\n'.format(line))
+            self.assertEqual(output.decode('utf-8'), f'{line}\n')
 
     def assertOutputEquals(self, expected_lines, max_wait=2000):
         self.assertOutputContains(expected_lines, max_wait)

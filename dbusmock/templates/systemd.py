@@ -50,7 +50,7 @@ def StartUnit(self, name, _mode):
     job_id = self.next_job_id
     self.next_job_id += 1
 
-    job_path = PATH_PREFIX + '/Job/{}'.format(job_id)
+    job_path = f'{PATH_PREFIX}/Job/{job_id}'
     GLib.idle_add(lambda: emit_job_new_remove(self, job_id, job_path, name))
 
     unit_path = self.units[str(name)]
@@ -65,7 +65,7 @@ def StartTransientUnit(self, name, _mode, _properties, _aux):
     job_id = self.next_job_id
     self.next_job_id += 1
 
-    job_path = PATH_PREFIX + '/Job/%d' % (job_id)
+    job_path = f'{PATH_PREFIX}/Job/{job_id}'
     GLib.idle_add(lambda: emit_job_new_remove(self, job_id, job_path, name))
 
     return job_path
@@ -76,7 +76,7 @@ def StopUnit(self, name, _mode):
     job_id = self.next_job_id
     self.next_job_id += 1
 
-    job_path = PATH_PREFIX + '/Job/%d' % (job_id)
+    job_path = f'{PATH_PREFIX}/Job/{job_id}'
     GLib.idle_add(lambda: emit_job_new_remove(self, job_id, job_path, name))
 
     unit_path = self.units[str(name)]
@@ -93,7 +93,7 @@ def GetUnit(self, name):
 
 @dbus.service.method(MOCK_IFACE, in_signature='s')
 def AddMockUnit(self, name):
-    unit_path = PATH_PREFIX + '/unit/%s' % (escape_unit_name(name))
+    unit_path = f'{PATH_PREFIX}/unit/{escape_unit_name(name)}'
     self.units[str(name)] = unit_path
     self.AddObject(unit_path,
                    UNIT_IFACE,

@@ -106,14 +106,14 @@ class TestAPI(dbusmock.DBusTestCase):
         '''array argument'''
 
         self.dbus_mock.AddMethod('', 'Do', 'iaous', '',
-                                 '''assert len(args) == 4
+                                 f'''assert len(args) == 4
 assert args[0] == -1;
 assert args[1] == ['/foo']
 assert type(args[1]) == dbus.Array
 assert type(args[1][0]) == dbus.ObjectPath
 assert args[2] == 5
-assert args[3] == %s
-''' % repr(UNICODE))
+assert args[3] == {repr(UNICODE)}
+''')
         self.assertEqual(self.dbus_test.Do(-1, ['/foo'], 5, UNICODE), None)
 
         # check that it's logged correctly
@@ -184,8 +184,7 @@ assert args[2] == 5
             self.dbus_mock.AddMethod('', 'Do', signature, '', '')
             try:
                 self.dbus_test.Do(*args)
-                self.fail('method call did not raise an error for signature "%s" and arguments %s'
-                          % (signature, args))
+                self.fail(f'method call did not raise an error for signature "{signature}" and arguments {args}')
             except dbus.exceptions.DBusException as e:
                 self.assertIn(err, str(e))
 
@@ -510,8 +509,7 @@ assert args[2] == 5
         def check(signature, args, err):
             try:
                 self.dbus_mock.EmitSignal('', 's', signature, args)
-                self.fail('EmitSignal did not raise an error for signature "%s" and arguments %s'
-                          % (signature, args))
+                self.fail(f'EmitSignal did not raise an error for signature "{signature}" and arguments {args}')
             except dbus.exceptions.DBusException as e:
                 self.assertIn(err, str(e))
 

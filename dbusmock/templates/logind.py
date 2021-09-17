@@ -34,12 +34,12 @@ def load(mock, parameters):
         ('Hibernate', 'b', '', ''),
         ('HybridSleep', 'b', '', ''),
         ('SuspendThenHibernate', 'b', '', ''),
-        ('CanPowerOff', '', 's', 'ret = "%s"' % parameters.get('CanPowerOff', 'yes')),
-        ('CanReboot', '', 's', 'ret = "%s"' % parameters.get('CanReboot', 'yes')),
-        ('CanSuspend', '', 's', 'ret = "%s"' % parameters.get('CanSuspend', 'yes')),
-        ('CanHibernate', '', 's', 'ret = "%s"' % parameters.get('CanHibernate', 'yes')),
-        ('CanHybridSleep', '', 's', 'ret = "%s"' % parameters.get('CanHybridSleep', 'yes')),
-        ('CanSuspendThenHibernate', '', 's', 'ret = "%s"' % parameters.get('CanSuspendThenHibernate', 'yes')),
+        ('CanPowerOff', '', 's', f'ret = "{parameters.get("CanPowerOff", "yes")}"'),
+        ('CanReboot', '', 's', f'ret = "{parameters.get("CanReboot", "yes")}"'),
+        ('CanSuspend', '', 's', f'ret = "{parameters.get("CanSuspend", "yes")}"'),
+        ('CanHibernate', '', 's', f'ret = "{parameters.get("CanHibernate", "yes")}"'),
+        ('CanHybridSleep', '', 's', f'ret = "{parameters.get("CanHybridSleep", "yes")}"'),
+        ('CanSuspendThenHibernate', '', 's', f'ret = "{parameters.get("CanSuspendThenHibernate", "yes")}"'),
 
         ('GetSession', 's', 'o', 'ret = "/org/freedesktop/login1/session/" + args[0]'),
         ('ActivateSession', 's', '', ''),
@@ -56,7 +56,7 @@ def load(mock, parameters):
         ('ListSeats', '', 'a(so)', 'ret = [(k.split("/")[-1], k) for k in objects.keys() if "/seat/" in k]'),
         ('TerminateSeat', 's', '', ''),
 
-        ('GetUser', 'u', 'o', 'ret = "/org/freedesktop/login1/user/%u" % args[0]'),
+        ('GetUser', 'u', 'o', 'ret = "/org/freedesktop/login1/user/" + args[0]'),
         ('KillUser', 'us', '', ''),
         ('TerminateUser', 'u', '', ''),
     ])
@@ -152,8 +152,7 @@ def AddSeat(self, seat):
     '''
     seat_path = '/org/freedesktop/login1/seat/' + seat
     if seat_path in mockobject.objects:
-        raise dbus.exceptions.DBusException('Seat %s already exists' % seat,
-                                            name=MOCK_IFACE + '.SeatExists')
+        raise dbus.exceptions.DBusException(f'Seat {seat} already exists', name=MOCK_IFACE + '.SeatExists')
 
     self.AddObject(seat_path,
                    'org.freedesktop.login1.Seat',
@@ -183,10 +182,9 @@ def AddUser(self, uid, username, active):
 
     Return the object path of the new user.
     '''
-    user_path = '/org/freedesktop/login1/user/%i' % uid
+    user_path = f'/org/freedesktop/login1/user/{uid}'
     if user_path in mockobject.objects:
-        raise dbus.exceptions.DBusException('User %i already exists' % uid,
-                                            name=MOCK_IFACE + '.UserExists')
+        raise dbus.exceptions.DBusException(f'User {uid} already exists', name=MOCK_IFACE + '.UserExists')
 
     self.AddObject(user_path,
                    'org.freedesktop.login1.User',
@@ -195,7 +193,7 @@ def AddUser(self, uid, username, active):
                        'IdleHint': False,
                        'DefaultControlGroup': 'systemd:/user/' + username,
                        'Name': username,
-                       'RuntimePath': '/run/user/%i' % uid,
+                       'RuntimePath': f'/run/user/{uid}',
                        'Service': '',
                        'State': (active and 'active' or 'online'),
                        'Display': ('', dbus.ObjectPath('/')),
@@ -223,17 +221,17 @@ def AddSession(self, session_id, seat, uid, username, active):
 
     Return the object path of the new session.
     '''
-    seat_path = dbus.ObjectPath('/org/freedesktop/login1/seat/' + seat)
+    seat_path = dbus.ObjectPath(f'/org/freedesktop/login1/seat/{seat}')
     if seat_path not in mockobject.objects:
         self.AddSeat(seat)
 
-    user_path = dbus.ObjectPath('/org/freedesktop/login1/user/%i' % uid)
+    user_path = dbus.ObjectPath(f'/org/freedesktop/login1/user/{uid}')
     if user_path not in mockobject.objects:
         self.AddUser(uid, username, active)
 
-    session_path = dbus.ObjectPath('/org/freedesktop/login1/session/' + session_id)
+    session_path = dbus.ObjectPath(f'/org/freedesktop/login1/session/{session_id}')
     if session_path in mockobject.objects:
-        raise dbus.exceptions.DBusException('Session %s already exists' % session_id,
+        raise dbus.exceptions.DBusException(f'Session {session_id} already exists',
                                             name=MOCK_IFACE + '.SessionExists')
 
     self.AddObject(session_path,
@@ -246,7 +244,7 @@ def AddSession(self, session_id, seat, uid, username, active):
                        'KillProcesses': False,
                        'Remote': False,
                        'Class': 'user',
-                       'DefaultControlGroup': 'systemd:/user/%s/%s' % (username, session_id),
+                       'DefaultControlGroup': f'systemd:/user/{username}/{session_id}',
                        'Display': os.getenv('DISPLAY', ''),
                        'Id': session_id,
                        'Name': username,

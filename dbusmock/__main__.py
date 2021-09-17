@@ -106,7 +106,7 @@ if __name__ == '__main__':
         try:
             parameters = json.loads(args.parameters)
         except ValueError as detail:
-            sys.stderr.write('Malformed JSON given for parameters: %s\n' % detail)
+            sys.stderr.write(f'Malformed JSON given for parameters: {detail}\n')
             sys.exit(2)
 
         if not isinstance(parameters, dict):

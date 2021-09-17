@@ -176,7 +176,7 @@ class DBusTestCase(unittest.TestCase):
             timeout -= 1
             time.sleep(0.1)
         if timeout <= 0:
-            assert timeout > 0, 'timed out waiting for D-Bus object %s: %s' % (path, last_exc)
+            assert timeout > 0, f'timed out waiting for D-Bus object {path}: {last_exc}'
 
     @classmethod
     def spawn_server(cls, name: str, path: str, interface: str, system_bus: bool = False, stdout: int = None):

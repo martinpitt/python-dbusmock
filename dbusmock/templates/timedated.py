@@ -23,7 +23,7 @@ SYSTEM_BUS = True
 
 
 def setProperty(prop):
-    return 'self.Set("%s", "%s", args[0])' % (MAIN_IFACE, prop)
+    return f'self.Set("{MAIN_IFACE}", "{prop}", args[0])'
 
 
 def load(mock, parameters):

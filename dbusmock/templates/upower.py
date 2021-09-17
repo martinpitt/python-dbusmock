@@ -45,7 +45,7 @@ def load(mock, parameters):
     }, signature='sv')
 
     mock.AddMethods(MAIN_IFACE, [
-        ('GetCriticalAction', '', 's', 'ret = "%s"' % parameters.get('GetCriticalAction', 'HybridSleep')),
+        ('GetCriticalAction', '', 's', f'ret = "{parameters.get("GetCriticalAction", "HybridSleep")}"'),
         ('GetDisplayDevice', '', 'o', 'ret = "/org/freedesktop/UPower/devices/DisplayDevice"')
     ])
 

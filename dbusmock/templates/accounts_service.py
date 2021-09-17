@@ -27,7 +27,7 @@ DEFAULT_USER_PASSWORD = 'Pa$$wo0rd'
 
 
 def get_user_path(uid):
-    return '/org/freedesktop/Accounts/User{}'.format(uid)
+    return f'/org/freedesktop/Accounts/User{uid}'
 
 
 def load(mock, parameters=None):
@@ -74,9 +74,9 @@ def AddUser(self, uid, username, password=DEFAULT_USER_PASSWORD,
         'AccountType': dbus.Int32(1),
         'AutomaticLogin': False,
         'BackgroundFile': '',
-        'Email': '{}@python-dbusmock.org'.format(username),
+        'Email': f'{username}@python-dbusmock.org',
         'FormatsLocale': 'C',
-        'HomeDirectory': '/nonexisting/mock-home/{}'.format(username),
+        'HomeDirectory': f'/nonexisting/mock-home/{username}',
         'IconFile': '',
         'InputSources': dbus.Array([], signature='a{ss}'),
         'Language': 'C',
@@ -164,9 +164,7 @@ def CreateUser(self, name, fullname, account_type):
         found = False
 
     if found:
-        raise dbus.exceptions.DBusException(
-            'User {} already exists'.format(name),
-            name='org.freedesktop.Accounts.Error.Failed')
+        raise dbus.exceptions.DBusException(f'User {name} already exists', name='org.freedesktop.Accounts.Error.Failed')
 
     self.users_auto_uids += 1
 
@@ -231,9 +229,7 @@ def FindUserByName(self, username):
         [user_id] = [uid for uid, props in self.mock_users.items()
                      if props['UserName'] == username]
     except ValueError as e:
-        raise dbus.exceptions.DBusException(
-            'No such user exists: {}'.format(e),
-            name='org.freedesktop.Accounts.Error.Failed')
+        raise dbus.exceptions.DBusException(f'No such user exists: {e}', name='org.freedesktop.Accounts.Error.Failed')
     return get_user_path(user_id)
 
 

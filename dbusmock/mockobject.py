@@ -115,8 +115,7 @@ def _wrap_in_dbus_variant(value):
         return type(value)(value.conjugate(), variant_level=1)
     if isinstance(value, str):
         return dbus.String(value, variant_level=1)
-    raise dbus.exceptions.DBusException(
-        'could not wrap type {}'.format(type(value)))
+    raise dbus.exceptions.DBusException(f'could not wrap type {type(value)}')
 
 
 class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-attributes
@@ -178,7 +177,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
         if self.path == '/':
             cond = 'k != \'/\''
         else:
-            cond = 'k.startswith(\'%s/\')' % self.path
+            cond = f'k.startswith(\'{self.path}/\')'
 
         self.AddMethod(OBJECT_MANAGER_IFACE,
                        'GetManagedObjects', '', 'a{oa{sa{sv}}}',
@@ -201,7 +200,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
     def Get(self, interface_name: str, property_name: str) -> Any:
         '''Standard D-Bus API for getting a property value'''
 
-        self.log('Get %s.%s' % (interface_name, property_name))
+        self.log(f'Get {interface_name}.{property_name}')
 
         if not interface_name:
             interface_name = self.interface
@@ -233,9 +232,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
     def Set(self, interface_name: str, property_name: str, value: Any, *_, **__) -> None:
         '''Standard D-Bus API for setting a property value'''
 
-        self.log('Set %s.%s%s' % (interface_name,
-                                  property_name,
-                                  _format_args((value,))))
+        self.log(f'Set {interface_name}.{property_name}{_format_args((value,))}')
 
         try:
             iface_props = self.props[interface_name]
@@ -292,9 +289,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
                              ])
         '''
         if path in objects:
-            raise dbus.exceptions.DBusException(
-                'object %s already exists' % path,
-                name='org.freedesktop.DBus.Mock.NameError')
+            raise dbus.exceptions.DBusException(f'object {path} already exists', name='org.freedesktop.DBus.Mock.NameError')
 
         obj = DBusMockObject(self.bus_name,
                              path,
@@ -322,7 +317,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
             del objects[path]
         except KeyError as e:
             raise dbus.exceptions.DBusException(
-                'object %s does not exist' % path,
+                f'object {path} does not exist',
                 name='org.freedesktop.DBus.Mock.NameError') from e
 
     @dbus.service.method(MOCK_IFACE,
@@ -408,7 +403,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
                                           out_signature=out_sig)(method)
         dbus_method.__name__ = str(name)
         dbus_method._dbus_in_signature = in_sig
-        dbus_method._dbus_args = ['arg%i' % i for i in range(1, n_args + 1)]
+        dbus_method._dbus_args = [f'arg{i}' for i in range(1, n_args + 1)]
 
         # for convenience, add mocked methods on the primary interface as
         # callable methods
@@ -458,9 +453,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
             if not interface:
                 interface = self.interface
             if name not in self.props.get(interface, {}):
-                raise dbus.exceptions.DBusException(
-                    'property %s not found' % name,
-                    name=interface + '.NoSuchProperty')
+                raise dbus.exceptions.DBusException(f'property {name} not found', name=interface + '.NoSuchProperty')
 
             self._set_property(interface, name, value)
             changed_props[name] = _wrap_in_dbus_variant(value)
@@ -483,9 +476,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
         if not interface:
             interface = self.interface
         if name in self.props.get(interface, {}):
-            raise dbus.exceptions.DBusException(
-                'property %s already exists' % name,
-                name=self.interface + '.PropertyExists')
+            raise dbus.exceptions.DBusException(f'property {name} already exists', name=self.interface + '.PropertyExists')
 
         self._set_property(interface, name, value)
 
@@ -528,7 +519,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
         try:
             module = load_module(template)
         except ImportError as e:
-            raise dbus.exceptions.DBusException('Cannot add template %s: %s' % (template, str(e)),
+            raise dbus.exceptions.DBusException(f'Cannot add template {template}: {str(e)}',
                                                 name='org.freedesktop.DBus.Mock.TemplateError')
 
         # If the template specifies this is an ObjectManager, set that up
@@ -585,11 +576,11 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
         m.append(signature=signature, *args)
         args = m.get_args_list()
 
-        fn = lambda self, *args: self.log('emit %s.%s%s' % (interface, name, _format_args(args)))
+        fn = lambda self, *args: self.log(f'emit {interface}.{name}{_format_args(args)}')
         fn.__name__ = str(name)
         dbus_fn = dbus.service.signal(interface)(fn)
         dbus_fn._dbus_signature = signature
-        dbus_fn._dbus_args = ['arg%i' % i for i in range(1, len(args) + 1)]
+        dbus_fn._dbus_args = [f'arg{i}' for i in range(1, len(args) + 1)]
 
         dbus_fn(self, *args)
 
@@ -692,7 +683,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
         else:
             fd = sys.stdout.fileno()
 
-        os.write(fd, ('%.3f %s\n' % (time.time(), msg)).encode('UTF-8'))
+        os.write(fd, f'{time.time():.3f} {msg}\n'.encode('UTF-8'))
 
     @dbus.service.method(dbus.INTROSPECTABLE_IFACE,
                          in_signature='',
@@ -726,7 +717,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
             # We might have properties for new interfaces we don't know about
             # yet. Try to find an existing <interface> node named after our
             # interface to append to, and create one if we can't.
-            interface = tree.find(".//interface[@name='%s']" % name)
+            interface = tree.find(f".//interface[@name='{name}']")
             if interface is None:
                 interface = ElementTree.Element("interface", {"name": name})
                 tree.append(interface)

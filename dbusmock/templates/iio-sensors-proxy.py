@@ -177,10 +177,10 @@ def SetInternalProperty(self, interface, property_name, value):
     owners = None
     if is_valid_sensor_for_interface(sensor, interface):
 
-        if not getattr(self, 'has_{}'.format(sensor)):
-            raise Exception('No {} sensor available'.format(sensor))
+        if not getattr(self, f'has_{sensor}'):
+            raise Exception(f'No {sensor} sensor available')
 
-        owners = getattr(self, '{}_owners'.format(sensor))
+        owners = getattr(self, f'{sensor}_owners')
         # We allow setting a property from any client here, even if not claiming
         # but only owners, if any, will be notified about sensors changes
 

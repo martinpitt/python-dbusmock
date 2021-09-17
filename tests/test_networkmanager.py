@@ -309,7 +309,7 @@ class TestNetworkManager(dbusmock.DBusTestCase):
 
         self.assertEqual(con1, '/org/freedesktop/NetworkManager/Settings/0')
         self.assertRegex(self.read_connection(),
-                         r'%s.*\s(802-11-wireless|wifi)' % uuid)
+                         uuid + r'.*\s(802-11-wireless|wifi)')
 
         # Use the same settings, but this one will autoconnect.
         uuid2 = '22222222-2222-2222-2222-222222222222'
@@ -322,9 +322,9 @@ class TestNetworkManager(dbusmock.DBusTestCase):
 
         self.assertRegex(self.read_general(), r'connected.*\sfull')
         self.assertRegex(self.read_connection(),
-                         r'%s.*\s(802-11-wireless|wifi)' % uuid2)
+                         uuid2 + r'.*\s(802-11-wireless|wifi)')
         self.assertRegex(self.read_active_connection(),
-                         r'%s.*\s(802-11-wireless|wifi)' % uuid2)
+                         uuid2 + r'.*\s(802-11-wireless|wifi)')
 
     def test_update_connection(self):
         uuid = '133d8eb9-6de6-444f-8b37-f40bf9e33226'
@@ -343,7 +343,7 @@ class TestNetworkManager(dbusmock.DBusTestCase):
             CSETTINGS_IFACE)
 
         self.assertEqual(con1, '/org/freedesktop/NetworkManager/Settings/0')
-        self.assertRegex(self.read_connection(), r'%s.*\s(802-11-wireless|wifi)' % uuid)
+        self.assertRegex(self.read_connection(), uuid + r'.*\s(802-11-wireless|wifi)')
 
         new_settings = dbus.Dictionary({
             'connection': dbus.Dictionary({
@@ -354,7 +354,7 @@ class TestNetworkManager(dbusmock.DBusTestCase):
             }, signature='sv')}, signature='sa{sv}')
 
         con1_iface.Update(new_settings)
-        self.assertRegex(self.read_connection(), r'%s.*\s(ethernet|802-3-ethernet)' % uuid)
+        self.assertRegex(self.read_connection(), uuid + r'.*\s(ethernet|802-3-ethernet)')
 
     def test_remove_connection(self):
         wifi1 = self.dbusmock.AddWiFiDevice('mock_WiFi1', 'wlan0',
@@ -556,7 +556,7 @@ class TestNetworkManager(dbusmock.DBusTestCase):
         self.assertEqual(self.settings.GetConnectionByUuid(uuid), connectionPath)
 
         fakeuuid = '123123123213213'
-        with self.assertRaisesRegex(dbus.exceptions.DBusException, ".*uuid.*%s$" % fakeuuid):
+        with self.assertRaisesRegex(dbus.exceptions.DBusException, f".*uuid.*{fakeuuid}$"):
             self.settings.GetConnectionByUuid(fakeuuid)
 
 

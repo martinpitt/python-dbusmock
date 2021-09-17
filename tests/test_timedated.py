@@ -67,12 +67,12 @@ class TestTimedated(dbusmock.DBusTestCase):
 
     def test_default_ntp(self):
         out = self.run_timedatectl()
-        self.assertRegex(out, '%s: yes' % TIMEDATECTL_NTP_LABEL)
+        self.assertRegex(out, f'{TIMEDATECTL_NTP_LABEL}: yes')
 
     def test_changing_ntp(self):
         self.obj_timedated.SetNTP(False, False)
         out = self.run_timedatectl()
-        self.assertRegex(out, '%s: no' % TIMEDATECTL_NTP_LABEL)
+        self.assertRegex(out, f'{TIMEDATECTL_NTP_LABEL}: no')
 
     def test_default_local_rtc(self):
         out = self.run_timedatectl()

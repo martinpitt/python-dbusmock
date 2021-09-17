@@ -35,7 +35,7 @@ def load(mock, parameters):
     mock.next_id = 1
 
     mock.AddMethods(MAIN_IFACE, [
-        ('GetCapabilities', '', 'as', 'ret = %s' % repr(caps)),
+        ('GetCapabilities', '', 'as', f'ret = {repr(caps)}'),
         ('CloseNotification', 'i', '', 'if args[0] < self.next_id: self.EmitSignal('
                                        '"", "NotificationClosed", "uu", [args[0], 1])'),
         ('GetServerInformation', '', 'ssss', 'ret = ("mock-notify", "test vendor", "1.0", "1.1")'),

@@ -115,7 +115,7 @@ def AddModem(self, name, _properties):
 # Generate a new modem serial number so each modem we add gets a unique one.
 # Use a counter so that the result is predictable for tests.
 def new_modem_serial(mock):
-    serial = '12345678-1234-1234-1234-' + ('%012d' % mock.modem_serial_counter)
+    serial = f'12345678-1234-1234-1234-{mock.modem_serial_counter:012d}'
     mock.modem_serial_counter += 1
     return serial
 
@@ -123,7 +123,7 @@ def new_modem_serial(mock):
 # Generate a new unique IMSI (start with USA/AT&T 310/150 to match the MCC/MNC SIM properties)
 # Use a counter so that the result is predictable for tests.
 def new_imsi(mock):
-    imsi = '310150' + ('%09d' % mock.imsi_counter)
+    imsi = f'310150{mock.imsi_counter:09d}'
     mock.imsi_counter += 1
     return imsi
 
@@ -131,7 +131,7 @@ def new_imsi(mock):
 # Generate a new unique ICCID
 # Use a counter so that the result is predictable for tests.
 def new_iccid(mock):
-    iccid = '893581234' + ('%012d' % mock.iccid_counter)
+    iccid = f'893581234{mock.iccid_counter:012d}'
     mock.iccid_counter += 1
     return iccid
 
@@ -192,7 +192,7 @@ def add_voice_call_api(mock):
                      in_signature='ss', out_signature='s')
 def Dial(self, number, _hide_callerid):
     # pylint: disable=protected-access # _object_path
-    path = self._object_path + '/voicecall%02i' % (len(self.calls) + 1)
+    path = f'{self._object_path}/voicecall{(len(self.calls) + 1):02}'
     self.AddObject(path, 'org.ofono.VoiceCall',
                    {
                        'State': dbus.String('dialing', variant_level=1),
@@ -255,7 +255,7 @@ def HangupAll(self):
 
 def get_all_operators(mock):
     return 'ret = [(m, objects[m].GetAll("org.ofono.NetworkOperator")) ' \
-           'for m in objects if "%s/operator/" in m]' % mock.name
+           f'for m in objects if "{mock.name}/operator/" in m]'
 
 
 def add_netreg_api(mock):
@@ -276,7 +276,7 @@ def add_netreg_api(mock):
         'BaseStation': _parameters.get('BaseStation', ''),
     })
 
-    mock.AddObject('/%s/operator/op1' % mock.name,
+    mock.AddObject(f'/{mock.name}/operator/op1',
                    'org.ofono.NetworkOperator',
                    {
                        'Name': _parameters.get('Name', 'fake.tel'),
@@ -293,9 +293,8 @@ def add_netreg_api(mock):
 
     mock.AddMethods('org.ofono.NetworkRegistration', [
         ('GetProperties', '', 'a{sv}', 'ret = self.GetAll("org.ofono.NetworkRegistration")'),
-        ('SetProperty', 'sv', '', 'self.Set("%(i)s", args[0], args[1]); '
-         'self.EmitSignal("%(i)s", "PropertyChanged", "sv", [args[0], args[1]])' % {
-             'i': 'org.ofono.NetworkRegistration'}),
+        ('SetProperty', 'sv', '', 'self.Set("org.ofono.NetworkRegistration", args[0], args[1]); '
+         'self.EmitSignal("org.ofono.NetworkRegistration", "PropertyChanged", "sv", [args[0], args[1]])'),
         ('Register', '', '', ''),
         ('GetOperators', '', 'a(oa{sv})', get_all_operators(mock)),
         ('Scan', '', 'a(oa{sv})', get_all_operators(mock)),
@@ -345,43 +344,45 @@ def add_simmanager_api(self, mock):
         'SubscriberIdentity': _parameters.get('SubscriberIdentity', new_imsi(self)),
     })
     mock.AddMethods(iface, [
-        ('GetProperties', '', 'a{sv}', 'ret = self.GetAll("%s")' % iface),
-        ('SetProperty', 'sv', '', 'self.Set("%(i)s", args[0], args[1]); '
-         'self.EmitSignal("%(i)s", "PropertyChanged", "sv", [args[0], args[1]])' % {'i': iface}),
+        ('GetProperties', '', 'a{sv}', f'ret = self.GetAll("{iface}")'),
+        ('SetProperty', 'sv', '', f'self.Set("{iface}", args[0], args[1]); '
+         'self.EmitSignal("{iface}", "PropertyChanged", "sv", [args[0], args[1]])'),
         ('ChangePin', 'sss', '', ''),
 
         ('EnterPin', 'ss', '',
          'correctPin = "1234"\n'
-         'newRetries = self.Get("%(i)s", "Retries")\n'
+         f'iface = "{iface}"\n'
+         'newRetries = self.Get(iface, "Retries")\n'
          'if args[0] == "pin" and args[1] != correctPin:\n'
          '    newRetries["pin"] = dbus.Byte(newRetries["pin"] - 1)\n'
          'elif args[0] == "pin":\n'
          '    newRetries["pin"] = dbus.Byte(3)\n'
 
-         'self.Set("%(i)s", "Retries", newRetries)\n'
-         'self.EmitSignal("%(i)s", "PropertyChanged", "sv", ["Retries", newRetries])\n'
+         'self.Set(iface, "Retries", newRetries)\n'
+         'self.EmitSignal(iface, "PropertyChanged", "sv", ["Retries", newRetries])\n'
 
          'if args[0] == "pin" and args[1] != correctPin:\n'
          '    class Failed(dbus.exceptions.DBusException):\n'
          '        _dbus_error_name = "org.ofono.Error.Failed"\n'
-         '    raise Failed("Operation failed")' % {'i': iface}),
+         '    raise Failed("Operation failed")'),
 
         ('ResetPin', 'sss', '',
          'correctPuk = "12345678"\n'
-         'newRetries = self.Get("%(i)s", "Retries")\n'
+         f'iface = "{iface}"\n'
+         'newRetries = self.Get(iface, "Retries")\n'
          'if args[0] == "puk" and args[1] != correctPuk:\n'
          '    newRetries["puk"] = dbus.Byte(newRetries["puk"] - 1)\n'
          'elif args[0] == "puk":\n'
          '    newRetries["pin"] = dbus.Byte(3)\n'
          '    newRetries["puk"] = dbus.Byte(10)\n'
 
-         'self.Set("%(i)s", "Retries", newRetries)\n'
-         'self.EmitSignal("%(i)s", "PropertyChanged", "sv", ["Retries", newRetries])\n'
+         'self.Set(iface, "Retries", newRetries)\n'
+         'self.EmitSignal(iface, "PropertyChanged", "sv", ["Retries", newRetries])\n'
 
          'if args[0] == "puk" and args[1] != correctPuk:\n'
          '    class Failed(dbus.exceptions.DBusException):\n'
          '        _dbus_error_name = "org.ofono.Error.Failed"\n'
-         '    raise Failed("Operation failed")' % {'i': iface}),
+         '    raise Failed("Operation failed")'),
 
         ('LockPin', 'ss', '', ''),
         ('UnlockPin', 'ss', '', ''),
@@ -416,9 +417,9 @@ def add_connectionmanager_api(mock):
         'Powered': _parameters.get('ConnectionPowered', True),
     })
     mock.AddMethods(iface, [
-        ('GetProperties', '', 'a{sv}', 'ret = self.GetAll("%s")' % iface),
-        ('SetProperty', 'sv', '', 'self.Set("%(i)s", args[0], args[1]); '
-         'self.EmitSignal("%(i)s", "PropertyChanged", "sv", [args[0], args[1]])' % {'i': iface}),
+        ('GetProperties', '', 'a{sv}', f'ret = self.GetAll("{iface}")'),
+        ('SetProperty', 'sv', '', f'self.Set("{iface}", args[0], args[1]); '
+         'self.EmitSignal("{iface}", "PropertyChanged", "sv", [args[0], args[1]])'),
         ('AddContext', 's', 'o', 'ret = "/"'),
         ('RemoveContext', 'o', '', ''),
         ('DeactivateAll', '', '', ''),

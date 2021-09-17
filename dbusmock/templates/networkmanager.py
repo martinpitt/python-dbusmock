@@ -239,8 +239,8 @@ def load(mock, parameters):
                      'WwanHardwareEnabled': parameters.get('WwanHardwareEnabled', True)}
     manager_methods = [('GetDevices', '', 'ao', 'ret = [k for k in objects.keys() if "/Devices" in k]'),
                        ('GetPermissions', '', 'a{ss}', 'ret = {}'),
-                       ('state', '', 'u', "ret = self.Get('%s', 'State')" % MANAGER_IFACE),
-                       ('CheckConnectivity', '', 'u', "ret = self.Get('%s', 'Connectivity')" % MANAGER_IFACE),
+                       ('state', '', 'u', f"ret = self.Get('{MANAGER_IFACE}', 'State')"),
+                       ('CheckConnectivity', '', 'u', f"ret = self.Get('{MANAGER_IFACE}', 'Connectivity')"),
                        ('ActivateConnection', 'ooo', 'o', "ret = self.activate_connection(self, args[0], args[1], args[2])"),
                        ('DeactivateConnection', 'o', '', "self.deactivate_connection(self, args[0])"),
                        ('AddAndActivateConnection', 'a{sa{sv}}oo', 'oo',
@@ -265,7 +265,7 @@ def load(mock, parameters):
     settings_props = {'Hostname': 'hostname',
                       'CanModify': True,
                       'Connections': dbus.Array([], signature='o')}
-    settings_methods = [('ListConnections', '', 'ao', "ret = self.Get('%s', 'Connections')" % SETTINGS_IFACE),
+    settings_methods = [('ListConnections', '', 'ao', f"ret = self.Get('{SETTINGS_IFACE}', 'Connections')"),
                         ('GetConnectionByUuid', 's', 'o', 'ret = self.SettingsGetConnectionByUuid(args[0])'),
                         ('AddConnection', 'a{sa{sv}}', 'o', 'ret = self.SettingsAddConnection(args[0])'),
                         ('AddConnectionUnsaved', 'a{sa{sv}}', 'o', 'ret = self.SettingsAddConnection(args[0])'),
@@ -459,7 +459,7 @@ def AddAccessPoint(self, dev_path, ap_name, ssid, hw_address,
     ap_path = '/org/freedesktop/NetworkManager/AccessPoint/' + ap_name
     if ap_path in dev_obj.access_points:
         raise dbus.exceptions.DBusException(
-            'Access point %s on device %s already exists' % (ap_name, dev_path),
+            f'Access point {ap_name} on device {dev_path} already exists',
             name=MANAGER_IFACE + '.AlreadyExists')
 
     flags = NM80211ApFlags.NM_802_11_AP_FLAGS_PRIVACY
@@ -527,7 +527,7 @@ def AddWiFiConnection(self, dev_path, connection_name, ssid_name, _key_mgmt):
 
     if not access_point:
         raise dbus.exceptions.DBusException(
-            'Access point with SSID [%s] could not be found' % (ssid_name),
+            f'Access point with SSID [{ssid_name}] could not be found',
             name=MANAGER_IFACE + '.DoesNotExist')
 
     hw_address = access_point.Get(ACCESS_POINT_IFACE, 'HwAddress')
@@ -536,7 +536,7 @@ def AddWiFiConnection(self, dev_path, connection_name, ssid_name, _key_mgmt):
 
     if connection_path in connections or connection_path in main_connections:
         raise dbus.exceptions.DBusException(
-            'Connection %s on device %s already exists' % (connection_name, dev_path),
+            f'Connection {connection_name} on device {dev_path} already exists',
             name=MANAGER_IFACE + '.AlreadyExists')
 
     # Parse mac address string into byte array
@@ -810,7 +810,7 @@ def SettingsGetConnectionByUuid(self, conn_uuid):
         settings = self.conn.GetSettings()
         if settings['connection']['uuid'] == conn_uuid:
             return o
-    raise dbus.exceptions.DBusException("There was no connection with uuid %s" % conn_uuid)
+    raise dbus.exceptions.DBusException(f"There was no connection with uuid {conn_uuid}")
 
 
 def ConnectionUpdate(self, settings):
@@ -828,7 +828,7 @@ def ConnectionUpdate(self, settings):
 
     if connection_path not in main_connections:
         raise dbus.exceptions.DBusException(
-            'Connection %s does not exist' % connection_path,
+            f'Connection {connection_path} does not exist',
             name=MANAGER_IFACE + '.DoesNotExist',)
 
     # Take care not to overwrite the secrets
