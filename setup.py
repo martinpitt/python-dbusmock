@@ -3,10 +3,10 @@
 
 import setuptools
 
-with open('README.rst') as f:
+with open('README.rst', encoding="UTF-8") as f:
     readme = f.read()
 
-with open('NEWS', 'r') as f:
+with open('NEWS', 'r', encoding="UTF-8") as f:
     version = f.readline().split('[')[1].split(']')[0]
 
 setuptools.setup(

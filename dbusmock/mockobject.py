@@ -46,7 +46,7 @@ def load_module(name: str):
         spec = importlib.util.spec_from_file_location(os.path.splitext(os.path.basename(name))[0], name)
         assert spec
         mod = importlib.util.module_from_spec(spec)
-        with open(name) as f:
+        with open(name, encoding="UTF-8") as f:
             exec(f.read(), mod.__dict__, mod.__dict__)  # pylint: disable=exec-used
         return mod
 

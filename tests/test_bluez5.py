@@ -241,19 +241,19 @@ class TestBlueZObex(dbusmock.DBusTestCase):
             obj = bus.get_object('org.bluez.obex', path)
             transfer = dbus.Interface(obj, 'org.bluez.obex.transfer1.Mock')
 
-            with open(transfer_filename, 'w') as f:
+            with open(transfer_filename, 'wb') as f:
                 f.write(
-                    'BEGIN:VCARD\r\n' +
-                    'VERSION:3.0\r\n' +
-                    'FN:Forrest Gump\r\n' +
-                    'TEL;TYPE=WORK,VOICE:(111) 555-1212\r\n' +
-                    'TEL;TYPE=HOME,VOICE:(404) 555-1212\r\n' +
-                    'EMAIL;TYPE=PREF,INTERNET:forrestgump@example.com\r\n' +
-                    'EMAIL:test@example.com\r\n' +
-                    'URL;TYPE=HOME:http://example.com/\r\n' +
-                    'URL:http://forest.com/\r\n' +
-                    'URL:https://test.com/\r\n' +
-                    'END:VCARD\r\n'
+                    b'BEGIN:VCARD\r\n' +
+                    b'VERSION:3.0\r\n' +
+                    b'FN:Forrest Gump\r\n' +
+                    b'TEL;TYPE=WORK,VOICE:(111) 555-1212\r\n' +
+                    b'TEL;TYPE=HOME,VOICE:(404) 555-1212\r\n' +
+                    b'EMAIL;TYPE=PREF,INTERNET:forrestgump@example.com\r\n' +
+                    b'EMAIL:test@example.com\r\n' +
+                    b'URL;TYPE=HOME:http://example.com/\r\n' +
+                    b'URL:http://forest.com/\r\n' +
+                    b'URL:https://test.com/\r\n' +
+                    b'END:VCARD\r\n'
                 )
 
             transfer.UpdateStatus(True)

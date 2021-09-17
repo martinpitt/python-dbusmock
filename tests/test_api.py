@@ -53,6 +53,10 @@ class TestAPI(dbusmock.DBusTestCase):
         self.dbus_mock = dbus.Interface(self.obj_test, dbusmock.MOCK_IFACE)
         self.dbus_props = dbus.Interface(self.obj_test, dbus.PROPERTIES_IFACE)
 
+    def assertLog(self, regex):
+        with open(self.mock_log.name, "rb") as f:
+            self.assertRegex(f.read(), regex)
+
     def tearDown(self):
         if self.p_mock.stdout:
             self.p_mock.stdout.close()
@@ -66,8 +70,7 @@ class TestAPI(dbusmock.DBusTestCase):
         self.assertEqual(self.dbus_test.Do(), None)
 
         # check that it's logged correctly
-        with open(self.mock_log.name) as f:
-            self.assertRegex(f.read(), '^[0-9.]+ Do$')
+        self.assertLog(b'^[0-9.]+ Do$')
 
     def test_onearg_noret(self):
         '''one argument, no return value'''
@@ -76,8 +79,7 @@ class TestAPI(dbusmock.DBusTestCase):
         self.assertEqual(self.dbus_test.Do('Hello'), None)
 
         # check that it's logged correctly
-        with open(self.mock_log.name) as f:
-            self.assertRegex(f.read(), '^[0-9.]+ Do "Hello"$')
+        self.assertLog(b'^[0-9.]+ Do "Hello"$')
 
     def test_onearg_ret(self):
         '''one argument, code for return value'''
@@ -98,8 +100,7 @@ class TestAPI(dbusmock.DBusTestCase):
         self.assertEqual(self.dbus_test.Do('foo', 3), 'foofoofoo')
 
         # check that it's logged correctly
-        with open(self.mock_log.name) as f:
-            self.assertRegex(f.read(), '^[0-9.]+ Do "foo" 3$')
+        self.assertLog(b'^[0-9.]+ Do "foo" 3$')
 
     def test_array_arg(self):
         '''array argument'''
@@ -116,9 +117,7 @@ assert args[3] == %s
         self.assertEqual(self.dbus_test.Do(-1, ['/foo'], 5, UNICODE), None)
 
         # check that it's logged correctly
-        with open(self.mock_log.name, "rb") as f:
-            log = f.read()
-            self.assertRegex(log, b'^[0-9.]+ Do -1 \\["/foo"\\] 5 "a\\xe2\\x99\\xa5b"$')
+        self.assertLog(b'^[0-9.]+ Do -1 \\["/foo"\\] 5 "a\\xe2\\x99\\xa5b"$')
 
     def test_dict_arg(self):
         '''dictionary argument'''
@@ -133,8 +132,7 @@ assert args[2] == 5
         self.assertEqual(self.dbus_test.Do(-1, {'foo': 42}, 5), None)
 
         # check that it's logged correctly
-        with open(self.mock_log.name) as f:
-            self.assertRegex(f.read(), '^[0-9.]+ Do -1 {"foo": 42} 5$')
+        self.assertLog(b'^[0-9.]+ Do -1 {"foo": 42} 5$')
 
     def test_methods_on_other_interfaces(self):
         '''methods on other interfaces'''
@@ -154,8 +152,7 @@ assert args[2] == 5
         self.assertEqual(self.obj_test.OtherDo3(42, dbus_interface='org.freedesktop.Test.Other'), 42)
 
         # check that it's logged correctly
-        with open(self.mock_log.name) as f:
-            self.assertRegex(f.read(), '^[0-9.]+ OtherDo\n[0-9.]+ OtherDo2\n[0-9.]+ OtherDo3 42$')
+        self.assertLog(b'^[0-9.]+ OtherDo\n[0-9.]+ OtherDo2\n[0-9.]+ OtherDo3 42$')
 
     def test_methods_same_name(self):
         '''methods with same name on different interfaces'''
@@ -172,8 +169,7 @@ assert args[2] == 5
         self.assertEqual(self.obj_test.Do(11, dbus_interface='org.iface2'), 14)
 
         # check that it's logged correctly
-        with open(self.mock_log.name) as f:
-            self.assertRegex(f.read(), '^[0-9.]+ Do 10\n[0-9.]+ Do 11$')
+        self.assertLog(b'^[0-9.]+ Do 10\n[0-9.]+ Do 11$')
 
         # now add it to the primary interface, too
         self.dbus_mock.AddMethod('', 'Do', 'i', 'i', 'ret = args[0] + 1')
@@ -321,7 +317,7 @@ assert args[2] == 5
         self.assertEqual(self.dbus_props.Get('org.freedesktop.Test.Main', 'version'), 4)
 
         # check that the Get/Set calls get logged
-        with open(self.mock_log.name) as f:
+        with open(self.mock_log.name, encoding="UTF-8") as f:
             contents = f.read()
             self.assertRegex(contents, '\n[0-9.]+ Get org.freedesktop.Test.Main.version\n')
             self.assertRegex(contents, '\n[0-9.]+ Get org.freedesktop.Test.Main.connected\n')
@@ -501,7 +497,7 @@ assert args[2] == 5
         self.assertEqual(args[3][0].variant_level, 0)
 
         # check correct logging
-        with open(self.mock_log.name) as f:
+        with open(self.mock_log.name, encoding="UTF-8") as f:
             log = f.read()
         self.assertRegex(log, '[0-9.]+ emit org.freedesktop.Test.Main.SigNoArgs\n')
         self.assertRegex(log, '[0-9.]+ emit org.freedesktop.Test.Sub.SigTwoArgs "hello" 42\n')
