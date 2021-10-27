@@ -25,6 +25,7 @@ import dbusmock
 
 tracemalloc.start(25)
 have_upower = shutil.which('upower')
+have_gdbus = shutil.which('gdbus')
 
 
 class TestCLI(dbusmock.DBusTestCase):
@@ -56,6 +57,10 @@ class TestCLI(dbusmock.DBusTestCase):
                                        stdout=subprocess.PIPE,
                                        universal_newlines=True)
         self.wait_for_bus_object(wait_name, wait_path, wait_system)
+
+    def start_mock_process(self, args):
+        return subprocess.check_output([sys.executable, '-m', 'dbusmock'] + args,
+                                       universal_newlines=True)
 
     def test_session_bus(self):
         self.start_mock(['com.example.Test', '/', 'TestIface'],
@@ -140,6 +145,27 @@ class TestCLI(dbusmock.DBusTestCase):
         err = cm.exception
         self.assertEqual(err.returncode, 2)
         self.assertEqual(err.output, 'JSON parameters must be a dictionary\n')
+
+    @unittest.skipIf(not have_upower, 'No upower installed')
+    def test_template_upower_exec(self):
+        out = self.start_mock_process(
+            ['-t', 'upower', '--exec', 'upower', '--dump'])
+        self.assertRegex(out, r'on-battery:\s+no')
+        self.assertRegex(out, r'daemon-version:\s+0\.99')
+
+    @unittest.skipIf(not have_gdbus, 'No gdbus installed')
+    def test_manual_upower_exec(self):
+        out = self.start_mock_process(
+            ['--system',
+             'org.freedesktop.UPower',
+             '/org/freedesktop/UPower',
+             'org.freedesktop.UPower',
+             '--exec',
+             'gdbus', 'introspect', '--system',
+             '--dest', 'org.freedesktop.UPower',
+             '--object-path', '/org/freedesktop/UPower'])
+        self.assertRegex(out, r'AddMethod\(')
+        self.assertRegex(out, r'AddMethods\(')
 
     def test_template_local(self):
         with tempfile.NamedTemporaryFile(prefix='answer_', suffix='.py') as my_template:

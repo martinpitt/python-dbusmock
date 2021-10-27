@@ -15,6 +15,8 @@ __copyright__ = '''
 
 import argparse
 import json
+import os
+import subprocess
 import sys
 
 import dbusmock.mockobject
@@ -43,6 +45,8 @@ def parse_args():
                         help='automatically implement the org.freedesktop.DBus.ObjectManager interface')
     parser.add_argument('-p', '--parameters',
                         help='JSON dictionary of parameters to pass to the template')
+    parser.add_argument('-e', '--exec', nargs=argparse.REMAINDER,
+                        help='Command to run in the mock environment')
 
     arguments = parser.parse_args()
 
@@ -120,8 +124,34 @@ if __name__ == '__main__':
     if args.template:
         main_object.AddTemplate(args.template, parameters)
 
+    libglib = ctypes.cdll.LoadLibrary('libglib-2.0.so.0')
+
     dbusmock.mockobject.objects[args.path] = main_object
 
-    libglib = ctypes.cdll.LoadLibrary('libglib-2.0.so.0')
-    while should_run:
-        libglib.g_main_context_iteration(None, True)
+    if args.exec:
+        with subprocess.Popen(args.exec) as exec_proc:
+            exit_status = set()
+
+            @ctypes.CFUNCTYPE(None, ctypes.c_int, ctypes.c_int)
+            def on_process_watch(_pid, status):
+                """ Check if the launched process is still alive """
+                if os.WIFEXITED(status):
+                    exit_status.add(os.WEXITSTATUS(status))
+                else:
+                    exit_status.add(1)
+                should_run.pop()
+
+            libglib.g_child_watch_add(exec_proc.pid, on_process_watch)
+
+            while should_run:
+                libglib.g_main_context_iteration(None, True)
+
+            try:
+                exec_proc.terminate()
+                exec_proc.wait()
+            except ProcessLookupError:
+                pass
+            sys.exit(exit_status.pop() if exit_status else exec_proc.returncode)
+    else:
+        while should_run:
+            libglib.g_main_context_iteration(None, True)

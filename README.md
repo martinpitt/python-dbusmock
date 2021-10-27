@@ -165,6 +165,20 @@ call.
 You can do the same operations in e. g. d-feet or any other D-Bus
 language binding.
 
+## Interactive debugging
+
+It's possible to use dbus-mock to run interactive sessions using something like:
+
+    python3 -m dbusmock com.example.Foo / com.example.Foo.Manager -e $SHELL
+
+Where a shell session with the defined mocks is set and others can be added.
+
+Or more complex ones such as:
+
+    python3 -m dbusmock --session -t upower -e \
+      python3 -m dbusmock com.example.Foo / com.example.Foo.Manager -e \
+        gdbus introspect --session -d com.example.Foo -o /
+
 ## Logging
 
 Usually you want to verify which methods have been called on the mock
