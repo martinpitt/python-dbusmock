@@ -66,7 +66,9 @@ class TestCLI(dbusmock.DBusTestCase):
     def test_template_upower(self):
         self.start_mock(['-t', 'upower'],
                         'org.freedesktop.UPower', '/org/freedesktop/UPower', True)
+        self.check_upower_running()
 
+    def check_upower_running(self):
         # check that it actually ran the template, if we have upower
         if have_upower:
             out = subprocess.check_output(['upower', '--dump'],
@@ -81,6 +83,7 @@ class TestCLI(dbusmock.DBusTestCase):
         # --system is redundant here, but should not break
         self.start_mock(['--system', '-t', 'upower'],
                         'org.freedesktop.UPower', '/org/freedesktop/UPower', True)
+        self.check_upower_running()
 
     def test_template_override_session(self):
         self.start_mock(['--session', '-t', 'upower'],
