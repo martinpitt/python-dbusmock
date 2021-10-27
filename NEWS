@@ -1,3 +1,9 @@
+## [0.24.1] - 2021-10-27
+- Do not register standard D-Bus service directories (Thanks Benjamin Berg)
+- templates: Add IIO Sensors Proxy support (Thanks Marco Trevisan)
+- Fix importlib module import (Thanks Marco Trevisan)
+- Clean up code for most recent pylint version
+
 ## [0.24.0] - 2021-08-28
 - Add Add power-profiles-daemon template (Thanks Bastien Nocera)
 - logind: Implement Inhibit and ListInhibitors (Thanks to Benjamin Berg)
