@@ -12,6 +12,7 @@ __copyright__ = '(c) 2012 Canonical Ltd.'
 
 import copy
 import importlib
+import importlib.util
 import os
 import sys
 import time
