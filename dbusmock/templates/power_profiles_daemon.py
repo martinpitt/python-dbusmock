@@ -57,9 +57,9 @@ def load(mock, parameters):
         'ActiveProfile': parameters.get('ActiveProfile', 'balanced'),
         'PerformanceDegraded': parameters.get('PerformanceDegraded', ''),
         'Profiles': [
-            {'Profile': 'power-saver', 'Driver': 'dbusmock'},
-            {'Profile': 'balanced', 'Driver': 'dbusmock'},
-            {'Profile': 'performance', 'Driver': 'dbusmock'},
+            dbus.Dictionary({'Profile': 'power-saver', 'Driver': 'dbusmock'}, signature='sv'),
+            dbus.Dictionary({'Profile': 'balanced', 'Driver': 'dbusmock'}, signature='sv'),
+            dbus.Dictionary({'Profile': 'performance', 'Driver': 'dbusmock'}, signature='sv')
         ],
         'Actions': dbus.Array([], signature='(as)'),
         'ActiveProfileHolds': dbus.Array([], signature='(aa{sv})'),
