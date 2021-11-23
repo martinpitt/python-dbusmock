@@ -111,6 +111,9 @@ def AddAdapter(self, device_name, system_name):
     Returns the new object path.
     '''
     path = '/org/bluez/' + device_name
+    address_start = int(device_name[-1])
+    address = f"{address_start:02d}:{address_start+1:02d}:{address_start+2:02d}:" + \
+        f"{address_start+3:02d}:{address_start+4:02d}:{address_start+5:02d}"
     adapter_properties = {
         'UUIDs': dbus.Array([
             # Reference:
@@ -130,7 +133,7 @@ def AddAdapter(self, device_name, system_name):
         'Discovering': dbus.Boolean(True, variant_level=1),
         'Pairable': dbus.Boolean(True, variant_level=1),
         'Powered': dbus.Boolean(True, variant_level=1),
-        'Address': dbus.String('00:01:02:03:04:05', variant_level=1),
+        'Address': dbus.String(address, variant_level=1),
         'Alias': dbus.String(system_name, variant_level=1),
         'Modalias': dbus.String('usb:v1D6Bp0245d050A', variant_level=1),
         'Name': dbus.String(system_name, variant_level=1),
