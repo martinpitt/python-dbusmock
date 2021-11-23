@@ -255,7 +255,7 @@ def TransferCreated(_self, _path, _filters, _transfer_filename):
 
 
 @dbus.service.method(TRANSFER_MOCK_IFACE,
-                     in_signature='', out_signature='')
+                     in_signature='b', out_signature='')
 def UpdateStatus(self, is_complete):
     '''Mock method to update the transfer status.
 
