@@ -176,6 +176,26 @@ def AddAdapter(self, device_name, system_name):
     return path
 
 
+@dbus.service.method(BLUEZ_MOCK_IFACE,
+                     in_signature='s')
+def RemoveAdapter(self, device_name):
+    '''Convenience method to remove a Bluetooth adapter
+    '''
+    path = '/org/bluez/' + device_name
+    # We could remove the devices related to the adapters here, but
+    # when bluez crashes, the InterfacesRemoved aren't necessarily sent
+    # devices first, so in effect, our laziness is testing an edge case
+    # in the clients
+    self.RemoveObject(path)
+
+    manager = mockobject.objects['/']
+    manager.EmitSignal(OBJECT_MANAGER_IFACE, 'InterfacesRemoved',
+                       'oas', [
+                           dbus.ObjectPath(path),
+                           [ADAPTER_IFACE],
+                       ])
+
+
 @dbus.service.method(DEVICE_IFACE,
                      in_signature='', out_signature='')
 def Pair(device):
