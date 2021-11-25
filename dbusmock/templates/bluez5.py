@@ -129,8 +129,8 @@ def AddAdapter(self, device_name, system_name):
             # Audio/Video Remote Control Profile (target)
             '0000110c-0000-1000-8000-00805f9b34fb',
         ], variant_level=1),
-        'Discoverable': dbus.Boolean(True, variant_level=1),
-        'Discovering': dbus.Boolean(True, variant_level=1),
+        'Discoverable': dbus.Boolean(False, variant_level=1),
+        'Discovering': dbus.Boolean(False, variant_level=1),
         'Pairable': dbus.Boolean(True, variant_level=1),
         'Powered': dbus.Boolean(True, variant_level=1),
         'Address': dbus.String(address, variant_level=1),
@@ -143,7 +143,7 @@ def AddAdapter(self, device_name, system_name):
         # bluetooth_class_of_device-service_generator.html
         'Class': dbus.UInt32(268, variant_level=1),  # Computer, Laptop
         'DiscoverableTimeout': dbus.UInt32(180, variant_level=1),
-        'PairableTimeout': dbus.UInt32(180, variant_level=1),
+        'PairableTimeout': dbus.UInt32(0, variant_level=1),
     }
 
     self.AddObject(path,

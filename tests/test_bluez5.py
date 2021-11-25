@@ -126,9 +126,9 @@ class TestBlueZ5(dbusmock.DBusTestCase):
         self.assertIn('Name: ' + system_name, out)
         self.assertIn('Alias: ' + system_name, out)
         self.assertIn('Powered: yes', out)
-        self.assertIn('Discoverable: yes', out)
+        self.assertIn('Discoverable: no', out)
         self.assertIn('Pairable: yes', out)
-        self.assertIn('Discovering: yes', out)
+        self.assertIn('Discovering: no', out)
 
     def test_no_devices(self):
         # Add an adapter.
