@@ -100,6 +100,48 @@ def load(mock, _parameters):
     ])
 
 
+@dbus.service.method(ADAPTER_IFACE,
+                     in_signature='', out_signature='')
+def StartDiscovery(adapter):
+    adapter.discovering = True
+    # NOTE: discovery filter support is minimal to mock
+    # the Discoverable discovery filter
+    if adapter.discovery_filter is not None:
+        adapter.discoverable = True
+    adapter.EmitSignal(dbus.PROPERTIES_IFACE, 'PropertiesChanged', 'sa{sv}as', [
+        ADAPTER_IFACE,
+        {
+            'Discoverable': dbus.Boolean(adapter.discoverable, variant_level=1),
+            'Discovering': dbus.Boolean(adapter.discovering, variant_level=1),
+        },
+        [],
+    ])
+
+
+@dbus.service.method(ADAPTER_IFACE,
+                     in_signature='', out_signature='')
+def StopDiscovery(adapter):
+    adapter.discovering = False
+    # NOTE: discovery filter support is minimal to mock
+    # the Discoverable discovery filter
+    if adapter.discovery_filter is not None:
+        adapter.discoverable = False
+    adapter.EmitSignal(dbus.PROPERTIES_IFACE, 'PropertiesChanged', 'sa{sv}as', [
+        ADAPTER_IFACE,
+        {
+            'Discoverable': dbus.Boolean(adapter.discoverable, variant_level=1),
+            'Discovering': dbus.Boolean(adapter.discovering, variant_level=1),
+        },
+        [],
+    ])
+
+
+@dbus.service.method(ADAPTER_IFACE,
+                     in_signature='a{sv}', out_signature='')
+def SetDiscoveryFilter(adapter, discovery_filter):
+    adapter.discovery_filter = discovery_filter
+
+
 @dbus.service.method(BLUEZ_MOCK_IFACE,
                      in_signature='ss', out_signature='s')
 def AddAdapter(self, device_name, system_name):
@@ -153,11 +195,15 @@ def AddAdapter(self, device_name, system_name):
                    # Methods
                    [
                        ('RemoveDevice', 'o', '', ''),
-                       ('StartDiscovery', '', '', ''),
-                       ('StopDiscovery', '', '', ''),
+                       ('StartDiscovery', '', '', StartDiscovery),
+                       ('StopDiscovery', '', '', StopDiscovery),
+                       ('SetDiscoveryFilter', 'a{sv}', '', SetDiscoveryFilter),
                    ])
 
     adapter = mockobject.objects[path]
+    adapter.discovering = False
+    adapter.discoverable = False
+    adapter.discovery_filter = None
     adapter.AddMethods(MEDIA_IFACE, [
         ('RegisterEndpoint', 'oa{sv}', '', ''),
         ('UnregisterEndpoint', 'o', '', ''),
