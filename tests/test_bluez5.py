@@ -112,13 +112,17 @@ class TestBlueZ5(dbusmock.DBusTestCase):
 
         adapter = self.dbus_con.get_object('org.bluez', path)
         address = adapter.Get('org.bluez.Adapter1', 'Address')
+        address_type = adapter.Get('org.bluez.Adapter1', 'AddressType')
 
         # Check for the adapter.
         out = _run_bluetoothctl('list')
         self.assertIn('Controller ' + address + ' ' + system_name + ' [default]', out)
 
         out = _run_bluetoothctl('show ' + address)
-        self.assertIn('Controller ' + address, out)
+        if address_type is not None:
+            self.assertIn(f'Controller {address} ({address_type})', out)
+        else:
+            self.assertIn('Controller ' + address, out)
         self.assertIn('Name: ' + system_name, out)
         self.assertIn('Alias: ' + system_name, out)
         self.assertIn('Powered: yes', out)

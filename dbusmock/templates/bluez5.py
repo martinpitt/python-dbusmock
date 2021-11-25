@@ -134,6 +134,7 @@ def AddAdapter(self, device_name, system_name):
         'Pairable': dbus.Boolean(True, variant_level=1),
         'Powered': dbus.Boolean(True, variant_level=1),
         'Address': dbus.String(address, variant_level=1),
+        'AddressType': dbus.String('public', variant_level=1),
         'Alias': dbus.String(system_name, variant_level=1),
         'Modalias': dbus.String('usb:v1D6Bp0245d050A', variant_level=1),
         'Name': dbus.String(system_name, variant_level=1),
