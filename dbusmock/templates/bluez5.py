@@ -101,6 +101,19 @@ def load(mock, _parameters):
 
 
 @dbus.service.method(ADAPTER_IFACE,
+                     in_signature='o', out_signature='')
+def RemoveDevice(adapter, path):
+    adapter.RemoveObject(path)
+
+    manager = mockobject.objects['/']
+    manager.EmitSignal(OBJECT_MANAGER_IFACE, 'InterfacesRemoved',
+                       'oas', [
+                           dbus.ObjectPath(path),
+                           [DEVICE_IFACE],
+                       ])
+
+
+@dbus.service.method(ADAPTER_IFACE,
                      in_signature='', out_signature='')
 def StartDiscovery(adapter):
     adapter.discovering = True
@@ -194,7 +207,7 @@ def AddAdapter(self, device_name, system_name):
                    adapter_properties,
                    # Methods
                    [
-                       ('RemoveDevice', 'o', '', ''),
+                       ('RemoveDevice', 'o', '', RemoveDevice),
                        ('StartDiscovery', '', '', StartDiscovery),
                        ('StopDiscovery', '', '', StopDiscovery),
                        ('SetDiscoveryFilter', 'a{sv}', '', SetDiscoveryFilter),
