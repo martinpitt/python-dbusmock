@@ -56,7 +56,7 @@ def RegisterAgent(manager, agent_path, capability):
     if not manager.default_agent:
         manager.default_agent = agent_path
     manager.agent_paths += [agent_path]
-    manager.capabilities[agent_path] = capability
+    manager.capabilities[str(agent_path)] = capability
 
 
 @dbus.service.method(AGENT_MANAGER_IFACE,
@@ -98,6 +98,9 @@ def load(mock, _parameters):
         ('RegisterProfile', 'osa{sv}', '', ''),
         ('UnregisterProfile', 'o', '', ''),
     ])
+    bluez.agent_paths = []
+    bluez.capabilities = {}
+    bluez.default_agent = None
 
 
 @dbus.service.method(ADAPTER_IFACE,
