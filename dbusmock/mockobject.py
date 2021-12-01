@@ -92,7 +92,6 @@ def _format_args(args):
 
 def _wrap_in_dbus_variant(value):
     dbus_types = [
-        dbus.types.Array,
         dbus.types.ByteArray,
         dbus.types.Int16,
         dbus.types.ObjectPath,
@@ -112,6 +111,8 @@ def _wrap_in_dbus_variant(value):
     ]
     if isinstance(value, dbus.String):
         return dbus.String(str(value), variant_level=1)
+    if isinstance(value, dbus.types.Array):
+        return value
     if type(value) in dbus_types:
         return type(value)(value.conjugate(), variant_level=1)
     if isinstance(value, str):
