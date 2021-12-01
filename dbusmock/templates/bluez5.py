@@ -268,6 +268,40 @@ def Pair(device):
     device.PairDevice(adapter_device_name, device_address)
 
 
+@dbus.service.method(DEVICE_IFACE,
+                     in_signature='', out_signature='')
+def Connect(device):
+    if device.connected:
+        raise dbus.exceptions.DBusException(
+            'Already Connected',
+            name='org.bluez.Error.AlreadyConnected')
+    device.connected = True
+    device.EmitSignal(dbus.PROPERTIES_IFACE, 'PropertiesChanged', 'sa{sv}as', [
+        DEVICE_IFACE,
+        {
+            'Connected': dbus.Boolean(device.connected, variant_level=1),
+        },
+        [],
+    ])
+
+
+@dbus.service.method(DEVICE_IFACE,
+                     in_signature='', out_signature='')
+def Disconnect(device):
+    if not device.connected:
+        raise dbus.exceptions.DBusException(
+            'Not Connected',
+            name='org.bluez.Error.NotConnected')
+    device.connected = False
+    device.EmitSignal(dbus.PROPERTIES_IFACE, 'PropertiesChanged', 'sa{sv}as', [
+        DEVICE_IFACE,
+        {
+            'Connected': dbus.Boolean(device.connected, variant_level=1),
+        },
+        [],
+    ])
+
+
 @dbus.service.method(BLUEZ_MOCK_IFACE,
                      in_signature='sss', out_signature='s')
 def AddDevice(self, adapter_device_name, device_address, alias):
@@ -312,14 +346,15 @@ def AddDevice(self, adapter_device_name, device_address, alias):
                    # Methods
                    [
                        ('CancelPairing', '', '', ''),
-                       ('Connect', '', '', ''),
+                       ('Connect', '', '', Connect),
                        ('ConnectProfile', 's', '', ''),
-                       ('Disconnect', '', '', ''),
+                       ('Disconnect', '', '', Disconnect),
                        ('DisconnectProfile', 's', '', ''),
                        ('Pair', '', '', Pair),
                    ])
     device = mockobject.objects[path]
     device.paired = False
+    device.connected = False
 
     manager = mockobject.objects['/']
     manager.EmitSignal(OBJECT_MANAGER_IFACE, 'InterfacesAdded',
