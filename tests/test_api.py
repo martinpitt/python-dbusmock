@@ -372,6 +372,20 @@ assert args[2] == 5
         self.assertEqual(changed_props,
                          [{'version': 5, 'connected': False}])
 
+        # test adding properties with the array type
+        self.dbus_mock.AddProperty('org.freedesktop.Test.Main',
+                                   'array',
+                                   dbus.Array(['first'], signature='s'))
+        self.assertEqual(self.dbus_props.Get('org.freedesktop.Test.Main', 'array'),
+                         ['first'])
+
+        # test updating properties with the array type
+        self.dbus_mock.UpdateProperties('org.freedesktop.Test.Main',
+                                        {'array': dbus.Array(['second', 'third'],
+                                                             signature='s')})
+        self.assertEqual(self.dbus_props.Get('org.freedesktop.Test.Main', 'array'),
+                         ['second', 'third'])
+
     def test_introspection_methods(self):
         '''dynamically added methods appear in introspection'''
 
