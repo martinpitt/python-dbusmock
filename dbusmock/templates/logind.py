@@ -16,6 +16,7 @@ __copyright__ = '(c) 2013 Canonical Ltd.'
 
 import os
 import dbus
+import re
 
 from gi.repository import GLib
 from dbusmock import MOCK_IFACE, mockobject
@@ -23,6 +24,7 @@ from dbusmock import MOCK_IFACE, mockobject
 BUS_NAME = 'org.freedesktop.login1'
 MAIN_OBJ = '/org/freedesktop/login1'
 MAIN_IFACE = 'org.freedesktop.login1.Manager'
+SESSION_IFACE = 'org.freedesktop.login1.Session'
 SYSTEM_BUS = True
 
 
@@ -271,6 +273,7 @@ def AddSession(self, session_id, seat, uid, username, active):
                        ('SetIdleHint', 'b', '', ''),
                        ('Terminate', '', '', ''),
                        ('Unlock', '', '', ''),
+                       ('TakeControl', 'b', '', ''),
                    ])
 
     # add session to seat
@@ -287,3 +290,30 @@ def AddSession(self, session_id, seat, uid, username, active):
     obj_user.Set('org.freedesktop.login1.User', 'Sessions', cur_sessions)
 
     return session_path
+
+@dbus.service.method(SESSION_IFACE,
+                     in_signature='uu',
+                     out_signature='hb')
+def TakeDevice(self, major, minor):
+    sysfs_uevent_path = '/sys/dev/char/{}:{}/uevent'.format(major, minor)
+    sysfs_uevent = open(sysfs_uevent_path, 'r')
+    devname = None
+    for line in sysfs_uevent.readlines():
+        match = re.search('DEVNAME=(.*)', line)
+        if match:
+            devname = match[1]
+            break
+    sysfs_uevent.close()
+    if not devname:
+        raise dbus.exceptions.DBusException(f'Device file {major}:{minor} doesn\'t exists',
+                                            major=major, minor=minor)
+    fd = os.open('/dev/' + devname, os.O_RDWR | os.O_CLOEXEC)
+    unix_fd = dbus.types.UnixFd(fd)
+    os.close(fd)
+    return (unix_fd, False)
+
+@dbus.service.method(SESSION_IFACE,
+                     in_signature='uu',
+                     out_signature='')
+def ReleaseDevice(self, major, minor):
+    pass
