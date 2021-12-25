@@ -1,4 +1,4 @@
-## [0.25.0] - UNRELEASED
+## [0.25.0] - 2021-12-25
 - bluez template: Implement adapter discovery, connect, disconnect, and removal
   (thanks Bastien Nocera)
 - Fix changing array properties (thanks Jonas Ådahl)
