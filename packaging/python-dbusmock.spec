@@ -2,7 +2,7 @@
 
 Name:             python-%{modname}
 Version:          0.23.0
-Release:          2%{?dist}
+Release:          1%{?dist}
 Summary:          Mock D-Bus objects
 
 License:          LGPLv3+
