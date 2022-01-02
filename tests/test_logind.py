@@ -17,6 +17,7 @@ import sys
 import unittest
 import tracemalloc
 
+import dbus
 import dbusmock
 
 tracemalloc.start(25)
@@ -105,6 +106,17 @@ class TestLogind(dbusmock.DBusTestCase):
         self.assertRegex(out, 'Active=yes')
         self.assertRegex(out, 'State=active')
         self.assertRegex(out, 'Name=joe')
+        self.assertRegex(out, 'LockedHint=no')
+
+        session_mock = dbus.Interface(self.dbus_con.get_object(
+            'org.freedesktop.login1', '/org/freedesktop/login1/session/c1'),
+            'org.freedesktop.login1.Session')
+        session_mock.SetLockedHint(True)
+
+        out = subprocess.check_output(['loginctl', 'show-session', 'c1'],
+                                      universal_newlines=True)
+        self.assertRegex(out, 'Id=c1')
+        self.assertRegex(out, 'LockedHint=yes')
 
     def test_properties(self):
         (self.p_mock, obj_logind) = self.spawn_server_template('logind', {}, stdout=subprocess.PIPE)

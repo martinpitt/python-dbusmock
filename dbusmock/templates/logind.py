@@ -241,6 +241,7 @@ def AddSession(self, session_id, seat, uid, username, active):
                        'ResetControllers': dbus.Array([], signature='s'),
                        'Active': active,
                        'IdleHint': False,
+                       'LockedHint': False,
                        'KillProcesses': False,
                        'Remote': False,
                        'Class': 'user',
@@ -269,6 +270,7 @@ def AddSession(self, session_id, seat, uid, username, active):
                        ('Kill', 'ss', '', ''),
                        ('Lock', '', '', ''),
                        ('SetIdleHint', 'b', '', ''),
+                       ('SetLockedHint', 'b', '', 'self.UpdateProperties("", {"LockedHint": args[0]})'),
                        ('Terminate', '', '', ''),
                        ('Unlock', '', '', ''),
                    ])
