@@ -268,11 +268,11 @@ def AddSession(self, session_id, seat, uid, username, active):
                    [
                        ('Activate', '', '', ''),
                        ('Kill', 'ss', '', ''),
-                       ('Lock', '', '', ''),
+                       ('Lock', '', '', 'self.EmitSignal("", "Lock", "", [])'),
                        ('SetIdleHint', 'b', '', ''),
                        ('SetLockedHint', 'b', '', 'self.UpdateProperties("", {"LockedHint": args[0]})'),
                        ('Terminate', '', '', ''),
-                       ('Unlock', '', '', ''),
+                       ('Unlock', '', '', 'self.EmitSignal("", "Unlock", "", [])'),
                    ])
 
     # add session to seat
