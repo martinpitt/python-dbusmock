@@ -318,10 +318,10 @@ assert args[2] == 5
         # check that the Get/Set calls get logged
         with open(self.mock_log.name, encoding="UTF-8") as f:
             contents = f.read()
-            self.assertRegex(contents, '\n[0-9.]+ Get org.freedesktop.Test.Main.version\n')
-            self.assertRegex(contents, '\n[0-9.]+ Get org.freedesktop.Test.Main.connected\n')
-            self.assertRegex(contents, '\n[0-9.]+ GetAll org.freedesktop.Test.Main\n')
-            self.assertRegex(contents, '\n[0-9.]+ Set org.freedesktop.Test.Main.version 4\n')
+            self.assertRegex(contents, '\n[0-9.]+ Get / org.freedesktop.Test.Main.version\n')
+            self.assertRegex(contents, '\n[0-9.]+ Get / org.freedesktop.Test.Main.connected\n')
+            self.assertRegex(contents, '\n[0-9.]+ GetAll / org.freedesktop.Test.Main\n')
+            self.assertRegex(contents, '\n[0-9.]+ Set / org.freedesktop.Test.Main.version 4\n')
 
         # add property to different interface
         self.dbus_mock.AddProperty('org.freedesktop.Test.Other',
@@ -512,10 +512,10 @@ assert args[2] == 5
         # check correct logging
         with open(self.mock_log.name, encoding="UTF-8") as f:
             log = f.read()
-        self.assertRegex(log, '[0-9.]+ emit org.freedesktop.Test.Main.SigNoArgs\n')
-        self.assertRegex(log, '[0-9.]+ emit org.freedesktop.Test.Sub.SigTwoArgs "hello" 42\n')
-        self.assertRegex(log, '[0-9.]+ emit org.freedesktop.Test.Sub.SigTypeTest -42 42')
-        self.assertRegex(log, r'[0-9.]+ emit org.freedesktop.Test.Sub.SigTypeTest -42 42 "hello" \["/a", "/b"\]\n')
+        self.assertRegex(log, '[0-9.]+ emit / org.freedesktop.Test.Main.SigNoArgs\n')
+        self.assertRegex(log, '[0-9.]+ emit / org.freedesktop.Test.Sub.SigTwoArgs "hello" 42\n')
+        self.assertRegex(log, '[0-9.]+ emit / org.freedesktop.Test.Sub.SigTypeTest -42 42')
+        self.assertRegex(log, r'[0-9.]+ emit / org.freedesktop.Test.Sub.SigTypeTest -42 42 "hello" \["/a", "/b"\]\n')
 
     def test_signals_type_mismatch(self):
         '''emitting signals with wrong arguments'''

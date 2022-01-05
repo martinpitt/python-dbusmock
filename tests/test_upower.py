@@ -76,7 +76,7 @@ class TestUPower(dbusmock.DBusTestCase):
         self.assertEqual(path, '/org/freedesktop/UPower/devices/mock_AC')
 
         self.assertRegex(self.p_mock.stdout.read(),
-                         b'emit org.freedesktop.UPower.DeviceAdded '
+                         b'emit /org/freedesktop/UPower org.freedesktop.UPower.DeviceAdded '
                          b'"/org/freedesktop/UPower/devices/mock_AC"\n')
 
         out = subprocess.check_output(['upower', '--dump'],
@@ -107,7 +107,7 @@ class TestUPower(dbusmock.DBusTestCase):
         self.assertEqual(path, '/org/freedesktop/UPower/devices/mock_BAT')
 
         self.assertRegex(self.p_mock.stdout.read(),
-                         b'emit org.freedesktop.UPower.DeviceAdded '
+                         b'emit /org/freedesktop/UPower org.freedesktop.UPower.DeviceAdded '
                          b'"/org/freedesktop/UPower/devices/mock_BAT"\n')
 
         out = subprocess.check_output(['upower', '--dump'],
@@ -127,7 +127,7 @@ class TestUPower(dbusmock.DBusTestCase):
         self.assertEqual(path, '/org/freedesktop/UPower/devices/mock_BAT')
 
         self.assertRegex(self.p_mock.stdout.read(),
-                         b'emit org.freedesktop.UPower.DeviceAdded '
+                         b'emit /org/freedesktop/UPower org.freedesktop.UPower.DeviceAdded '
                          b'"/org/freedesktop/UPower/devices/mock_BAT"\n')
 
         out = subprocess.check_output(['upower', '--dump'],
