@@ -119,16 +119,16 @@ def RemoveDevice(adapter, path):
 @dbus.service.method(ADAPTER_IFACE,
                      in_signature='', out_signature='')
 def StartDiscovery(adapter):
-    adapter.discovering = True
+    adapter.props[ADAPTER_IFACE]['Discovering'] = True
     # NOTE: discovery filter support is minimal to mock
     # the Discoverable discovery filter
-    if adapter.discovery_filter is not None:
-        adapter.discoverable = True
+    if adapter.props[ADAPTER_IFACE]['DiscoveryFilter'] is not None:
+        adapter.props[ADAPTER_IFACE]['Discoverable'] = True
     adapter.EmitSignal(dbus.PROPERTIES_IFACE, 'PropertiesChanged', 'sa{sv}as', [
         ADAPTER_IFACE,
         {
-            'Discoverable': dbus.Boolean(adapter.discoverable, variant_level=1),
-            'Discovering': dbus.Boolean(adapter.discovering, variant_level=1),
+            'Discoverable': dbus.Boolean(adapter.props[ADAPTER_IFACE]['Discoverable'], variant_level=1),
+            'Discovering': dbus.Boolean(adapter.props[ADAPTER_IFACE]['Discovering'], variant_level=1),
         },
         [],
     ])
@@ -137,16 +137,16 @@ def StartDiscovery(adapter):
 @dbus.service.method(ADAPTER_IFACE,
                      in_signature='', out_signature='')
 def StopDiscovery(adapter):
-    adapter.discovering = False
+    adapter.props[ADAPTER_IFACE]['Discovering'] = False
     # NOTE: discovery filter support is minimal to mock
     # the Discoverable discovery filter
-    if adapter.discovery_filter is not None:
-        adapter.discoverable = False
+    if adapter.props[ADAPTER_IFACE]['DiscoveryFilter'] is not None:
+        adapter.props[ADAPTER_IFACE]['Discoverable'] = False
     adapter.EmitSignal(dbus.PROPERTIES_IFACE, 'PropertiesChanged', 'sa{sv}as', [
         ADAPTER_IFACE,
         {
-            'Discoverable': dbus.Boolean(adapter.discoverable, variant_level=1),
-            'Discovering': dbus.Boolean(adapter.discovering, variant_level=1),
+            'Discoverable': dbus.Boolean(adapter.props[ADAPTER_IFACE]['Discoverable'], variant_level=1),
+            'Discovering': dbus.Boolean(adapter.props[ADAPTER_IFACE]['Discovering'], variant_level=1),
         },
         [],
     ])
@@ -155,7 +155,7 @@ def StopDiscovery(adapter):
 @dbus.service.method(ADAPTER_IFACE,
                      in_signature='a{sv}', out_signature='')
 def SetDiscoveryFilter(adapter, discovery_filter):
-    adapter.discovery_filter = discovery_filter
+    adapter.props[ADAPTER_IFACE]['DiscoveryFilter'] = discovery_filter
 
 
 @dbus.service.method(BLUEZ_MOCK_IFACE,
@@ -217,9 +217,6 @@ def AddAdapter(self, device_name, system_name):
                    ])
 
     adapter = mockobject.objects[path]
-    adapter.discovering = False
-    adapter.discoverable = False
-    adapter.discovery_filter = None
     adapter.AddMethods(MEDIA_IFACE, [
         ('RegisterEndpoint', 'oa{sv}', '', ''),
         ('UnregisterEndpoint', 'o', '', ''),
