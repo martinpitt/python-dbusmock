@@ -202,7 +202,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
     def Get(self, interface_name: str, property_name: str) -> Any:
         '''Standard D-Bus API for getting a property value'''
 
-        self.log(f'Get {interface_name}.{property_name}')
+        self.log(f'Get {self.path} {interface_name}.{property_name}')
 
         if not interface_name:
             interface_name = self.interface
@@ -218,7 +218,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
     def GetAll(self, interface_name: str, *_, **__) -> PropsType:
         '''Standard D-Bus API for getting all property values'''
 
-        self.log('GetAll ' + interface_name)
+        self.log(f'GetAll {self.path} {interface_name}')
 
         if not interface_name:
             interface_name = self.interface
@@ -234,7 +234,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
     def Set(self, interface_name: str, property_name: str, value: Any, *_, **__) -> None:
         '''Standard D-Bus API for setting a property value'''
 
-        self.log(f'Set {interface_name}.{property_name}{_format_args((value,))}')
+        self.log(f'Set {self.path} {interface_name}.{property_name}{_format_args((value,))}')
 
         try:
             iface_props = self.props[interface_name]
@@ -578,7 +578,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
         m.append(signature=signature, *args)
         args = m.get_args_list()
 
-        fn = lambda self, *args: self.log(f'emit {interface}.{name}{_format_args(args)}')
+        fn = lambda self, *args: self.log(f'emit {self.path} {interface}.{name}{_format_args(args)}')
         fn.__name__ = str(name)
         dbus_fn = dbus.service.signal(interface)(fn)
         dbus_fn._dbus_signature = signature
