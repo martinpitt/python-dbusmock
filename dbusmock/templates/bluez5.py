@@ -327,16 +327,28 @@ def AddDevice(self, adapter_device_name, device_address, alias):
 
     properties = {
         'Address': dbus.String(device_address, variant_level=1),
+        'AddressType': dbus.String('public', variant_level=1),
         'Name': dbus.String(alias, variant_level=1),
+        'Icon': dbus.String('', variant_level=1),
+        'Class': dbus.UInt32(0, variant_level=1),
+        'Appearance': dbus.UInt16(0, variant_level=1),
         'UUIDs': dbus.Array([], signature='s', variant_level=1),
         'Paired': dbus.Boolean(False, variant_level=1),
         'Connected': dbus.Boolean(False, variant_level=1),
         'Trusted': dbus.Boolean(False, variant_level=1),
         'Blocked': dbus.Boolean(False, variant_level=1),
+        'WakeAllowed': dbus.Boolean(False, variant_level=1),
         'Alias': dbus.String(alias, variant_level=1),
         'Adapter': dbus.ObjectPath(adapter_path, variant_level=1),
         'LegacyPairing': dbus.Boolean(False, variant_level=1),
+        'ModAlias': dbus.String('', variant_level=1),
         'RSSI': dbus.Int16(-79, variant_level=1),  # arbitrary
+        'TxPower': dbus.Int16(0, variant_level=1),
+        'ManufacturerData': dbus.Array([], signature='a{qv}', variant_level=1),
+        'ServiceData': dbus.Array([], signature='a{sv}', variant_level=1),
+        'ServicesResolved': dbus.Boolean(False, variant_level=1),
+        'AdvertisingFlags': dbus.Array([], signature='ay', variant_level=1),
+        'AdvertisingData': dbus.Array([], signature='a{yv}', variant_level=1),
     }
 
     self.AddObject(path,
