@@ -326,17 +326,17 @@ def AddDevice(self, adapter_device_name, device_address, alias):
             name=BLUEZ_MOCK_IFACE + '.NoSuchAdapter')
 
     properties = {
-        'UUIDs': dbus.Array([], signature='s', variant_level=1),
-        'Blocked': dbus.Boolean(False, variant_level=1),
-        'Connected': dbus.Boolean(False, variant_level=1),
-        'LegacyPairing': dbus.Boolean(False, variant_level=1),
-        'Paired': dbus.Boolean(False, variant_level=1),
-        'Trusted': dbus.Boolean(False, variant_level=1),
-        'RSSI': dbus.Int16(-79, variant_level=1),  # arbitrary
-        'Adapter': dbus.ObjectPath(adapter_path, variant_level=1),
         'Address': dbus.String(device_address, variant_level=1),
-        'Alias': dbus.String(alias, variant_level=1),
         'Name': dbus.String(alias, variant_level=1),
+        'UUIDs': dbus.Array([], signature='s', variant_level=1),
+        'Paired': dbus.Boolean(False, variant_level=1),
+        'Connected': dbus.Boolean(False, variant_level=1),
+        'Trusted': dbus.Boolean(False, variant_level=1),
+        'Blocked': dbus.Boolean(False, variant_level=1),
+        'Alias': dbus.String(alias, variant_level=1),
+        'Adapter': dbus.ObjectPath(adapter_path, variant_level=1),
+        'LegacyPairing': dbus.Boolean(False, variant_level=1),
+        'RSSI': dbus.Int16(-79, variant_level=1),  # arbitrary
     }
 
     self.AddObject(path,
