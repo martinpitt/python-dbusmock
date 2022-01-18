@@ -341,7 +341,7 @@ def AddDevice(self, adapter_device_name, device_address, alias):
         'Alias': dbus.String(alias, variant_level=1),
         'Adapter': dbus.ObjectPath(adapter_path, variant_level=1),
         'LegacyPairing': dbus.Boolean(False, variant_level=1),
-        'ModAlias': dbus.String('', variant_level=1),
+        'Modalias': dbus.String('', variant_level=1),
         'RSSI': dbus.Int16(-79, variant_level=1),  # arbitrary
         'TxPower': dbus.Int16(0, variant_level=1),
         'ManufacturerData': dbus.Array([], signature='a{qv}', variant_level=1),
