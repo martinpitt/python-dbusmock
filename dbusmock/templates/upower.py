@@ -221,3 +221,10 @@ def SetDeviceProperties(_self, object_path, properties):
     # set the properties
     for key, value in properties.items():
         device.Set(DEVICE_IFACE, key, value)
+
+
+@dbus.service.method(MOCK_IFACE,
+                     in_signature='o', out_signature='')
+def RemoveDevice(self, device_path):
+    self.RemoveObject(device_path)
+    self.EmitSignal(MAIN_IFACE, 'DeviceRemoved', 'o', [device_path])
