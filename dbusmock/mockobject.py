@@ -126,6 +126,9 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
     This can be configured to have arbitrary methods (including code execution)
     and properties via methods on the org.freedesktop.DBus.Mock interface, so
     that you can control the mock from any programming language.
+
+    Beyond that "remote control" API, this is a standard dbus-python service object, see
+    <https://dbus.freedesktop.org/doc/dbus-python/tutorial.html#exporting-objects>.
     '''
 
     def __init__(self, bus_name: str, path: str, interface: str, props: PropsType,
@@ -262,7 +265,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
                          in_signature='ssa{sv}a(ssss)',
                          out_signature='')
     def AddObject(self, path: str, interface: str, properties: PropsType, methods: List[MethodType]) -> None:
-        '''Add a new D-Bus object to the mock
+        '''Dynamically add a new D-Bus object to the mock
 
         path: D-Bus object path
         interface: Primary D-Bus interface name of this object (where
@@ -359,7 +362,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
                          in_signature='sssss',
                          out_signature='')
     def AddMethod(self, interface, name: str, in_sig: str, out_sig: str, code: str) -> None:
-        '''Add a method to this object
+        '''Dynamically add a method to this object
 
         interface: D-Bus interface to add this to. For convenience you can
                    specify '' here to add the method to the object's main
@@ -385,6 +388,14 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
 
               When specifying '', the method will not do anything (except
               logging) and return None.
+
+
+        This is meant for adding a method to a mock at runtime, from any programming language.
+        You can also use it in templates in the load() function.
+
+        For implementing non-trivial and static methods in templates, it is recommended to
+        implement them in the normal dbus-python way with using the @dbus.service.method
+        decorator instead.
         '''
         # pylint: disable=protected-access
 

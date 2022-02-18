@@ -220,6 +220,11 @@ with the template's convenience methods like
 or calling `AddObject()` yourself with the desired properties, of
 course.
 
+Templates commonly implement some non-trivial functionality with actual Python
+methods and the standard [dbus-python](https://dbus.freedesktop.org/doc/dbus-python/)
+[`@dbus.service.method`](https://dbus.freedesktop.org/doc/dbus-python/dbus.service.html#dbus.service.method)
+decorator.
+
 If you want to contribute a template, look at
 dbusmock/templates/upower.py for a real-life implementation. You can
 copy dbusmock/templates/SKELETON to your new template file name and
