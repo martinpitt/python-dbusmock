@@ -47,7 +47,7 @@ rm -rf python-%{modname}.egg-info
 %{__python3} -m unittest -v
 
 %files -n python3-dbusmock
-%doc README.rst COPYING
+%doc README.md COPYING
 %{python3_sitelib}/*%{modname}*
 
 %changelog
