@@ -386,6 +386,10 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
               "self.my_state = True", and another method that returns it with
               "ret = self.my_state".
 
+              Methods can raise exceptions in the usual way, in particular
+              dbus.exceptions.DBusException:
+              <https://dbus.freedesktop.org/doc/dbus-python/dbus.html#dbus.DBusException>
+
               When specifying '', the method will not do anything (except
               logging) and return None.
 

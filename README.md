@@ -240,7 +240,7 @@ Have a look at the test suite for two real-live use cases:
  -   `tests/test_api.py` runs a mock on the session bus and exercises
      all available functionality, such as adding additional objects,
      properties, multiple methods, input arguments, return values, code
-     in methods, raising signals, and introspection.
+     in methods, sending signals, raising exceptions, and introspection.
 
 ## Documentation
 

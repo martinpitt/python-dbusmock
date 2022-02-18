@@ -134,6 +134,16 @@ assert args[2] == 5
         # check that it's logged correctly
         self.assertLog(b'^[0-9.]+ Do -1 {"foo": 42} 5$')
 
+    def test_exception(self):
+        '''raise a D-Bus exception'''
+
+        self.dbus_mock.AddMethod('', 'Do', '', 'i',
+                                 'raise dbus.exceptions.DBusException("no good", name="com.example.Error.NoGood")')
+        with self.assertRaises(dbus.exceptions.DBusException) as cm:
+            self.dbus_test.Do()
+        self.assertEqual(cm.exception.get_dbus_name(), 'com.example.Error.NoGood')
+        self.assertEqual(cm.exception.get_dbus_message(), 'no good')
+
     def test_methods_on_other_interfaces(self):
         '''methods on other interfaces'''
 
