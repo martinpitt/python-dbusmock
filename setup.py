@@ -3,7 +3,7 @@
 
 import setuptools
 
-with open('README.rst', encoding="UTF-8") as f:
+with open('README.md', encoding="UTF-8") as f:
     readme = f.read()
 
 with open('NEWS', 'r', encoding="UTF-8") as f:
