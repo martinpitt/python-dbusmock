@@ -256,6 +256,37 @@ def RemoveAdapter(self, device_name):
                        ])
 
 
+@dbus.service.method(BLUEZ_MOCK_IFACE,
+                     in_signature='s')
+def RemoveAdapterWithDevices(self, device_name):
+    '''Convenience method to remove a Bluetooth adapter and all
+       the devices associated to it
+    '''
+    adapter_path = '/org/bluez/' + device_name
+    adapter = mockobject.objects[adapter_path]
+    manager = mockobject.objects['/']
+
+    to_remove = []
+    for path in mockobject.objects:
+        if path.startswith(adapter_path + '/'):
+            to_remove.append(path)
+
+    for path in to_remove:
+        adapter.RemoveObject(path)
+        manager.EmitSignal(OBJECT_MANAGER_IFACE, 'InterfacesRemoved',
+                           'oas', [
+                               dbus.ObjectPath(path),
+                               [DEVICE_IFACE],
+                           ])
+
+    self.RemoveObject(adapter_path)
+    manager.EmitSignal(OBJECT_MANAGER_IFACE, 'InterfacesRemoved',
+                       'oas', [
+                           dbus.ObjectPath(adapter_path),
+                           [ADAPTER_IFACE],
+                       ])
+
+
 @dbus.service.method(DEVICE_IFACE,
                      in_signature='', out_signature='')
 def Pair(device):
