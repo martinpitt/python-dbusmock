@@ -1,4 +1,4 @@
-## [0.26.1] - UNRELEASED
+## [0.26.1] - 2022-02-25
 - Fix README content type to Markdown, to fix releasing to PyPi
 
 ## [0.26.0] - 2022-02-25
