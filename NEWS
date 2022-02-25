@@ -1,3 +1,9 @@
+## [0.26.0] - UNRELEASED
+- logind template: Add locking API (thanks Andy Holmes)
+- bluez5 template: Add RemoveDevice() and RemoveAdapterWithDevices() methods,
+  fix properties (thanks Bastien Nocera)
+- Documentation improvements, particularly wrt. raising errors
+
 ## [0.25.0] - 2021-12-25
 - bluez template: Implement adapter discovery, connect, disconnect, and removal
   (thanks Bastien Nocera)
