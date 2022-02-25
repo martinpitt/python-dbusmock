@@ -14,6 +14,7 @@ setuptools.setup(
     version=version,
     description='Mock D-Bus objects',
     long_description=readme,
+    long_description_content_type='text/markdown',
     author='Martin Pitt',
     author_email='martin.pitt@ubuntu.com',
     url='https://github.com/martinpitt/python-dbusmock',
