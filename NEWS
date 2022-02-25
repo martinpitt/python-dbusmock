@@ -1,4 +1,4 @@
-## [0.26.0] - UNRELEASED
+## [0.26.0] - 2022-02-25
 - logind template: Add locking API (thanks Andy Holmes)
 - bluez5 template: Add RemoveDevice() and RemoveAdapterWithDevices() methods,
   fix properties (thanks Bastien Nocera)
