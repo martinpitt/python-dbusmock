@@ -42,7 +42,24 @@ class DBusTestCase(unittest.TestCase):
 
         This gets stopped automatically in tearDownClass().
         '''
-        (DBusTestCase.session_bus_pid, addr) = cls.start_dbus()
+        with tempfile.NamedTemporaryFile(prefix='dbusmock_session_cfg') as c:
+            c.write(b'''<!DOCTYPE busconfig PUBLIC "-//freedesktop//DTD D-Bus Bus Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
+<busconfig>
+  <type>session</type>
+  <keep_umask/>
+  <listen>unix:tmpdir=/tmp</listen>
+  <!-- We do not add standard_session_servicedirs (i.e. we have *no* service directory). -->
+
+  <policy context="default">
+    <allow send_destination="*" eavesdrop="true"/>
+    <allow eavesdrop="true"/>
+    <allow own="*"/>
+  </policy>
+</busconfig>
+''')
+            c.flush()
+            (DBusTestCase.session_bus_pid, addr) = cls.start_dbus(conf=c.name)
         os.environ['DBUS_SESSION_BUS_ADDRESS'] = addr
 
     @classmethod
