@@ -37,34 +37,19 @@ class DBusTestCase(unittest.TestCase):
     system_bus_pid = None
 
     @classmethod
-    def start_session_bus(cls) -> None:
+    def __start_bus(cls, bus_type) -> None:
         '''Set up a private local session bus
 
         This gets stopped automatically at class teardown.
         '''
-        (DBusTestCase.session_bus_pid, addr) = cls.start_dbus()
-        os.environ['DBUS_SESSION_BUS_ADDRESS'] = addr
-
-        cls.addClassCleanup(setattr, DBusTestCase, 'session_bus_pid', None)
-        cls.addClassCleanup(os.environ.pop, 'DBUS_SESSION_BUS_ADDRESS')
-        cls.addClassCleanup(cls.stop_dbus, DBusTestCase.session_bus_pid)
-
-    @classmethod
-    def start_system_bus(cls) -> None:
-        '''Set up a private local system bus
-
-        This gets stopped automatically at class teardown.
-        '''
-        # create a temporary configuration which makes the fake bus actually
-        # appear a type "system"
-        with tempfile.NamedTemporaryFile(prefix='dbusmock_cfg') as c:
-            c.write(b'''<!DOCTYPE busconfig PUBLIC "-//freedesktop//DTD D-Bus Bus Configuration 1.0//EN"
+        with tempfile.NamedTemporaryFile(prefix=f'dbusmock_{bus_type}_cfg', mode='w') as c:
+            c.write(f'''<!DOCTYPE busconfig PUBLIC "-//freedesktop//DTD D-Bus Bus Configuration 1.0//EN"
  "http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
 <busconfig>
-  <type>system</type>
+  <type>{bus_type}</type>
   <keep_umask/>
   <listen>unix:tmpdir=/tmp</listen>
-  <!-- We do not add standard_system_servicedirs (i.e. we have *no* service directory). -->
+  <!-- We do not add standard_{bus_type}_servicedirs (i.e. we have *no* service directory). -->
 
   <policy context="default">
     <allow send_destination="*" eavesdrop="true"/>
@@ -74,12 +59,29 @@ class DBusTestCase(unittest.TestCase):
 </busconfig>
 ''')
             c.flush()
-            (DBusTestCase.system_bus_pid, addr) = cls.start_dbus(conf=c.name)
-        os.environ['DBUS_SYSTEM_BUS_ADDRESS'] = addr
+            (pid, addr) = cls.start_dbus(conf=c.name)
+        os.environ[f'DBUS_{bus_type.upper()}_BUS_ADDRESS'] = addr
+        setattr(cls, f'{bus_type}_bus_pid', pid)
 
-        cls.addClassCleanup(setattr, DBusTestCase, 'system_bus_pid', None)
-        cls.addClassCleanup(os.environ.pop, 'DBUS_SYSTEM_BUS_ADDRESS')
-        cls.addClassCleanup(cls.stop_dbus, DBusTestCase.system_bus_pid)
+        cls.addClassCleanup(setattr, cls, f'{bus_type}_bus_pid', None)
+        cls.addClassCleanup(os.environ.pop, f'DBUS_{bus_type.upper()}_BUS_ADDRESS')
+        cls.addClassCleanup(cls.stop_dbus, pid)
+
+    @classmethod
+    def start_session_bus(cls) -> None:
+        '''Set up a private local session bus
+
+        This gets stopped automatically at class teardown.
+        '''
+        DBusTestCase.__start_bus('session')
+
+    @classmethod
+    def start_system_bus(cls) -> None:
+        '''Set up a private local system bus
+
+        This gets stopped automatically at class teardown.
+        '''
+        DBusTestCase.__start_bus('system')
 
     @classmethod
     def start_dbus(cls, conf: str = None) -> Tuple[int, str]:
