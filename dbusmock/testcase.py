@@ -40,16 +40,20 @@ class DBusTestCase(unittest.TestCase):
     def start_session_bus(cls) -> None:
         '''Set up a private local session bus
 
-        This gets stopped automatically in tearDownClass().
+        This gets stopped automatically at class teardown.
         '''
         (DBusTestCase.session_bus_pid, addr) = cls.start_dbus()
         os.environ['DBUS_SESSION_BUS_ADDRESS'] = addr
+
+        cls.addClassCleanup(setattr, DBusTestCase, 'session_bus_pid', None)
+        cls.addClassCleanup(os.environ.pop, 'DBUS_SESSION_BUS_ADDRESS')
+        cls.addClassCleanup(cls.stop_dbus, DBusTestCase.session_bus_pid)
 
     @classmethod
     def start_system_bus(cls) -> None:
         '''Set up a private local system bus
 
-        This gets stopped automatically in tearDownClass().
+        This gets stopped automatically at class teardown.
         '''
         # create a temporary configuration which makes the fake bus actually
         # appear a type "system"
@@ -73,18 +77,9 @@ class DBusTestCase(unittest.TestCase):
             (DBusTestCase.system_bus_pid, addr) = cls.start_dbus(conf=c.name)
         os.environ['DBUS_SYSTEM_BUS_ADDRESS'] = addr
 
-    @classmethod
-    def tearDownClass(cls) -> None:
-        '''Stop private session/system buses'''
-
-        if DBusTestCase.session_bus_pid is not None:
-            cls.stop_dbus(DBusTestCase.session_bus_pid)
-            del os.environ['DBUS_SESSION_BUS_ADDRESS']
-            DBusTestCase.session_bus_pid = None
-        if DBusTestCase.system_bus_pid is not None:
-            cls.stop_dbus(DBusTestCase.system_bus_pid)
-            del os.environ['DBUS_SYSTEM_BUS_ADDRESS']
-            DBusTestCase.system_bus_pid = None
+        cls.addClassCleanup(setattr, DBusTestCase, 'system_bus_pid', None)
+        cls.addClassCleanup(os.environ.pop, 'DBUS_SYSTEM_BUS_ADDRESS')
+        cls.addClassCleanup(cls.stop_dbus, DBusTestCase.system_bus_pid)
 
     @classmethod
     def start_dbus(cls, conf: str = None) -> Tuple[int, str]:
