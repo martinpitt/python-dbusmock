@@ -50,7 +50,7 @@ class StaticCodeTests(unittest.TestCase):
         subprocess.check_call(pylint +
                               ['--score=n',
                                '--disable=missing-module-docstring,missing-class-docstring,missing-function-docstring',
-                               '--disable=too-many-public-methods,R0801', 'tests/'])
+                               '--disable=too-many-public-methods,too-many-lines,R0801', 'tests/'])
 
     @unittest.skipUnless(mypy, 'mypy not installed')
     def test_types(self):  # pylint: disable=no-self-use
