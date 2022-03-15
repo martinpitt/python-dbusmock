@@ -11,6 +11,7 @@ __copyright__ = '(c) 2012 Canonical Ltd.'
 
 import errno
 import os
+import shutil
 import signal
 import subprocess
 import sys
@@ -35,6 +36,29 @@ class DBusTestCase(unittest.TestCase):
     '''
     session_bus_pid = None
     system_bus_pid = None
+    _DBusTestCase__datadir = ''
+
+    @classmethod
+    def get_services_dir(cls, system_bus: bool = False) -> str:
+        '''Returns the private services directory for the bus type in question.
+        This allows dropping in a .service file so that the dbus server inside
+        dbusmock can launch it.
+        '''
+        # NOTE: Explicitly use the attribute of DBusTestCase, as cls may be a
+        # different class depending on how the method is called.
+        if system_bus:
+            services_dir = 'system_services'
+        else:
+            services_dir = 'services'
+        if not DBusTestCase._DBusTestCase__datadir:
+            DBusTestCase._DBusTestCase__datadir = tempfile.mkdtemp(prefix='dbusmock_data_')
+            cls.addClassCleanup(setattr, DBusTestCase, '_DBusTestCase__datadir', '')
+            cls.addClassCleanup(shutil.rmtree, DBusTestCase._DBusTestCase__datadir)
+
+            os.mkdir(os.path.join(DBusTestCase._DBusTestCase__datadir, 'system_services'))
+            os.mkdir(os.path.join(DBusTestCase._DBusTestCase__datadir, 'services'))
+
+        return os.path.join(DBusTestCase._DBusTestCase__datadir, services_dir)
 
     @classmethod
     def __start_bus(cls, bus_type) -> None:
@@ -42,14 +66,17 @@ class DBusTestCase(unittest.TestCase):
 
         This gets stopped automatically at class teardown.
         '''
-        with tempfile.NamedTemporaryFile(prefix=f'dbusmock_{bus_type}_cfg', mode='w') as c:
+        cls.get_services_dir()
+
+        with open(os.path.join(DBusTestCase._DBusTestCase__datadir, f'dbusmock_{bus_type}_cfg'), 'w', encoding='ascii') as c:
             c.write(f'''<!DOCTYPE busconfig PUBLIC "-//freedesktop//DTD D-Bus Bus Configuration 1.0//EN"
  "http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
 <busconfig>
   <type>{bus_type}</type>
   <keep_umask/>
   <listen>unix:tmpdir=/tmp</listen>
-  <!-- We do not add standard_{bus_type}_servicedirs (i.e. we have *no* service directory). -->
+  <!-- We do not add standard_{bus_type}_servicedirs (i.e. we only have our private services directory). -->
+  <servicedir>{cls.get_services_dir(bus_type == 'system')}</servicedir>
 
   <policy context="default">
     <allow send_destination="*" eavesdrop="true"/>
@@ -251,3 +278,52 @@ class DBusTestCase(unittest.TestCase):
                         dbus_interface=MOCK_IFACE)
 
         return (daemon, obj)
+
+    @classmethod
+    def enable_service(cls, service, system_bus: bool = False) -> None:
+        '''Enable the given well known service name inside dbusmock
+
+        This symlinks a service file from the usual dbus service directories
+        into the dbusmock environment. Doing that allows the service to be
+        launched automatically if they are defined within $XDG_DATA_DIRS.
+
+        The daemon configuration is reloaded if a test bus is running.
+        '''
+        services_dir = 'system-services' if system_bus else 'services'
+        xdg_data_dirs = os.environ.get('XDG_DATA_DIRS') or '/usr/local/share/:/usr/share/'
+
+        for d in xdg_data_dirs.split(':'):
+            src = os.path.join(d, 'dbus-1', services_dir, service + '.service')
+            if os.path.exists(src):
+                os.symlink(src, os.path.join(cls.get_services_dir(system_bus), service + '.service'))
+                break
+        else:
+            raise AssertionError(f"Service {service} not found in XDG_DATA_DIRS ({xdg_data_dirs})")
+
+        dbus_pid = cls.system_bus_pid if system_bus else cls.session_bus_pid
+        if dbus_pid:
+            bus = cls.get_dbus(system_bus)
+            dbus_obj = bus.get_object('org.freedesktop.DBus', '/org/freedesktop/DBus')
+            dbus_if = dbus.Interface(dbus_obj, 'org.freedesktop.DBus')
+
+            dbus_if.ReloadConfig()
+
+    @classmethod
+    def disable_service(cls, service, system_bus: bool = False) -> None:
+        '''Disable the given well known service name inside dbusmock
+
+        This unlink's the .service file for the service and reloads the
+        daemon configuration if a test bus is running.
+        '''
+        try:
+            os.unlink(os.path.join(cls.get_services_dir(system_bus), service + '.service'))
+        except OSError:
+            raise AssertionError(f"Service {service} not found") from None
+
+        dbus_pid = cls.system_bus_pid if system_bus else cls.session_bus_pid
+        if dbus_pid:
+            bus = cls.get_dbus(system_bus)
+            dbus_obj = bus.get_object('org.freedesktop.DBus', '/org/freedesktop/DBus')
+            dbus_if = dbus.Interface(dbus_obj, 'org.freedesktop.DBus')
+
+            dbus_if.ReloadConfig()

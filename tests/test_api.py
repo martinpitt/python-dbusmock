@@ -14,6 +14,7 @@ import sys
 import os
 import tempfile
 import subprocess
+import shutil
 import time
 import importlib.util
 import tracemalloc
@@ -910,6 +911,89 @@ class TestSubclass(dbusmock.DBusTestCase):
 
         m.AddProperty('org.test.MyMockI', 'blurb', 5)
         self.assertEqual(m.GetAll('org.test.MyMockI'), {'blurb': 5})
+
+
+class TestServiceAutostart(dbusmock.DBusTestCase):
+    '''Test service starting DBusMockObject'''
+
+    @classmethod
+    def setUpClass(cls):
+        cls.xdg_data_dir = tempfile.mkdtemp(prefix='dbusmock_xdg_')
+        cls.addClassCleanup(shutil.rmtree, cls.xdg_data_dir)
+
+        os.environ['XDG_DATA_DIRS'] = cls.xdg_data_dir
+
+        os.mkdir(os.path.join(cls.xdg_data_dir, 'dbus-1'))
+        system_dir = os.path.join(cls.xdg_data_dir, 'dbus-1', 'system-services')
+        session_dir = os.path.join(cls.xdg_data_dir, 'dbus-1', 'services')
+        os.mkdir(system_dir)
+        os.mkdir(session_dir)
+
+        with open(os.path.join(system_dir, 'org.TestSystem.service'), 'w', encoding='ascii') as s:
+            s.write('[D-BUS Service]\n' +
+                    'Name=org.TestSystem\n'
+                    'Exec=/usr/bin/python3 -c "import sys; from gi.repository import GLib, Gio; '
+                    '     Gio.bus_own_name(Gio.BusType.SYSTEM, \'org.TestSystem\', 0, None, None, lambda *args: sys.exit(0)); '
+                    '     GLib.MainLoop().run()"\n'
+                    'User=root')
+
+        with open(os.path.join(session_dir, 'org.TestSession.service'), 'w', encoding='ascii') as s:
+            s.write('[D-BUS Service]\n'
+                    'Name=org.TestSession\n'
+                    'Exec=/usr/bin/python3 -c "import sys; from gi.repository import GLib, Gio; '
+                    '     Gio.bus_own_name(Gio.BusType.SESSION, \'org.TestSession\', 0, None, None, lambda *args: sys.exit(0)); '
+                    '     GLib.MainLoop().run()"\n'
+                    'User=root')
+
+        cls.start_system_bus()
+        cls.start_session_bus()
+
+    def test_session_service_function_raise(self):
+        with self.assertRaises(AssertionError):
+            self.enable_service('does-not-exist')
+
+        with self.assertRaises(AssertionError):
+            self.disable_service('does-not-exist')
+
+    def test_session_service_isolation(self):
+        dbus_con = self.get_dbus(system_bus=False)
+        dbus_obj = dbus_con.get_object('org.freedesktop.DBus', '/org/freedesktop/DBus')
+        dbus_if = dbus.Interface(dbus_obj, 'org.freedesktop.DBus')
+
+        self.assertEqual(dbus_if.ListActivatableNames(), ['org.freedesktop.DBus'])
+        self.enable_service('org.TestSession')
+        self.addCleanup(self.disable_service, 'org.TestSession')
+        self.assertEqual(dbus_if.ListActivatableNames(), ['org.freedesktop.DBus', 'org.TestSession'])
+
+    def test_system_service_isolation(self):
+        dbus_con = self.get_dbus(system_bus=True)
+        dbus_obj = dbus_con.get_object('org.freedesktop.DBus', '/org/freedesktop/DBus')
+        dbus_if = dbus.Interface(dbus_obj, 'org.freedesktop.DBus')
+
+        self.assertEqual(dbus_if.ListActivatableNames(), ['org.freedesktop.DBus'])
+        self.enable_service('org.TestSystem', system_bus=True)
+        self.addCleanup(self.disable_service, 'org.TestSystem', system_bus=True)
+        self.assertEqual(dbus_if.ListActivatableNames(), ['org.freedesktop.DBus', 'org.TestSystem'])
+
+    def test_session_service_activation(self):
+        dbus_con = self.get_dbus(system_bus=False)
+        dbus_obj = dbus_con.get_object('org.freedesktop.DBus', '/org/freedesktop/DBus')
+        dbus_if = dbus.Interface(dbus_obj, 'org.freedesktop.DBus')
+
+        self.enable_service('org.TestSession')
+        self.addCleanup(self.disable_service, 'org.TestSession')
+
+        dbus_if.StartServiceByName('org.TestSession', 0)
+
+    def test_system_service_activation(self):
+        dbus_con = self.get_dbus(system_bus=True)
+        dbus_obj = dbus_con.get_object('org.freedesktop.DBus', '/org/freedesktop/DBus')
+        dbus_if = dbus.Interface(dbus_obj, 'org.freedesktop.DBus')
+
+        self.enable_service('org.TestSystem', system_bus=True)
+        self.addCleanup(self.disable_service, 'org.TestSystem', system_bus=True)
+
+        dbus_if.StartServiceByName('org.TestSystem', 0)
 
 
 if __name__ == '__main__':
