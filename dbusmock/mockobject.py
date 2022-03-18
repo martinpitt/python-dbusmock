@@ -11,6 +11,7 @@ __author__ = 'Martin Pitt'
 __copyright__ = '(c) 2012 Canonical Ltd.'
 
 import copy
+import functools
 import importlib
 import importlib.util
 import os
@@ -118,6 +119,22 @@ def _wrap_in_dbus_variant(value):
     if isinstance(value, str):
         return dbus.String(value, variant_level=1)
     raise dbus.exceptions.DBusException(f'could not wrap type {type(value)}')
+
+
+def loggedmethod(self, func):
+    """Decorator for a method to end in the call log"""
+
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        fname = func.__name__
+        log_args = args[1:]  # args[0] is self
+        self.log(fname + _format_args(log_args))
+        self.call_log.append((int(time.time()), fname, log_args))
+        self.MethodCalled(fname, log_args)
+
+        return func(*args, **kwargs)
+
+    return wrapper
 
 
 class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-attributes
@@ -548,6 +565,8 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
             # pylint: disable=protected-access
             fn = getattr(module, symbol)
             if ('_dbus_interface' in dir(fn) and ('_dbus_is_signal' not in dir(fn) or not fn._dbus_is_signal)):
+                fn = loggedmethod(self, fn)
+
                 # for dbus-python compatibility, add methods as callables
                 setattr(self.__class__, symbol, fn)
                 self.methods.setdefault(fn._dbus_interface, {})[str(symbol)] = (
