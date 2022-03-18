@@ -667,7 +667,7 @@ MAIN_IFACE = 'universe.Ultimate'
 SYSTEM_BUS = False
 
 def load(mock, parameters):
-    mock.AddMethods(MAIN_IFACE, [('Answer', '', 'i', 'ret = 42')])
+    mock.AddMethods(MAIN_IFACE, [('Answer', 's', 'i', 'ret = 42')])
 ''')
             my_template.flush()
             (p_mock, dbus_ultimate) = self.spawn_server_template(
@@ -681,7 +681,18 @@ def load(mock, parameters):
             self.assertFalse(os.path.exists(my_template.name + 'c'))
             self.assertFalse(os.path.exists(importlib.util.cache_from_source(my_template.name)))
 
-        self.assertEqual(dbus_ultimate.Answer(), 42)
+        loop = GLib.MainLoop()
+        caught_signals = []
+
+        def method_called(method, args, **_):
+            caught_signals.append((method, args))
+            loop.quit()
+
+        dbus_mock = dbus.Interface(dbus_ultimate, dbusmock.MOCK_IFACE)
+        dbus_mock.connect_to_signal('MethodCalled', method_called)
+
+        self.assertEqual(dbus_ultimate.Answer("foo"), 42)
+        self.assertEqual(dbus_ultimate.Answer("bar"), 42)
 
         # should appear in introspection
         xml = dbus_ultimate.Introspect()
@@ -691,6 +702,23 @@ def load(mock, parameters):
         # should not have ObjectManager API by default
         self.assertRaises(dbus.exceptions.DBusException,
                           dbus_ultimate.GetManagedObjects)
+
+        # Call should have been registered
+        mock_calls = dbus_mock.GetMethodCalls('Answer')
+        self.assertEqual(len(mock_calls), 2)
+        self.assertEqual(mock_calls[0][1], ['foo'])
+        self.assertEqual(mock_calls[1][1], ['bar'])
+
+        # Check signals
+        GLib.timeout_add(5000, loop.quit)
+        loop.run()
+
+        #  only one signal because we call loop.quit() in the handler
+        self.assertEqual(len(caught_signals), 1)
+        method, args = caught_signals[0]
+        self.assertEqual(method, 'Answer')
+        self.assertEqual(len(args), 1)
+        self.assertEqual(args[0], 'foo')
 
     def test_static_method(self):
         '''Static method in a template'''
@@ -706,9 +734,9 @@ def load(mock, parameters):
     pass
 
 @dbus.service.method(MAIN_IFACE,
-                     in_signature='',
+                     in_signature='s',
                      out_signature='i')
-def Answer(self):
+def Answer(self, string):
     return 42
 ''')
             my_template.flush()
@@ -718,12 +746,39 @@ def Answer(self):
             self.addCleanup(p_mock.terminate)
             self.addCleanup(p_mock.stdout.close)
 
-        self.assertEqual(dbus_ultimate.Answer(), 42)
+        loop = GLib.MainLoop()
+        caught_signals = []
 
+        def method_called(method, args, **_):
+            caught_signals.append((method, args))
+            loop.quit()
+
+        dbus_mock = dbus.Interface(dbus_ultimate, dbusmock.MOCK_IFACE)
+        dbus_mock.connect_to_signal('MethodCalled', method_called)
+
+        self.assertEqual(dbus_ultimate.Answer("foo"), 42)
+        self.assertEqual(dbus_ultimate.Answer("bar"), 42)
         # should appear in introspection
         xml = dbus_ultimate.Introspect()
         self.assertIn('<interface name="universe.Ultimate">', xml)
         self.assertIn('<method name="Answer">', xml)
+
+        # Call should have been registered
+        mock_calls = dbus_mock.GetMethodCalls('Answer')
+        self.assertEqual(len(mock_calls), 2)
+        self.assertEqual(mock_calls[0][1], ['foo'])
+        self.assertEqual(mock_calls[1][1], ['bar'])
+
+        # Check signals
+        GLib.timeout_add(5000, loop.quit)
+        loop.run()
+
+        #  only one signal because we call loop.quit() in the handler
+        self.assertEqual(len(caught_signals), 1)
+        method, args = caught_signals[0]
+        self.assertEqual(method, 'Answer')
+        self.assertEqual(len(args), 1)
+        self.assertEqual(args[0], 'foo')
 
     def test_local_nonexisting(self):
         self.assertRaises(ImportError, self.spawn_server_template, '/non/existing.py')
