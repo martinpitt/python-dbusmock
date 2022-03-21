@@ -24,7 +24,10 @@ su -s /bin/sh - build << EOF
 set -ex
 cp -r $(pwd) /tmp/source
 cd /tmp/source
-python3 -m unittest -v
+python3 -m unittest -v || {
+  [ -z "$DEBUG" ] || sleep infinity
+  exit 1
+}
 
 # massively parallel test to check for races
 for i in \$(seq 100); do
