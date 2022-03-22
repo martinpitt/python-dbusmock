@@ -144,6 +144,7 @@ assert args[2] == 5
             self.dbus_test.Do()
         self.assertEqual(cm.exception.get_dbus_name(), 'com.example.Error.NoGood')
         self.assertEqual(cm.exception.get_dbus_message(), 'no good')
+        self.assertLog(b'\n[0-9.]+ Do raised: com.example.Error.NoGood:.*\n')
 
     def test_methods_on_other_interfaces(self):
         '''methods on other interfaces'''
