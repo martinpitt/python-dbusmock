@@ -1,3 +1,6 @@
+## [0.27.2] - UNRELEASED
+- packit: Really fix Fedora dist-git syncing
+
 ## [0.27.1] - 2022-03-22
 - packit: Fix Fedora dist-git syncing
 
