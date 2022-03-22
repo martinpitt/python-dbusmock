@@ -7,7 +7,7 @@ upstream_package_name: python-dbusmock
 downstream_package_name: python-dbusmock
 
 files_to_sync:
-  - packit.yml
+  - packit.yaml
   - src: packaging/python-dbusmock.spec
     dest: python-dbusmock.spec
 
