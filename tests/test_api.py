@@ -197,21 +197,22 @@ assert args[2] == 5
                 self.dbus_test.Do(*args)
                 self.fail(f'method call did not raise an error for signature "{signature}" and arguments {args}')
             except dbus.exceptions.DBusException as e:
+                self.assertEqual(e.get_dbus_name(), 'org.freedesktop.DBus.Error.InvalidArgs')
                 self.assertIn(err, str(e))
 
         # not enough arguments
-        check('i', [], 'TypeError: More items found')
-        check('is', [1], 'TypeError: More items found')
+        check('i', [], 'More items found')
+        check('is', [1], 'More items found')
 
         # too many arguments
-        check('', [1], 'TypeError: Fewer items found')
-        check('i', [1, 'hello'], 'TypeError: Fewer items found')
+        check('', [1], 'Fewer items found')
+        check('i', [1, 'hello'], 'Fewer items found')
 
         # type mismatch
         check('u', [-1], 'convert negative value to unsigned')
-        check('i', ['hello'], 'TypeError')
+        check('i', ['hello'], 'dbus.String')
         check('i', ['hello'], 'integer')
-        check('s', [1], 'TypeError: Expected a string')
+        check('s', [1], 'Expected a string')
 
     def test_add_object(self):
         '''add a new object'''
@@ -536,21 +537,22 @@ assert args[2] == 5
                 self.dbus_mock.EmitSignal('', 's', signature, args)
                 self.fail(f'EmitSignal did not raise an error for signature "{signature}" and arguments {args}')
             except dbus.exceptions.DBusException as e:
+                self.assertEqual(e.get_dbus_name(), 'org.freedesktop.DBus.Error.InvalidArgs')
                 self.assertIn(err, str(e))
 
         # not enough arguments
-        check('i', [], 'TypeError: More items found')
-        check('is', [1], 'TypeError: More items found')
+        check('i', [], 'More items found')
+        check('is', [1], 'More items found')
 
         # too many arguments
-        check('', [1], 'TypeError: Fewer items found')
-        check('i', [1, 'hello'], 'TypeError: Fewer items found')
+        check('', [1], 'Fewer items found')
+        check('i', [1, 'hello'], 'Fewer items found')
 
         # type mismatch
         check('u', [-1], 'convert negative value to unsigned')
-        check('i', ['hello'], 'TypeError')
+        check('i', ['hello'], 'dbus.String')
         check('i', ['hello'], 'integer')
-        check('s', [1], 'TypeError: Expected a string')
+        check('s', [1], 'Expected a string')
 
     def test_dbus_get_log(self):
         '''query call logs over D-Bus'''
