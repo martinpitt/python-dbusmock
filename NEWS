@@ -1,4 +1,4 @@
-## [0.27.0] - UNRELEASED
+## [0.27.0] - 2022-03-22
 - Do not register standard session service directories, add API to enable selected services (thanks Benjamin Berg)
 - Log static method calls from templates (thanks Peter Hutterer)
 
