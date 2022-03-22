@@ -683,36 +683,40 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
         This gets "instantiated" in AddMethod(). Execute the code snippet of
         the method and return the "ret" variable if it was set.
         '''
-        # print('mock_method', dbus_method, self, in_signature, args, kwargs, file=sys.stderr)
+        # print('mock_method', dbus_method, self, in_signature, args, _, file=sys.stderr)
 
         try:
-            # convert types of arguments according to signature, using
-            # MethodCallMessage.append(); this will also provide type/length
-            # checks, except for the case of an empty signature
-            if in_signature == '' and len(args) > 0:
-                raise TypeError('Fewer items found in D-Bus signature than in Python arguments')
-            m = dbus.connection.MethodCallMessage('a.b', '/a', 'a.b', 'a')
-            m.append(signature=in_signature, *args)
-            args = m.get_args_list()
+            try:
+                # convert types of arguments according to signature, using
+                # MethodCallMessage.append(); this will also provide type/length
+                # checks, except for the case of an empty signature
+                if in_signature == '' and len(args) > 0:
+                    raise TypeError('Fewer items found in D-Bus signature than in Python arguments')
+                m = dbus.connection.MethodCallMessage('a.b', '/a', 'a.b', 'a')
+                m.append(signature=in_signature, *args)
+                args = m.get_args_list()
+            except Exception as e:
+                raise dbus.exceptions.DBusException(f'Invalid arguments: {str(e)}',
+                                                    name='org.freedesktop.DBus.Error.InvalidArgs')
+
+            self.log(dbus_method + _format_args(args))
+            self.call_log.append((int(time.time()), str(dbus_method), args))
+            self.MethodCalled(dbus_method, args)
+
+            # The code may be a Python 3 string to interpret, or may be a function
+            # object (if AddMethod was called from within Python itself, rather than
+            # over D-Bus).
+            code = self.methods[interface][dbus_method][2]
+            if code and isinstance(code, types.FunctionType):
+                return code(self, *args)
+            if code:
+                loc = locals().copy()
+                exec(code, globals(), loc)  # pylint: disable=exec-used
+                if 'ret' in loc:
+                    return loc['ret']
         except Exception as e:
-            raise dbus.exceptions.DBusException(f'Invalid arguments: {str(e)}',
-                                                name='org.freedesktop.DBus.Error.InvalidArgs')
-
-        self.log(dbus_method + _format_args(args))
-        self.call_log.append((int(time.time()), str(dbus_method), args))
-        self.MethodCalled(dbus_method, args)
-
-        # The code may be a Python 3 string to interpret, or may be a function
-        # object (if AddMethod was called from within Python itself, rather than
-        # over D-Bus).
-        code = self.methods[interface][dbus_method][2]
-        if code and isinstance(code, types.FunctionType):
-            return code(self, *args)
-        if code:
-            loc = locals().copy()
-            exec(code, globals(), loc)  # pylint: disable=exec-used
-            if 'ret' in loc:
-                return loc['ret']
+            self.log(dbus_method + ' raised: ' + str(e))
+            raise e
 
         return None
 
