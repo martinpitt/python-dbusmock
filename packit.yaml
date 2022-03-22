@@ -6,6 +6,11 @@ copy_upstream_release_description: true
 upstream_package_name: python-dbusmock
 downstream_package_name: python-dbusmock
 
+files_to_sync:
+  - packit.yml
+  - src: packaging/python-dbusmock.spec
+    dest: python-dbusmock.spec
+
 jobs:
   - job: copr_build
     trigger: pull_request
