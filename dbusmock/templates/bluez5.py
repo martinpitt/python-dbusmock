@@ -36,6 +36,9 @@ MEDIA_IFACE = 'org.bluez.Media1'
 NETWORK_SERVER_IFACE = 'org.bluez.Network1'
 DEVICE_IFACE = 'org.bluez.Device1'
 
+# The device class of some arbitrary Android phone.
+MOCK_PHONE_CLASS = 5898764
+
 
 @dbus.service.method(AGENT_MANAGER_IFACE,
                      in_signature='os', out_signature='')
@@ -296,7 +299,7 @@ def Pair(device):
             name='org.bluez.Error.AlreadyExists')
     device_address = device.props[DEVICE_IFACE]['Address']
     adapter_device_name = os.path.basename(device.props[DEVICE_IFACE]['Adapter'])
-    device.PairDevice(adapter_device_name, device_address)
+    device.PairDevice(adapter_device_name, device_address, MOCK_PHONE_CLASS)
 
 
 @dbus.service.method(DEVICE_IFACE,
@@ -411,7 +414,7 @@ def AddDevice(self, adapter_device_name, device_address, alias):
 
 @dbus.service.method(BLUEZ_MOCK_IFACE,
                      in_signature='ssi', out_signature='')
-def PairDevice(_self, adapter_device_name, device_address, class_=5898764):
+def PairDevice(_self, adapter_device_name, device_address, class_=MOCK_PHONE_CLASS):
     '''Convenience method to mark an existing device as paired.
 
     You have to specify a device address which must be a valid Bluetooth
