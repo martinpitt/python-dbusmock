@@ -144,12 +144,16 @@ def loggedmethod(self, func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         fname = func.__name__
-        log_args = args[1:]  # args[0] is self
-        self.log(fname + _format_args(log_args))
-        self.call_log.append((int(time.time()), fname, log_args))
-        self.MethodCalled(fname, log_args)
+        self_arg, args = args[0], args[1:]
 
-        return func(*args, **kwargs)
+        in_signature = getattr(func, '_dbus_in_signature', '')
+        args = _convert_args(in_signature, args)
+
+        self.log(fname + _format_args(args))
+        self.call_log.append((int(time.time()), fname, args))
+        self.MethodCalled(fname, args)
+
+        return func(*[self_arg, *args], **kwargs)
 
     return wrapper
 
