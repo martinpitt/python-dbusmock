@@ -121,6 +121,23 @@ def _wrap_in_dbus_variant(value):
     raise dbus.exceptions.DBusException(f'could not wrap type {type(value)}')
 
 
+def _convert_args(signature: str, args: Tuple[Any, ...]) -> List[Any]:
+    """
+    Convert types of arguments according to signature, using
+    MethodCallMessage.append(); this will also provide type/length
+    checks, except for the case of an empty signature
+    """
+    try:
+        if signature == '' and len(args) > 0:
+            raise TypeError('Fewer items found in D-Bus signature than in Python arguments')
+        m = dbus.connection.MethodCallMessage('a.b', '/a', 'a.b', 'a')
+        m.append(signature=signature, *args)
+        return m.get_args_list()
+    except Exception as e:
+        raise dbus.exceptions.DBusException(f'Invalid arguments: {str(e)}',
+                                            name='org.freedesktop.DBus.Error.InvalidArgs')
+
+
 def loggedmethod(self, func):
     """Decorator for a method to end in the call log"""
 
@@ -586,7 +603,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
     @dbus.service.method(MOCK_IFACE,
                          in_signature='sssav',
                          out_signature='')
-    def EmitSignal(self, interface: str, name: str, signature: str, args: List[Any]) -> None:
+    def EmitSignal(self, interface: str, name: str, signature: str, sigargs: Tuple[Any, ...]) -> None:
         '''Emit a signal from the object.
 
         interface: D-Bus interface to send the signal from. For convenience you
@@ -603,18 +620,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
         if not interface:
             interface = self.interface
 
-        try:
-            # convert types of arguments according to signature, using
-            # MethodCallMessage.append(); this will also provide type/length
-            # checks, except for the case of an empty signature
-            if signature == '' and len(args) > 0:
-                raise TypeError('Fewer items found in D-Bus signature than in Python arguments')
-            m = dbus.connection.MethodCallMessage('a.b', '/a', 'a.b', 'a')
-            m.append(signature=signature, *args)
-            args = m.get_args_list()
-        except Exception as e:
-            raise dbus.exceptions.DBusException(f'Invalid arguments: {str(e)}',
-                                                name='org.freedesktop.DBus.Error.InvalidArgs')
+        args = _convert_args(signature, sigargs)
 
         fn = lambda self, *args: self.log(f'emit {self.path} {interface}.{name}{_format_args(args)}')
         fn.__name__ = str(name)
@@ -677,7 +683,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
                                            'oas', [dbus.ObjectPath(path),
                                                    objects[path].props])
 
-    def mock_method(self, interface: str, dbus_method: str, in_signature: str, *args, **_) -> Any:
+    def mock_method(self, interface: str, dbus_method: str, in_signature: str, *m_args, **_) -> Any:
         '''Master mock method.
 
         This gets "instantiated" in AddMethod(). Execute the code snippet of
@@ -686,18 +692,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
         # print('mock_method', dbus_method, self, in_signature, args, _, file=sys.stderr)
 
         try:
-            try:
-                # convert types of arguments according to signature, using
-                # MethodCallMessage.append(); this will also provide type/length
-                # checks, except for the case of an empty signature
-                if in_signature == '' and len(args) > 0:
-                    raise TypeError('Fewer items found in D-Bus signature than in Python arguments')
-                m = dbus.connection.MethodCallMessage('a.b', '/a', 'a.b', 'a')
-                m.append(signature=in_signature, *args)
-                args = m.get_args_list()
-            except Exception as e:
-                raise dbus.exceptions.DBusException(f'Invalid arguments: {str(e)}',
-                                                    name='org.freedesktop.DBus.Error.InvalidArgs')
+            args = _convert_args(in_signature, m_args)
 
             self.log(dbus_method + _format_args(args))
             self.call_log.append((int(time.time()), str(dbus_method), args))
