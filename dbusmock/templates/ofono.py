@@ -45,7 +45,7 @@ def load(mock, parameters):
                    'ret = [(m, objects[m].GetAll("org.ofono.Modem")) for m in self.modems]')
 
     if not parameters.get('no_modem', False):
-        mock.AddModem(parameters.get('ModemName', 'ril_0'), dbus.Dictionary({}, signature='sv'))
+        mock.AddModem(parameters.get('ModemName', 'ril_0'), {})
 
 
 #  interface org.ofono.Modem {
