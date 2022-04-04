@@ -191,8 +191,11 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
         self._reset(props)
 
     def __del__(self) -> None:
-        if self.logfile and self.is_logfile_owner:
-            self.logfile.close()
+        try:
+            if self.logfile and self.is_logfile_owner:
+                self.logfile.close()
+        except AttributeError:
+            pass
 
     def _set_up_object_manager(self) -> None:
         '''Set up this mock object as a D-Bus ObjectManager.'''
