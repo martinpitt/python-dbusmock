@@ -141,7 +141,6 @@ class TestBlueZ5(dbusmock.DBusTestCase):
         self.assertIn('Controller 00:01:02:03:04:05 my-computer [default]',
                       out)
 
-    @unittest.skip('flaky test')
     def test_one_device(self):
         # Add an adapter.
         adapter_name = 'hci0'
@@ -169,7 +168,6 @@ class TestBlueZ5(dbusmock.DBusTestCase):
         self.assertIn('Blocked: no', out)
         self.assertIn('Connected: no', out)
 
-    @unittest.skip('flaky test')
     def test_pairing_device(self):
         # Add an adapter.
         adapter_name = 'hci0'
@@ -184,7 +182,7 @@ class TestBlueZ5(dbusmock.DBusTestCase):
         self.assertEqual(path, '/org/bluez/' + adapter_name + '/dev_' + address.replace(':', '_'))
 
         # Pair with the device.
-        self.dbusmock_bluez.PairDevice(adapter_name, address)
+        self.dbusmock_bluez.PairDevice(adapter_name, address, 5898764)
 
         # Check the device’s properties.
         out = '\n'.join(_run_bluetoothctl('info ' + address))
