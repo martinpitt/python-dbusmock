@@ -414,7 +414,7 @@ def AddDevice(self, adapter_device_name, device_address, alias):
 
 @dbus.service.method(BLUEZ_MOCK_IFACE,
                      in_signature='ssi', out_signature='')
-def PairDevice(_self, adapter_device_name, device_address, class_=MOCK_PHONE_CLASS):
+def PairDevice(_self, adapter_device_name, device_address, class_):
     '''Convenience method to mark an existing device as paired.
 
     You have to specify a device address which must be a valid Bluetooth
