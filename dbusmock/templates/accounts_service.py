@@ -60,8 +60,7 @@ def emit_properties_changed(mock, interface=MAIN_IFACE, properties=None):
 
 @dbus.service.method(MOCK_IFACE, in_signature='xssa{sv}a{sv}',
                      out_signature='o')
-def AddUser(self, uid, username, password=DEFAULT_USER_PASSWORD,
-            overrides=None, password_policy_overrides=None):
+def AddUser(self, uid, username, password, overrides, password_policy_overrides):
     '''Add user via uid and username and optionally overriding properties
 
     Returns the new object path.
@@ -169,7 +168,7 @@ def CreateUser(self, name, fullname, account_type):
     self.users_auto_uids += 1
 
     return self.AddUser(self.users_auto_uids, name, DEFAULT_USER_PASSWORD, {
-        'RealName': fullname, 'AccountType': account_type})
+        'RealName': fullname, 'AccountType': account_type}, {})
 
 
 @dbus.service.method(MAIN_IFACE, in_signature='xb')
