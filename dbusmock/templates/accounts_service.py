@@ -326,7 +326,7 @@ def SetIconFile(self, icon_file):
     set_user_property(self, 'IconFile', icon_file)
 
 
-@dbus.service.method(USER_IFACE, in_signature='s')
+@dbus.service.method(USER_IFACE, in_signature='b')
 def SetLocked(self, locked):
     set_user_property(self, 'Locked', locked)
 
