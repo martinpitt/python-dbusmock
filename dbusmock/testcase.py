@@ -222,6 +222,10 @@ class DBusTestCase(unittest.TestCase):
         argv.append(path)
         argv.append(interface)
 
+        bus = cls.get_dbus(system_bus)
+        if bus.name_has_owner(name):
+            raise AssertionError(f'Trying to spawn a server for name {name} but it is already owned!')
+
         # pylint: disable=consider-using-with
         daemon = subprocess.Popen(argv, stdout=stdout)
 
