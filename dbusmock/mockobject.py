@@ -607,6 +607,21 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
         self._template = template
         self._template_parameters = parameters
 
+    def _emit_signal(self, interface: str, name: str, signature: str, sigargs: Tuple[Any, ...]) -> None:
+        # pylint: disable=protected-access
+        if not interface:
+            interface = self.interface
+
+        args = _convert_args(signature, sigargs)
+
+        sig = dbus.lowlevel.SignalMessage(self.path, interface, name)
+        sig.append(*args, signature=signature)
+
+        for location in self.locations:
+            conn = location[0]
+            conn.send_message(sig)
+        self.log(f'emit {self.path} {interface}.{name}{_format_args(args)}')
+
     @dbus.service.method(MOCK_IFACE,
                          in_signature='sssav',
                          out_signature='')
@@ -623,19 +638,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
         args: variant array with signal arguments; must match order and type in
               "signature"
         '''
-        # pylint: disable=protected-access
-        if not interface:
-            interface = self.interface
-
-        args = _convert_args(signature, sigargs)
-
-        fn = lambda self, *args: self.log(f'emit {self.path} {interface}.{name}{_format_args(args)}')
-        fn.__name__ = str(name)
-        dbus_fn = dbus.service.signal(interface)(fn)
-        dbus_fn._dbus_signature = signature
-        dbus_fn._dbus_args = [f'arg{i}' for i in range(1, len(args) + 1)]
-
-        dbus_fn(self, *args)
+        self._emit_signal(interface, name, signature, sigargs)
 
     @dbus.service.method(MOCK_IFACE,
                          in_signature='',
