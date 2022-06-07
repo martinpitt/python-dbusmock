@@ -135,6 +135,12 @@ assert args[2] == 5
         # check that it's logged correctly
         self.assertLog(b'^[0-9.]+ Do -1 {"foo": 42} 5$')
 
+    def test_multi_output(self):
+        '''multiple output values'''
+
+        self.dbus_mock.AddMethod('', 'AddSub', 'ii', 'ii', 'ret = (args[0] + args[1], args[0] - args[1])')
+        self.assertEqual(self.dbus_test.AddSub(3, 5), (8, -2))
+
     def test_exception(self):
         '''raise a D-Bus exception'''
 
