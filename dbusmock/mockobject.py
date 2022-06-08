@@ -607,7 +607,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
         self._template = template
         self._template_parameters = parameters
 
-    def _emit_signal(self, interface: str, name: str, signature: str, sigargs: Tuple[Any, ...]) -> None:
+    def _emit_signal(self, interface: str, name: str, signature: str, sigargs: Tuple[Any, ...], details: PropsType) -> None:
         # pylint: disable=protected-access
         if not interface:
             interface = self.interface
@@ -616,6 +616,9 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
 
         sig = dbus.lowlevel.SignalMessage(self.path, interface, name)
         sig.append(*args, signature=signature)
+        dest = details.get("destination", None)
+        if dest is not None:
+            sig.set_destination(dest)
 
         for location in self.locations:
             conn = location[0]
@@ -638,7 +641,27 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
         args: variant array with signal arguments; must match order and type in
               "signature"
         '''
-        self._emit_signal(interface, name, signature, sigargs)
+        self._emit_signal(interface, name, signature, sigargs, {})
+
+    @dbus.service.method(MOCK_IFACE,
+                         in_signature='sssava{sv}',
+                         out_signature='')
+    def EmitSignalDetailed(self, interface: str, name: str, signature: str, sigargs: Tuple[Any, ...], details: PropsType) -> None:
+        '''Emit a signal from the object with extra details.
+
+        interface: D-Bus interface to send the signal from. For convenience you
+                   can specify '' here to add the method to the object's main
+                   interface (as specified on construction).
+        name: Name of the signal
+        signature: Signature of input arguments; for example "ias" for a signal
+                that takes an int32 and a string array as arguments; see
+                http://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-signatures
+        args: variant array with signal arguments; must match order and type in
+              "signature"
+        details: dictionary with a string key/value entries. Supported keys are:
+            "destination": for the signal destination
+        '''
+        self._emit_signal(interface, name, signature, sigargs, details)
 
     @dbus.service.method(MOCK_IFACE,
                          in_signature='',

@@ -472,6 +472,10 @@ assert args[2] == 5
                                       'SigTypeTest',
                                       'iuvao',
                                       [-42, 42, dbus.String('hello', variant_level=1), ['/a', '/b']])
+            self.dbus_mock.EmitSignalDetailed('',
+                                              'SigDetailed',
+                                              'su', ['details', 123],
+                                              {'destination': self.dbus_con.get_unique_name()})
 
         caught = []
         ml = GLib.MainLoop()
@@ -479,7 +483,7 @@ assert args[2] == 5
         def catch(*args, **kwargs):
             if kwargs['interface'].startswith('org.freedesktop.Test'):
                 caught.append((args, kwargs))
-            if len(caught) == 3:
+            if len(caught) == 4:
                 # we caught everything there is to catch, don't wait for the
                 # timeout
                 ml.quit()
@@ -528,6 +532,12 @@ assert args[2] == 5
         self.assertEqual(type(args[3][0]), dbus.ObjectPath)
         self.assertEqual(args[3][0].variant_level, 0)
 
+        # check SigDetailed
+        self.assertEqual(caught[3][0], ('details', 123))
+        self.assertEqual(caught[3][1]['member'], 'SigDetailed')
+        self.assertEqual(caught[3][1]['path'], '/')
+        self.assertEqual(caught[3][1]['interface'], 'org.freedesktop.Test.Main')
+
         # check correct logging
         with open(self.mock_log.name, encoding="UTF-8") as f:
             log = f.read()
@@ -535,6 +545,7 @@ assert args[2] == 5
         self.assertRegex(log, '[0-9.]+ emit / org.freedesktop.Test.Sub.SigTwoArgs "hello" 42\n')
         self.assertRegex(log, '[0-9.]+ emit / org.freedesktop.Test.Sub.SigTypeTest -42 42')
         self.assertRegex(log, r'[0-9.]+ emit / org.freedesktop.Test.Sub.SigTypeTest -42 42 "hello" \["/a", "/b"\]\n')
+        self.assertRegex(log, '[0-9.]+ emit / org.freedesktop.Test.Main.SigDetailed "details" 123\n')
 
     def test_signals_type_mismatch(self):
         '''emitting signals with wrong arguments'''
