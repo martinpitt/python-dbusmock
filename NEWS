@@ -1,3 +1,5 @@
+OBSOLETE: Release news of newer versions are contained in the git tag descriptions.
+
 ## [0.28.1] - 2022-06-28
 - Again works on RHEL/CentOS 8 (0.27 broke there), now in CI
 - Avoid glib GI dependency for main dbusmock, for running in virtualenv (thanks Allison Karlitskaya)
