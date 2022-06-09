@@ -10,6 +10,9 @@ jobs:
     steps:
       - name: Clone repository
         uses: actions/checkout@v2
+        with:
+          # need this to also fetch tags
+          fetch-depth: 0
 
       - name: Install dependencies
         run: |
@@ -28,12 +31,7 @@ jobs:
         run: python3 -m build --sdist
 
       - name: Create GitHub release
-        uses: docker://antonyurchenko/git-release:latest
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CHANGELOG_FILE: "NEWS"
-        with:
-          args: dist/python-dbusmock-*.tar.gz
+        uses: eloquent/github-release-action@v2
 
       - name: Create PyPy release
         uses: pypa/gh-action-pypi-publish@master
