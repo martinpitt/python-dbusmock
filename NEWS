@@ -1,4 +1,4 @@
-## [0.28.0] - UNRELEASED
+## [0.28.0] - 2022-06-19
 - Drop unmaintained and broken accountsservice template
 - testcase: Throw an error when spawning a well-known name that exists (thanks Benjamin Berg)
 - mockobject: Allow sending signals with extra details (thanks Peter Hutterer)
