@@ -1,10 +1,14 @@
 #!/bin/sh
 set -eux
 # install build dependencies
-dnf -y install python3-setuptools python3-gobject-base \
-    python3-dbus dbus-x11 python3-pycodestyle python3-pyflakes python3-pylint python3-pip \
-    upower NetworkManager bluez libnotify polkit power-profiles-daemon iio-sensor-proxy \
-    util-linux
+dnf -y install python3-setuptools python3 python3-gobject-base \
+    python3-dbus dbus-x11 util-linux \
+    upower NetworkManager bluez libnotify polkit
+
+if ! grep -q :el8 /etc/os-release; then
+    dnf -y install python3-pip python3-pycodestyle python3-pyflakes python3-pylint \
+        power-profiles-daemon iio-sensor-proxy
+fi
 
 # systemd's tools otherwise fail on "not been booted with systemd"
 mkdir -p /run/systemd/system
@@ -14,7 +18,7 @@ useradd build
 su -s /bin/sh - build << EOF
 set -ex
 cd /source
-pip3 install mypy
+grep -q platform:el8 /etc/os-release || pip3 install mypy
 python3 -m unittest -v || {
   [ -z "$DEBUG" ] || sleep infinity
   exit 1

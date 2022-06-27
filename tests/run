@@ -8,6 +8,6 @@ else
     RUNC="sudo docker"
 fi
 
-OS=${IMAGE#*/}
+OS=${IMAGE##*/}
 OS=${OS%:*}
 $RUNC run --interactive -e DEBUG=${DEBUG:-} --rm ${RUNC_OPTIONS:-} --volume `pwd`:/source:ro --workdir /source "$IMAGE" /bin/sh tests/run-$OS
