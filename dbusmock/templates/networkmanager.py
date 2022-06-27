@@ -17,7 +17,6 @@ __copyright__ = '(c) 2012 Canonical Ltd.'
 
 import uuid
 import binascii
-from dataclasses import dataclass
 
 import dbus
 
@@ -40,8 +39,8 @@ SYSTEM_BUS = True
 IS_OBJECT_MANAGER = True
 
 
-@dataclass(frozen=True)
-class NMState:
+# these really want to be dataclasses, but need to drop support for Python 3.6 for that
+class NMState:  # pylint: disable=too-few-public-methods
     '''Global state
 
     As per https://developer.gnome.org/NetworkManager/unstable/nm-dbus-types.html#NMState
@@ -56,8 +55,7 @@ class NMState:
     NM_STATE_CONNECTED_GLOBAL = 70
 
 
-@dataclass(frozen=True)
-class NMConnectivityState:
+class NMConnectivityState:  # pylint: disable=too-few-public-methods
     '''Connectvity state
 
     As per https://developer.gnome.org/NetworkManager/unstable/nm-dbus-types.html#NMConnectivityState
@@ -69,8 +67,7 @@ class NMConnectivityState:
     NM_CONNECTIVITY_FULL = 4
 
 
-@dataclass(frozen=True)
-class NMActiveConnectionState:
+class NMActiveConnectionState:  # pylint: disable=too-few-public-methods
     '''Active connection state
 
     As per https://developer.gnome.org/NetworkManager/unstable/nm-dbus-types.html#NMActiveConnectionState
@@ -82,8 +79,7 @@ class NMActiveConnectionState:
     NM_ACTIVE_CONNECTION_STATE_DEACTIVATED = 4
 
 
-@dataclass(frozen=True)
-class InfrastructureMode:
+class InfrastructureMode:  # pylint: disable=too-few-public-methods
     '''Infrastructure mode
 
     As per https://developer.gnome.org/NetworkManager/unstable/nm-dbus-types.html#NM80211Mode
@@ -101,8 +97,7 @@ class InfrastructureMode:
     }
 
 
-@dataclass(frozen=True)
-class DeviceState:
+class DeviceState:  # pylint: disable=too-few-public-methods
     '''Device states
 
     As per https://developer.gnome.org/NetworkManager/unstable/nm-dbus-types.html#NMDeviceState
@@ -122,8 +117,7 @@ class DeviceState:
     FAILED = 120
 
 
-@dataclass(frozen=True)
-class NM80211ApSecurityFlags:
+class NM80211ApSecurityFlags:  # pylint: disable=too-few-public-methods
     '''Security flags
 
     As per https://developer.gnome.org/NetworkManager/unstable/nm-dbus-types.html#NM80211ApSecurityFlags
@@ -148,8 +142,7 @@ class NM80211ApSecurityFlags:
     }
 
 
-@dataclass(frozen=True)
-class NM80211ApFlags:
+class NM80211ApFlags:  # pylint: disable=too-few-public-methods
     '''Device flags
 
     As per https://developer.gnome.org/NetworkManager/unstable/nm-dbus-types.html#NM80211ApFlags
