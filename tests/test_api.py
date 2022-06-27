@@ -994,7 +994,6 @@ class TestServiceAutostart(dbusmock.DBusTestCase):
     @classmethod
     def setUpClass(cls):
         cls.xdg_data_dir = tempfile.mkdtemp(prefix='dbusmock_xdg_')
-        cls.addClassCleanup(shutil.rmtree, cls.xdg_data_dir)
 
         os.environ['XDG_DATA_DIRS'] = cls.xdg_data_dir
 
@@ -1022,6 +1021,10 @@ class TestServiceAutostart(dbusmock.DBusTestCase):
 
         cls.start_system_bus()
         cls.start_session_bus()
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.xdg_data_dir)
 
     def test_session_service_function_raise(self):
         with self.assertRaises(AssertionError):

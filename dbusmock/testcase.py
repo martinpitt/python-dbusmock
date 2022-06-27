@@ -52,13 +52,26 @@ class DBusTestCase(unittest.TestCase):
             services_dir = 'services'
         if not DBusTestCase._DBusTestCase__datadir:
             DBusTestCase._DBusTestCase__datadir = tempfile.mkdtemp(prefix='dbusmock_data_')
-            cls.addClassCleanup(setattr, DBusTestCase, '_DBusTestCase__datadir', '')
-            cls.addClassCleanup(shutil.rmtree, DBusTestCase._DBusTestCase__datadir)
-
             os.mkdir(os.path.join(DBusTestCase._DBusTestCase__datadir, 'system_services'))
             os.mkdir(os.path.join(DBusTestCase._DBusTestCase__datadir, 'services'))
 
         return os.path.join(DBusTestCase._DBusTestCase__datadir, services_dir)
+
+    @classmethod
+    def tearDownClass(cls):
+        setattr(cls, '_DBusTestCase__datadir', '')
+        if cls._DBusTestCase__datadir:
+            shutil.rmtree(cls._DBusTestCase__datadir)
+
+        for bus_type in ['system', 'session']:
+            pid = getattr(cls, f'{bus_type}_bus_pid')
+            if pid:
+                try:
+                    os.environ.pop(f'DBUS_{bus_type.upper()}_BUS_ADDRESS')
+                except KeyError:
+                    pass
+                cls.stop_dbus(pid)
+                setattr(cls, f'{bus_type}_bus_pid', None)
 
     @classmethod
     def __start_bus(cls, bus_type) -> None:
@@ -89,10 +102,6 @@ class DBusTestCase(unittest.TestCase):
             (pid, addr) = cls.start_dbus(conf=c.name)
         os.environ[f'DBUS_{bus_type.upper()}_BUS_ADDRESS'] = addr
         setattr(cls, f'{bus_type}_bus_pid', pid)
-
-        cls.addClassCleanup(setattr, cls, f'{bus_type}_bus_pid', None)
-        cls.addClassCleanup(os.environ.pop, f'DBUS_{bus_type.upper()}_BUS_ADDRESS')
-        cls.addClassCleanup(cls.stop_dbus, pid)
 
     @classmethod
     def start_session_bus(cls) -> None:
