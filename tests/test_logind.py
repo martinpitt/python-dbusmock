@@ -134,13 +134,16 @@ class TestLogind(dbusmock.DBusTestCase):
         # Our inhibitor is held
         out = subprocess.check_output(['systemd-inhibit'],
                                       universal_newlines=True)
-        self.assertRegex(out, 'testcode +[0-9]+ +[^ ]* +[0-9]+ +[^ ]* +suspend purpose delay')
+        self.assertRegex(
+            out.replace('\n', ' '),
+            '(testcode +[0-9]+ +[^ ]* +[0-9]+ +[^ ]* +suspend purpose delay)|'
+            '(Who: testcode.*What: suspend.*Why: purpose.*Mode: delay.*)')
 
         del fd
         # No inhibitor is held
         out = subprocess.check_output(['systemd-inhibit'],
                                       universal_newlines=True)
-        self.assertRegex(out, 'No inhibitors')
+        self.assertRegex(out, 'No inhibitors|0 inhibitors listed')
 
 
 if __name__ == '__main__':
