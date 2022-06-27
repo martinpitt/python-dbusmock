@@ -164,7 +164,7 @@ class TestNetworkManager(dbusmock.DBusTestCase):
         self.assertRegex(aps, r'AP_3.*\sInfra')
 
         # connect to non-existing wifi
-        res = subprocess.run(['nmcli', 'dev', 'wifi', 'connect', 'nonexisting'], check=False, capture_output=True)
+        res = subprocess.run(['nmcli', 'dev', 'wifi', 'connect', 'nonexisting'], check=False, stderr=subprocess.PIPE)
         self.assertNotEqual(res.returncode, 0)
         self.assertRegex(res.stderr, b'No network.*nonexisting')
         self.assertRegex(self.read_device(), r'wlan0.*\sconnected\s+--')
