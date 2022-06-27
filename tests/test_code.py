@@ -18,9 +18,10 @@ import unittest
 pycodestyle = shutil.which('pycodestyle-3') or shutil.which('pycodestyle')
 pyflakes = shutil.which('pyflakes-3') or shutil.which('pyflakes3')
 
-if subprocess.call(['python3', '-m', 'pylint', '--version'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) == 0:
+try:
+    pylint_version = subprocess.check_output(['python3', '-m', 'pylint', '--version'], stderr=subprocess.DEVNULL)
     pylint = [sys.executable, '-m', 'pylint']
-else:
+except subprocess.CalledProcessError:
     pylint = []
 
 if subprocess.call(['python3', '-m', 'mypy', '--version'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) == 0:
@@ -39,6 +40,8 @@ class StaticCodeTests(unittest.TestCase):
         subprocess.check_call([pycodestyle, '--max-line-length=130', '--ignore=E124,E402,E731,W504', '.'])
 
     @unittest.skipUnless(pylint, 'pylint not installed')
+    @unittest.skipIf(sys.version_info >= (3, 11, 0) and b'pylint 2.13.7' in pylint_version,
+                     'pylint broken with Python 3.11; https://bugzilla.redhat.com/show_bug.cgi?id=2101222')
     def test_pylint(self):  # pylint: disable=no-self-use
         subprocess.check_call(pylint + ['setup.py'] + glob.glob('dbusmock/*.py'))
         # signatures/arguments are not determined by us, docstrings are a bit pointless, and code repetition
