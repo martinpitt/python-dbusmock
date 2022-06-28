@@ -1,3 +1,7 @@
+## [0.28.1] - UNRELEASED
+- Again works on RHEL/CentOS 8 (0.27 broke there), now in CI
+- Avoid glib GI dependency for main dbusmock, for running in virtualenv (thanks Allison Karlitskaya)
+
 ## [0.28.0] - 2022-06-19
 - Drop unmaintained and broken accountsservice template
 - testcase: Throw an error when spawning a well-known name that exists (thanks Benjamin Berg)
