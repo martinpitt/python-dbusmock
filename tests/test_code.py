@@ -22,6 +22,7 @@ try:
     pylint_version = subprocess.check_output(['python3', '-m', 'pylint', '--version'], stderr=subprocess.DEVNULL)
     pylint = [sys.executable, '-m', 'pylint']
 except subprocess.CalledProcessError:
+    pylint_version = b''
     pylint = []
 
 if subprocess.call(['python3', '-m', 'mypy', '--version'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) == 0:
