@@ -82,11 +82,11 @@ if __name__ == '__main__':
         else:
             args.interface = module.MAIN_IFACE
 
-    main_loop = GLib.MainLoop()
     bus = dbusmock.testcase.DBusTestCase.get_dbus(system_bus)
 
     # quit mock when the bus is going down
-    bus.add_signal_receiver(main_loop.quit, signal_name='Disconnected',
+    should_run = {True}
+    bus.add_signal_receiver(should_run.pop, signal_name='Disconnected',
                             path='/org/freedesktop/DBus/Local',
                             dbus_interface='org.freedesktop.DBus.Local')
 
@@ -117,4 +117,7 @@ if __name__ == '__main__':
         main_object.AddTemplate(args.template, parameters)
 
     dbusmock.mockobject.objects[args.path] = main_object
-    main_loop.run()
+
+    context = GLib.MainContext.default()
+    while should_run:
+        context.iteration(True)
