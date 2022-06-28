@@ -21,6 +21,9 @@ setuptools.setup(
     download_url='https://pypi.python.org/pypi/python-dbusmock/',
     license='LGPL 3+',
     packages=['dbusmock', 'dbusmock.templates'],
+    install_requires=[
+        'dbus-python',
+    ],
 
     classifiers=[
         'Programming Language :: Python',
