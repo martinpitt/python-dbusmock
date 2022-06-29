@@ -10,56 +10,50 @@ __author__ = 'Martin Pitt'
 __copyright__ = '(c) 2012 Canonical Ltd.'
 
 import glob
-import shutil
 import subprocess
 import sys
 import unittest
 
-pycodestyle = shutil.which('pycodestyle-3') or shutil.which('pycodestyle')
-pyflakes = shutil.which('pyflakes-3') or shutil.which('pyflakes3')
 
-try:
-    pylint_version = subprocess.check_output(['python3', '-m', 'pylint', '--version'], stderr=subprocess.DEVNULL)
-    pylint = [sys.executable, '-m', 'pylint']
-except subprocess.CalledProcessError:
-    pylint_version = b''
-    pylint = []
-
-if subprocess.call(['python3', '-m', 'mypy', '--version'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) == 0:
-    mypy = [sys.executable, '-m', 'mypy']
-else:
-    mypy = []
+checkers = {}
+for checker in ['pycodestyle', 'pyflakes', 'pylint', 'mypy']:
+    try:
+        checkers[checker] = subprocess.check_output(
+                [sys.executable, '-m', checker, '--version'], stderr=subprocess.DEVNULL)
+    except subprocess.CalledProcessError:
+        pass
 
 
 class StaticCodeTests(unittest.TestCase):
-    @unittest.skipUnless(pyflakes, 'pyflakes3 not installed')
+    @unittest.skipUnless('pyflakes' in checkers, 'pyflakes3 not installed')
     def test_pyflakes(self):  # pylint: disable=no-self-use
-        subprocess.check_call([pyflakes, '.'])
+        subprocess.check_call([sys.executable, '-m', 'pyflakes', '.'])
 
-    @unittest.skipUnless(pycodestyle, 'pycodestyle not installed')
+    @unittest.skipUnless('pycodestyle' in checkers, 'pycodestyle not installed')
     def test_codestyle(self):  # pylint: disable=no-self-use
-        subprocess.check_call([pycodestyle, '--max-line-length=130', '--ignore=E124,E402,E731,W504', '.'])
+        subprocess.check_call([sys.executable, '-m', 'pycodestyle',
+                               '--max-line-length=130', '--ignore=E124,E402,E731,W504', '.'])
 
-    @unittest.skipUnless(pylint, 'pylint not installed')
-    @unittest.skipIf(sys.version_info >= (3, 11, 0) and b'pylint 2.13.7' in pylint_version,
+    @unittest.skipUnless('pylint' in checkers, 'pylint not installed')
+    @unittest.skipIf(sys.version_info >= (3, 11, 0) and b'pylint 2.13.7' in checkers.get('pylint', b''),
                      'pylint broken with Python 3.11; https://bugzilla.redhat.com/show_bug.cgi?id=2101222')
     def test_pylint(self):  # pylint: disable=no-self-use
-        subprocess.check_call(pylint + ['setup.py'] + glob.glob('dbusmock/*.py'))
+        subprocess.check_call([sys.executable, '-m', 'pylint', 'setup.py'] + glob.glob('dbusmock/*.py'))
         # signatures/arguments are not determined by us, docstrings are a bit pointless, and code repetition
         # is impractical to avoid (e.g. bluez4 and bluez5)
-        subprocess.check_call(pylint +
+        subprocess.check_call([sys.executable, '-m', 'pylint'] +
                               ['--score=n', '--disable=missing-function-docstring,R0801',
                                '--disable=too-many-arguments,too-many-instance-attributes',
                                'dbusmock/templates/'])
-        subprocess.check_call(pylint +
+        subprocess.check_call([sys.executable, '-m', 'pylint'] +
                               ['--score=n',
                                '--disable=missing-module-docstring,missing-class-docstring,missing-function-docstring',
                                '--disable=too-many-public-methods,too-many-lines,too-many-statements,R0801',
                                'tests/'])
 
-    @unittest.skipUnless(mypy, 'mypy not installed')
+    @unittest.skipUnless('mypy' in checkers, 'mypy not installed')
     def test_types(self):  # pylint: disable=no-self-use
-        subprocess.check_call(mypy + ['setup.py', 'dbusmock/', 'tests/'])
+        subprocess.check_call([sys.executable, '-m', 'mypy', 'setup.py', 'dbusmock/', 'tests/'])
 
 
 if __name__ == '__main__':
