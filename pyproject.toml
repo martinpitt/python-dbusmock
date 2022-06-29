@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools >= 40.9.0"]
+requires = ["setuptools >= 45", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -33,7 +33,9 @@ homepage = "https://github.com/martinpitt/python-dbusmock"
 
 [tool.setuptools]
 packages = ["dbusmock", "dbusmock.templates"]
-dynamic = { version = { attr = "dbusmock.__version__" } }
+
+[tool.setuptools_scm]
+version_scheme = 'post-release'
 
 [tool.pylint]
 format = { max-line-length = 130 }

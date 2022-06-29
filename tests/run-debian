@@ -11,7 +11,7 @@ apt-get install -y eatmydata
 eatmydata apt-get -y --purge dist-upgrade
 
 # install build dependencies
-eatmydata apt-get install --no-install-recommends -y \
+eatmydata apt-get install --no-install-recommends -y git \
     python3-all python3-setuptools python3-build python3-venv \
     python3-dbus python3-gi gir1.2-glib-2.0 \
     pyflakes3 pycodestyle \
@@ -36,8 +36,8 @@ wait
 
 # check sdist; note https://bugs.debian.org/1009916
 if dpkg --compare-versions \$(dpkg-query -f '\${Version}' --show python3-build) '>=' 0.7.0-3; then
-    my_version=\$(PYTHONPATH=. python3 -c 'import dbusmock; print(dbusmock.__version__)')
+    my_version=\$(git describe --abbrev=0)
     python3 -m build --sdist
-    tar --wildcards -xOf dist/python-dbusmock-\${my_version}.tar.gz '*/PKG-INFO' | grep "^Version: \${my_version}"
+    tar --wildcards -xOf dist/python-dbusmock-\${my_version}*.tar.gz '*/PKG-INFO' | grep "^Version: \${my_version}"
 fi
 EOF

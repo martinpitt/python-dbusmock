@@ -20,9 +20,6 @@ version=$(sed -rn '1 { s/^.*\[([0-9.]+)\].*/\1/; p }' NEWS)
 }
 sed -i "s/UNRELEASED/$(date '+%Y-%m-%d')/" NEWS
 
-# update version in package
-sed -i -r "s/__version__ = '[0-9.]*'/__version__ = '${version}'/" dbusmock/__init__.py
-
 # commit release and tag
 git add NEWS dbusmock/__init__.py
 git commit -m "release $version"
