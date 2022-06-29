@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools >= 40.9.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "python-dbusmock"
+description = "Mock D-Bus objects"
+readme = "README.md"
+license = { file = "COPYING" }
+authors = [
+    { name = "Martin Pitt", email = "martin@piware.de" },
+]
+classifiers = [
+    "License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
+    "Programming Language :: Python :: 3",
+    "Development Status :: 6 - Mature",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: POSIX :: BSD",
+    "Operating System :: Unix",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Software Development :: Testing",
+    "Topic :: Software Development :: Testing :: Mocking",
+    "Topic :: Software Development :: Testing :: Unit",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dynamic = ["version"]
+requires-python = ">=3.6"
+
+dependencies = ["dbus-python"]
+
+[project.urls]
+homepage = "https://github.com/martinpitt/python-dbusmock"
+
+[tool.setuptools]
+packages = ["dbusmock", "dbusmock.templates"]
+dynamic = { version = { attr = "dbusmock.__version__" } }

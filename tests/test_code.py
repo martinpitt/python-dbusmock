@@ -38,7 +38,7 @@ class StaticCodeTests(unittest.TestCase):
     @unittest.skipIf(sys.version_info >= (3, 11, 0) and b'pylint 2.13.7' in checkers.get('pylint', b''),
                      'pylint broken with Python 3.11; https://bugzilla.redhat.com/show_bug.cgi?id=2101222')
     def test_pylint(self):  # pylint: disable=no-self-use
-        subprocess.check_call([sys.executable, '-m', 'pylint', 'setup.py'] + glob.glob('dbusmock/*.py'))
+        subprocess.check_call([sys.executable, '-m', 'pylint'] + glob.glob('dbusmock/*.py'))
         # signatures/arguments are not determined by us, docstrings are a bit pointless, and code repetition
         # is impractical to avoid (e.g. bluez4 and bluez5)
         subprocess.check_call([sys.executable, '-m', 'pylint'] +
@@ -53,7 +53,7 @@ class StaticCodeTests(unittest.TestCase):
 
     @unittest.skipUnless('mypy' in checkers, 'mypy not installed')
     def test_types(self):  # pylint: disable=no-self-use
-        subprocess.check_call([sys.executable, '-m', 'mypy', 'setup.py', 'dbusmock/', 'tests/'])
+        subprocess.check_call([sys.executable, '-m', 'mypy', 'dbusmock/', 'tests/'])
 
 
 if __name__ == '__main__':
