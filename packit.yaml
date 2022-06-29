@@ -13,7 +13,7 @@ files_to_sync:
     dest: python-dbusmock.spec
 
 jobs:
-  - job: copr_build
+  - job: tests
     trigger: pull_request
     metadata:
       targets:

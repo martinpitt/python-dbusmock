@@ -1,0 +1,14 @@
+summary: smoke test
+duration: 10m
+require:
+  - python3-dbusmock
+test: |
+  set -eux
+  python3 -m dbusmock com.example.Foo / com.example.Foo.Manager &
+  MOCK=$!
+  trap "kill $MOCK; wait $MOCK || true" EXIT INT QUIT PIPE
+
+  until busctl list --user | grep -q com.example.Foo; do sleep 0.1; done
+
+  busctl call --user com.example.Foo / org.freedesktop.DBus.Mock AddMethod sssss '' 'Ping' '' '' ''
+  busctl introspect --user com.example.Foo / com.example.Foo.Manager | grep Ping
