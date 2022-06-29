@@ -35,6 +35,11 @@ homepage = "https://github.com/martinpitt/python-dbusmock"
 packages = ["dbusmock", "dbusmock.templates"]
 dynamic = { version = { attr = "dbusmock.__version__" } }
 
+[tool.pylint]
+format = { max-line-length = 130 }
+"messages control" = { disable = ["invalid-name"] }
+design = { max-args = 7, max-locals = 25,  max-public-methods = 25 }
+
 [tool.mypy]
 warn_unused_configs = true
 [[tool.mypy.overrides]]
