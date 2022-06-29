@@ -34,3 +34,9 @@ homepage = "https://github.com/martinpitt/python-dbusmock"
 [tool.setuptools]
 packages = ["dbusmock", "dbusmock.templates"]
 dynamic = { version = { attr = "dbusmock.__version__" } }
+
+[tool.mypy]
+warn_unused_configs = true
+[[tool.mypy.overrides]]
+module = ["dbus.*", "gi.repository"]
+ignore_missing_imports = true
