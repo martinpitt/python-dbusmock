@@ -346,7 +346,7 @@ def add_simmanager_api(self, mock):
     mock.AddMethods(iface, [
         ('GetProperties', '', 'a{sv}', f'ret = self.GetAll("{iface}")'),
         ('SetProperty', 'sv', '', f'self.Set("{iface}", args[0], args[1]); '
-         'self.EmitSignal("{iface}", "PropertyChanged", "sv", [args[0], args[1]])'),
+         f'self.EmitSignal("{iface}", "PropertyChanged", "sv", [args[0], args[1]])'),
         ('ChangePin', 'sss', '', ''),
 
         ('EnterPin', 'ss', '',
@@ -419,7 +419,7 @@ def add_connectionmanager_api(mock):
     mock.AddMethods(iface, [
         ('GetProperties', '', 'a{sv}', f'ret = self.GetAll("{iface}")'),
         ('SetProperty', 'sv', '', f'self.Set("{iface}", args[0], args[1]); '
-         'self.EmitSignal("{iface}", "PropertyChanged", "sv", [args[0], args[1]])'),
+         f'self.EmitSignal("{iface}", "PropertyChanged", "sv", [args[0], args[1]])'),
         ('AddContext', 's', 'o', 'ret = "/"'),
         ('RemoveContext', 'o', '', ''),
         ('DeactivateAll', '', '', ''),
