@@ -11,7 +11,7 @@ with open('README.md', encoding="UTF-8") as f:
 
 setuptools.setup(
     name='python-dbusmock',
-    version="0.28.1",
+    version="0.28.2",
     description='Mock D-Bus objects',
     long_description=readme,
     long_description_content_type='text/markdown',
