@@ -63,9 +63,9 @@ class TestNotificationDaemon(dbusmock.DBusTestCase):
         log = self.p_mock.stdout.read()
         # HACK: Why is the timeout missing on s390x?
         if os.uname().machine == 's390x':
-            self.assertRegex(log, b'[0-9.]+ Notify "fooApp" 0 "warning_icon" "title" "my text" \\[\\] {"urgency": 1}')
+            self.assertRegex(log, b'[0-9.]+ Notify "fooApp" 0 "warning_icon" "title" "my text" \\[\\] {.*"urgency": 1')
         else:
-            self.assertRegex(log, b'[0-9.]+ Notify "fooApp" 0 "warning_icon" "title" "my text" \\[\\] {"urgency": 1} 27\n')
+            self.assertRegex(log, b'[0-9.]+ Notify "fooApp" 0 "warning_icon" "title" "my text" \\[\\] {.*"urgency": 1.* 27\n')
 
     def test_id(self):
         '''ID handling'''
