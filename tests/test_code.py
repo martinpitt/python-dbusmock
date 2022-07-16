@@ -35,8 +35,6 @@ class StaticCodeTests(unittest.TestCase):
                                '--max-line-length=130', '--ignore=E124,E402,E731,W504', '.'])
 
     @unittest.skipUnless('pylint' in checkers, 'pylint not installed')
-    @unittest.skipIf(sys.version_info >= (3, 11, 0) and b'pylint 2.13.7' in checkers.get('pylint', b''),
-                     'pylint broken with Python 3.11; https://bugzilla.redhat.com/show_bug.cgi?id=2101222')
     def test_pylint(self):  # pylint: disable=no-self-use
         subprocess.check_call([sys.executable, '-m', 'pylint'] + glob.glob('dbusmock/*.py'))
         # signatures/arguments are not determined by us, docstrings are a bit pointless, and code repetition
