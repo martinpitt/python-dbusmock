@@ -32,6 +32,8 @@ jobs:
 
       - name: Create GitHub release
         uses: eloquent/github-release-action@v2
+        with:
+          prerelease: "false"
 
       - name: Create PyPy release
         uses: pypa/gh-action-pypi-publish@master
