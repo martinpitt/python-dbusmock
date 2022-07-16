@@ -8,6 +8,11 @@ else
     RUNC="sudo docker"
 fi
 
+# only run pylint on a single release, too annoying to keep the code compatible with multiple versions
+if [ "${IMAGE%fedora:latest}" != "$IMAGE" ]; then
+    PYLINT="-e PYLINT=1"
+fi
+
 OS=${IMAGE##*/}
 OS=${OS%:*}
-$RUNC run --interactive -e DEBUG=${DEBUG:-} --rm ${RUNC_OPTIONS:-} --volume `pwd`:/source:ro --workdir /source "$IMAGE" /bin/sh tests/run-$OS
+$RUNC run --interactive -e DEBUG=${DEBUG:-} --rm ${RUNC_OPTIONS:-} ${PYLINT:-} --volume `pwd`:/source:ro --workdir /source "$IMAGE" /bin/sh tests/run-$OS
