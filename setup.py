@@ -6,12 +6,14 @@
 
 import setuptools
 
+from dbusmock import __version__
+
 with open('README.md', encoding="UTF-8") as f:
     readme = f.read()
 
 setuptools.setup(
     name='python-dbusmock',
-    version="0.28.2",
+    version=__version__,
     description='Mock D-Bus objects',
     long_description=readme,
     long_description_content_type='text/markdown',
