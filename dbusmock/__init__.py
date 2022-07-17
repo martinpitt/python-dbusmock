@@ -9,7 +9,7 @@
 
 __author__ = 'Martin Pitt'
 __copyright__ = '(c) 2012 Canonical Ltd.'
-__version__ = '0.28.2'
+__version__ = '0.28.3'
 
 
 from dbusmock.mockobject import (DBusMockObject, MOCK_IFACE,
