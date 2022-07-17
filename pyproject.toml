@@ -36,6 +36,7 @@ packages = ["dbusmock", "dbusmock.templates"]
 
 [tool.setuptools_scm]
 version_scheme = 'post-release'
+write_to = "dbusmock/version.py"
 
 [tool.pylint]
 format = { max-line-length = 130 }
