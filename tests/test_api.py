@@ -1073,6 +1073,9 @@ class TestServiceAutostart(dbusmock.DBusTestCase):
 
         dbus_if.StartServiceByName('org.TestSystem', 0)
 
+    def test_version(self):
+        self.assertGreater(dbusmock.__version__, "0.28.0")
+
 
 if __name__ == '__main__':
     # avoid writing to stderr
