@@ -4,7 +4,11 @@
 
 '''python-dbusmock - Mock D-Bus objects for testing'''
 
+import sys
+
 import setuptools
+
+sys.path.insert(0, ".")
 
 from dbusmock import __version__
 
