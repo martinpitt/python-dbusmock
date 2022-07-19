@@ -8,6 +8,15 @@ copy_upstream_release_description: true
 upstream_package_name: python-dbusmock
 downstream_package_name: python-dbusmock
 
+actions:
+  create-archive:
+    - ./setup.py sdist
+    # spec and tarball need to be in the same directory
+    - sh -c 'mv dist/*.tar.* packaging; ls packaging/python-dbusmock-*.tar.*'
+
+srpm_build_deps:
+  - python3-setuptools
+
 jobs:
   - job: tests
     trigger: pull_request
