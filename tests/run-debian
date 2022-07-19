@@ -12,7 +12,7 @@ eatmydata apt-get -y --purge dist-upgrade
 
 # install build dependencies
 eatmydata apt-get install --no-install-recommends -y git \
-    python3-all python3-setuptools \
+    python3-all python3-setuptools python3-build python3-venv \
     python3-dbus python3-gi gir1.2-glib-2.0 \
     pyflakes3 pycodestyle \
     dbus libnotify-bin upower network-manager bluez ofono ofono-scripts
@@ -42,4 +42,12 @@ tar --wildcards --strip-components=1 -xvf dist/python-dbusmock-\${my_version}*.t
 grep "^Version: \${my_version}" PKG-INFO
 grep "^## Purpose" PKG-INFO
 git clean -ffdx
+
+# test sdist with PyPA build; note https://bugs.debian.org/1009916
+if dpkg --compare-versions \$(dpkg-query -f '\${Version}' --show python3-build) '>=' 0.7.0-3; then
+    python3 -m build --sdist
+    tar --wildcards --strip-components=1 -xvf dist/python-dbusmock-\${my_version}*.tar.gz '*/PKG-INFO'
+    grep "^Version: \${my_version}" PKG-INFO
+    grep "^## Purpose" PKG-INFO
+fi
 EOF
