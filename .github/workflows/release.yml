@@ -26,11 +26,10 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y python3-setuptools python3-setuptools-scm python3-dbus
-          dpkg -l
+          sudo apt-get install -y python3-build python3-setuptools python3-setuptools-scm python3-venv
 
       - name: Build release tarball
-        run: ./setup.py sdist
+        run: python3 -m build --sdist
 
       - name: Sanity check
         run: |
