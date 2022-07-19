@@ -34,5 +34,12 @@ done
 wait
 [ ! -e /tmp/fail ]
 
+my_version=\$(git describe --abbrev=0)
+
+# test sdist with direct setuptools
 ./setup.py sdist
+tar --wildcards --strip-components=1 -xvf dist/python-dbusmock-\${my_version}*.tar.gz '*/PKG-INFO'
+grep "^Version: \${my_version}" PKG-INFO
+grep "^## Purpose" PKG-INFO
+git clean -ffdx
 EOF
