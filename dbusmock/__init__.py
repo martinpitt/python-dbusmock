@@ -9,12 +9,18 @@
 
 __author__ = 'Martin Pitt'
 __copyright__ = '(c) 2012 Canonical Ltd.'
-__version__ = '0.28.4'
 
 
 from dbusmock.mockobject import (DBusMockObject, MOCK_IFACE,
                                  OBJECT_MANAGER_IFACE, get_object, get_objects)
 from dbusmock.testcase import DBusTestCase
+
+try:
+    # created by setuptools_scm
+    from dbusmock._version import __version__
+except ImportError:
+    __version__ = '0.git'
+
 
 __all__ = ['DBusMockObject', 'MOCK_IFACE', 'OBJECT_MANAGER_IFACE',
            'DBusTestCase', 'get_object', 'get_objects']

@@ -35,6 +35,11 @@ homepage = "https://github.com/martinpitt/python-dbusmock"
 packages = ["dbusmock", "dbusmock.templates"]
 
 [tool.setuptools_scm]
+write_to = "dbusmock/_version.py"
+# otherwise pylint complains about missing-module-docstring, and mypy about missing type
+write_to_template = """'''auto-generated version from setuptools_scm'''
+__version__: str = "{version}"
+"""
 version_scheme = 'post-release'
 
 [tool.pylint]
