@@ -1,3 +1,6 @@
+include .fmf/version
+include plans/all.fmf
 include tests/*.py
+include tests/*.fmf
 include COPYING*
 include NEWS
