@@ -1,16 +1,12 @@
 # See the documentation for more information:
 # https://packit.dev/docs/configuration/
-specfile_path: packaging/python-dbusmock.spec
 upstream_project_url: https://github.com/martinpitt/python-dbusmock
+# HACK: should work without, but propose_downstream fails; https://github.com/packit/packit-service/issues/1511
+specfile_path: packaging/python-dbusmock.spec
 issue_repository: https://github.com/martinpitt/python-dbusmock
 copy_upstream_release_description: true
 upstream_package_name: python-dbusmock
 downstream_package_name: python-dbusmock
-
-files_to_sync:
-  - packit.yaml
-  - src: packaging/python-dbusmock.spec
-    dest: python-dbusmock.spec
 
 jobs:
   - job: tests
