@@ -35,6 +35,11 @@ homepage = "https://github.com/martinpitt/python-dbusmock"
 packages = ["dbusmock", "dbusmock.templates"]
 
 [tool.setuptools_scm]
+write_to = "dbusmock/_version.py"
+# otherwise pylint complains about missing-module-docstring
+write_to_template = """'''auto-generated version from setuptools_scm'''
+__version__ = "{version}"
+"""
 version_scheme = 'post-release'
 
 [tool.pylint]
@@ -45,5 +50,5 @@ design = { max-args = 7, max-locals = 25,  max-public-methods = 25 }
 [tool.mypy]
 warn_unused_configs = true
 [[tool.mypy.overrides]]
-module = ["dbus.*", "gi.repository"]
+module = ["dbus.*", "gi.repository", "dbusmock._version"]
 ignore_missing_imports = true

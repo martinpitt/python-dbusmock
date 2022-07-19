@@ -16,6 +16,7 @@ actions:
 
 srpm_build_deps:
   - python3-setuptools
+  - python3-setuptools_scm
 
 jobs:
   - job: tests
