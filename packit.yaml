@@ -20,25 +20,21 @@ srpm_build_deps:
 jobs:
   - job: tests
     trigger: pull_request
-    metadata:
-      targets:
-        - fedora-all
+    targets:
+      - fedora-all
 
   - job: propose_downstream
     trigger: release
-    metadata:
-      dist_git_branches:
-        - fedora-all
+    dist_git_branches:
+      - fedora-all
 
   - job: koji_build
     trigger: commit
-    metadata:
-      dist_git_branches:
-        - fedora-all
+    dist_git_branches:
+      - fedora-all
 
   - job: bodhi_update
     trigger: commit
-    metadata:
-      dist_git_branches:
-        # rawhide updates are created automatically
-        - fedora-branched
+    dist_git_branches:
+      # rawhide updates are created automatically
+      - fedora-branched
