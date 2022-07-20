@@ -22,15 +22,13 @@ jobs:
     trigger: pull_request
     metadata:
       targets:
-        - fedora-development
-        - fedora-stable
+        - fedora-all
 
   - job: propose_downstream
     trigger: release
     metadata:
       dist_git_branches:
-        - fedora-development
-        - fedora-stable
+        - fedora-all
 
   - job: koji_build
     trigger: commit
