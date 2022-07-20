@@ -9,17 +9,18 @@
 __author__ = 'Martin Pitt'
 __copyright__ = '(c) 2013 Canonical Ltd.'
 
-import unittest
-import sys
-import subprocess
 import os
+import subprocess
+import sys
+import unittest
+from pathlib import Path
 
 import dbus
 import dbusmock
 
-script_dir = os.environ.get('OFONO_SCRIPT_DIR', '/usr/share/ofono/scripts')
+script_dir = Path(os.environ.get('OFONO_SCRIPT_DIR', '/usr/share/ofono/scripts'))
 
-have_scripts = os.access(os.path.join(script_dir, 'list-modems'), os.X_OK)
+have_scripts = os.access(script_dir / 'list-modems', os.X_OK)
 
 
 @unittest.skipUnless(have_scripts,
@@ -40,7 +41,7 @@ class TestOfono(dbusmock.DBusTestCase):
     def test_list_modems(self):
         '''Manager.GetModems()'''
 
-        out = subprocess.check_output([os.path.join(script_dir, 'list-modems')])
+        out = subprocess.check_output([script_dir / 'list-modems'])
         self.assertTrue(out.startswith(b'[ /ril_0 ]'), out)
         self.assertIn(b'Powered = 1', out)
         self.assertIn(b'Online = 1', out)
@@ -62,50 +63,49 @@ class TestOfono(dbusmock.DBusTestCase):
         '''outgoing voice call'''
 
         # no calls by default
-        out = subprocess.check_output([os.path.join(script_dir, 'list-calls')])
+        out = subprocess.check_output([script_dir / 'list-calls'])
         self.assertEqual(out, b'[ /ril_0 ]\n')
 
         # start call
-        out = subprocess.check_output([os.path.join(script_dir, 'dial-number'), '12345'])
+        out = subprocess.check_output([script_dir / 'dial-number', '12345'])
         self.assertEqual(out, b'Using modem /ril_0\n/ril_0/voicecall01\n')
 
-        out = subprocess.check_output([os.path.join(script_dir, 'list-calls')])
+        out = subprocess.check_output([script_dir / 'list-calls'])
         self.assertIn(b'/ril_0/voicecall01', out)
         self.assertIn(b'LineIdentification = 12345', out)
         self.assertIn(b'State = dialing', out)
 
-        out = subprocess.check_output([os.path.join(script_dir, 'hangup-call'),
+        out = subprocess.check_output([script_dir / 'hangup-call',
                                       '/ril_0/voicecall01'])
         self.assertEqual(out, b'')
 
         # no active calls any more
-        out = subprocess.check_output([os.path.join(script_dir, 'list-calls')])
+        out = subprocess.check_output([script_dir / 'list-calls'])
         self.assertEqual(out, b'[ /ril_0 ]\n')
 
     def test_hangup_all(self):
         '''multiple outgoing voice calls'''
 
-        out = subprocess.check_output([os.path.join(script_dir, 'dial-number'), '12345'])
+        out = subprocess.check_output([script_dir / 'dial-number', '12345'])
         self.assertEqual(out, b'Using modem /ril_0\n/ril_0/voicecall01\n')
 
-        out = subprocess.check_output([os.path.join(script_dir, 'dial-number'), '54321'])
+        out = subprocess.check_output([script_dir / 'dial-number', '54321'])
         self.assertEqual(out, b'Using modem /ril_0\n/ril_0/voicecall02\n')
 
-        out = subprocess.check_output([os.path.join(script_dir, 'list-calls')])
+        out = subprocess.check_output([script_dir / 'list-calls'])
         self.assertIn(b'/ril_0/voicecall01', out)
         self.assertIn(b'/ril_0/voicecall02', out)
         self.assertIn(b'LineIdentification = 12345', out)
         self.assertIn(b'LineIdentification = 54321', out)
 
-        out = subprocess.check_output([os.path.join(script_dir, 'hangup-all')])
-        out = subprocess.check_output([os.path.join(script_dir, 'list-calls')])
+        out = subprocess.check_output([script_dir / 'hangup-all'])
+        out = subprocess.check_output([script_dir / 'list-calls'])
         self.assertEqual(out, b'[ /ril_0 ]\n')
 
     def test_list_operators(self):
         '''list operators'''
 
-        out = subprocess.check_output([os.path.join(script_dir, 'list-operators')],
-                                      universal_newlines=True)
+        out = subprocess.check_output([script_dir / 'list-operators'], universal_newlines=True)
         self.assertTrue(out.startswith('[ /ril_0 ]'), out)
         self.assertIn('[ /ril_0/operator/op1 ]', out)
         self.assertIn('Status = current', out)
@@ -142,14 +142,14 @@ class TestOfono(dbusmock.DBusTestCase):
 
     def test_second_modem(self):
         '''Add a second modem'''
-        out = subprocess.check_output([os.path.join(script_dir, 'list-modems')])
+        out = subprocess.check_output([script_dir / 'list-modems'])
         self.assertIn(b'CardIdentifier = 893581234000000000000', out)
         self.assertIn(b'Serial = 12345678-1234-1234-1234-000000000000', out)
         self.assertIn(b'SubscriberIdentity = 310150000000000', out)
 
         self.obj_ofono.AddModem('sim2', {'Powered': True})
 
-        out = subprocess.check_output([os.path.join(script_dir, 'list-modems')])
+        out = subprocess.check_output([script_dir / 'list-modems'])
         self.assertTrue(out.startswith(b'[ /ril_0 ]'), out)
         self.assertIn(b'[ /sim2 ]', out)
         self.assertIn(b'Powered = 1', out)

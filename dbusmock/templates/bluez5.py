@@ -18,7 +18,8 @@ This supports BlueZ 5 only.
 __author__ = 'Philip Withnall'
 __copyright__ = '(c) 2013 Collabora Ltd.'
 
-import os
+from pathlib import Path
+
 import dbus
 
 from dbusmock import OBJECT_MANAGER_IFACE, mockobject
@@ -298,7 +299,7 @@ def Pair(device):
             'Device already paired',
             name='org.bluez.Error.AlreadyExists')
     device_address = device.props[DEVICE_IFACE]['Address']
-    adapter_device_name = os.path.basename(device.props[DEVICE_IFACE]['Adapter'])
+    adapter_device_name = Path(device.props[DEVICE_IFACE]['Adapter']).name
     device.PairDevice(adapter_device_name, device_address, MOCK_PHONE_CLASS)
 
 

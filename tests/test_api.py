@@ -9,15 +9,16 @@
 __author__ = 'Martin Pitt'
 __copyright__ = '(c) 2012 Canonical Ltd.'
 
-import unittest
-import sys
-import os
-import tempfile
-import subprocess
-import shutil
-import time
 import importlib.util
+import os
+import shutil
+import subprocess
+import sys
+import tempfile
+import time
 import tracemalloc
+import unittest
+from pathlib import Path
 
 import dbus
 import dbus.mainloop.glib
@@ -55,8 +56,7 @@ class TestAPI(dbusmock.DBusTestCase):
         self.dbus_props = dbus.Interface(self.obj_test, dbus.PROPERTIES_IFACE)
 
     def assertLog(self, regex):
-        with open(self.mock_log.name, "rb") as f:
-            self.assertRegex(f.read(), regex)
+        self.assertRegex(Path(self.mock_log.name,).read_bytes(), regex)
 
     def tearDown(self):
         if self.p_mock.stdout:
@@ -335,12 +335,11 @@ assert args[2] == 5
         self.assertEqual(self.dbus_props.Get('org.freedesktop.Test.Main', 'version'), 4)
 
         # check that the Get/Set calls get logged
-        with open(self.mock_log.name, encoding="UTF-8") as f:
-            contents = f.read()
-            self.assertRegex(contents, '\n[0-9.]+ Get / org.freedesktop.Test.Main.version\n')
-            self.assertRegex(contents, '\n[0-9.]+ Get / org.freedesktop.Test.Main.connected\n')
-            self.assertRegex(contents, '\n[0-9.]+ GetAll / org.freedesktop.Test.Main\n')
-            self.assertRegex(contents, '\n[0-9.]+ Set / org.freedesktop.Test.Main.version 4\n')
+        log = Path(self.mock_log.name).read_text("UTF-8")
+        self.assertRegex(log, '\n[0-9.]+ Get / org.freedesktop.Test.Main.version\n')
+        self.assertRegex(log, '\n[0-9.]+ Get / org.freedesktop.Test.Main.connected\n')
+        self.assertRegex(log, '\n[0-9.]+ GetAll / org.freedesktop.Test.Main\n')
+        self.assertRegex(log, '\n[0-9.]+ Set / org.freedesktop.Test.Main.version 4\n')
 
         # add property to different interface
         self.dbus_mock.AddProperty('org.freedesktop.Test.Other',
@@ -539,8 +538,7 @@ assert args[2] == 5
         self.assertEqual(caught[3][1]['interface'], 'org.freedesktop.Test.Main')
 
         # check correct logging
-        with open(self.mock_log.name, encoding="UTF-8") as f:
-            log = f.read()
+        log = Path(self.mock_log.name).read_text("UTF-8")
         self.assertRegex(log, '[0-9.]+ emit / org.freedesktop.Test.Main.SigNoArgs\n')
         self.assertRegex(log, '[0-9.]+ emit / org.freedesktop.Test.Sub.SigTwoArgs "hello" 42\n')
         self.assertRegex(log, '[0-9.]+ emit / org.freedesktop.Test.Sub.SigTypeTest -42 42')
@@ -698,8 +696,8 @@ def load(mock, parameters):
 
             # ensure that we don't use/write any .pyc files, they are dangerous
             # in a world-writable directory like /tmp
-            self.assertFalse(os.path.exists(my_template.name + 'c'))
-            self.assertFalse(os.path.exists(importlib.util.cache_from_source(my_template.name)))
+            self.assertFalse(Path(my_template.name + 'c').exists())
+            self.assertFalse(Path(importlib.util.cache_from_source(my_template.name)).exists())
 
         loop = GLib.MainLoop()
         caught_signals = []
@@ -997,27 +995,27 @@ class TestServiceAutostart(dbusmock.DBusTestCase):
 
         os.environ['XDG_DATA_DIRS'] = cls.xdg_data_dir
 
-        os.mkdir(os.path.join(cls.xdg_data_dir, 'dbus-1'))
-        system_dir = os.path.join(cls.xdg_data_dir, 'dbus-1', 'system-services')
-        session_dir = os.path.join(cls.xdg_data_dir, 'dbus-1', 'services')
-        os.mkdir(system_dir)
-        os.mkdir(session_dir)
+        dbus_dir = Path(cls.xdg_data_dir, 'dbus-1')
+        system_dir = dbus_dir / 'system-services'
+        session_dir = dbus_dir / 'services'
+        system_dir.mkdir(parents=True)
+        session_dir.mkdir()
 
-        with open(os.path.join(system_dir, 'org.TestSystem.service'), 'w', encoding='ascii') as s:
-            s.write('[D-BUS Service]\n' +
-                    'Name=org.TestSystem\n'
-                    'Exec=/usr/bin/python3 -c "import sys; from gi.repository import GLib, Gio; '
-                    '     Gio.bus_own_name(Gio.BusType.SYSTEM, \'org.TestSystem\', 0, None, None, lambda *args: sys.exit(0)); '
-                    '     GLib.MainLoop().run()"\n'
-                    'User=root')
+        (system_dir / 'org.TestSystem.service').write_text(
+            '[D-BUS Service]\n' +
+            'Name=org.TestSystem\n'
+            'Exec=/usr/bin/python3 -c "import sys; from gi.repository import GLib, Gio; '
+            '     Gio.bus_own_name(Gio.BusType.SYSTEM, \'org.TestSystem\', 0, None, None, lambda *args: sys.exit(0)); '
+            '     GLib.MainLoop().run()"\n'
+            'User=root')
 
-        with open(os.path.join(session_dir, 'org.TestSession.service'), 'w', encoding='ascii') as s:
-            s.write('[D-BUS Service]\n'
-                    'Name=org.TestSession\n'
-                    'Exec=/usr/bin/python3 -c "import sys; from gi.repository import GLib, Gio; '
-                    '     Gio.bus_own_name(Gio.BusType.SESSION, \'org.TestSession\', 0, None, None, lambda *args: sys.exit(0)); '
-                    '     GLib.MainLoop().run()"\n'
-                    'User=root')
+        (session_dir / 'org.TestSession.service').write_text(
+            '[D-BUS Service]\n'
+            'Name=org.TestSession\n'
+            'Exec=/usr/bin/python3 -c "import sys; from gi.repository import GLib, Gio; '
+            '     Gio.bus_own_name(Gio.BusType.SESSION, \'org.TestSession\', 0, None, None, lambda *args: sys.exit(0)); '
+            '     GLib.MainLoop().run()"\n'
+            'User=root')
 
         cls.start_system_bus()
         cls.start_session_bus()

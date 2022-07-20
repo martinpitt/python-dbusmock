@@ -9,11 +9,11 @@
 __author__ = 'Iain Lane'
 __copyright__ = '(c) 2013 Canonical Ltd.'
 
-import os
 import shutil
 import subprocess
 import sys
 import unittest
+from pathlib import Path
 
 import dbusmock
 
@@ -24,7 +24,7 @@ have_timedatectl = shutil.which('timedatectl')
 
 
 @unittest.skipUnless(have_timedatectl, 'timedatectl not installed')
-@unittest.skipUnless(os.path.exists('/run/systemd/system'), '/run/systemd/system does not exist')
+@unittest.skipUnless(Path('/run/systemd/system').exists(), '/run/systemd/system does not exist')
 class TestTimedated(dbusmock.DBusTestCase):
     '''Test mocking timedated'''
 

@@ -10,13 +10,13 @@ __author__ = 'Martin Pitt'
 __copyright__ = '(c) 2012 Canonical Ltd.'
 
 import importlib.util
-import os
-import unittest
 import shutil
-import sys
 import subprocess
+import sys
 import tempfile
 import tracemalloc
+import unittest
+from pathlib import Path
 
 import dbus
 
@@ -72,7 +72,7 @@ class TestCLI(dbusmock.DBusTestCase):
 
     def test_template_upower_explicit_path(self):
         spec = importlib.util.find_spec('dbusmock.templates.upower')
-        self.assertTrue(os.path.exists(spec.origin))
+        self.assertTrue(Path(spec.origin).exists())
         self.start_mock(['-t', spec.origin],
                         'org.freedesktop.UPower', '/org/freedesktop/UPower', True)
         self.check_upower_running()

@@ -18,6 +18,7 @@ import os
 import sys
 import time
 import types
+from pathlib import Path
 from typing import Optional, Dict, Any, List, Tuple, Sequence, KeysView
 from xml.etree import ElementTree
 
@@ -44,12 +45,13 @@ CallLogType = Tuple[int, str, Sequence[Any]]
 def load_module(name: str):
     '''Load a mock template Python module from dbusmock/templates/'''
 
-    if os.path.exists(name) and os.path.splitext(name)[1] == '.py':
-        spec = importlib.util.spec_from_file_location(os.path.splitext(os.path.basename(name))[0], name)
+    pname = Path(name)
+
+    if pname.exists() and pname.suffix == '.py':
+        spec = importlib.util.spec_from_file_location(pname.stem, name)
         assert spec
         mod = importlib.util.module_from_spec(spec)
-        with open(name, encoding="UTF-8") as f:
-            exec(f.read(), mod.__dict__, mod.__dict__)  # pylint: disable=exec-used
+        exec(pname.read_text("UTF-8"), mod.__dict__, mod.__dict__)  # pylint: disable=exec-used
         return mod
 
     return importlib.import_module('dbusmock.templates.' + name)
