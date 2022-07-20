@@ -18,7 +18,8 @@ import sys
 import tempfile
 import time
 import unittest
-from typing import Tuple, Dict, Any
+from pathlib import Path
+from typing import Tuple, Dict, Any, Union
 
 import dbus
 
@@ -36,7 +37,7 @@ class DBusTestCase(unittest.TestCase):
     '''
     session_bus_pid = None
     system_bus_pid = None
-    _DBusTestCase__datadir = ''
+    _DBusTestCase__datadir = None
 
     @classmethod
     def get_services_dir(cls, system_bus: bool = False) -> str:
@@ -51,15 +52,15 @@ class DBusTestCase(unittest.TestCase):
         else:
             services_dir = 'services'
         if not DBusTestCase._DBusTestCase__datadir:
-            DBusTestCase._DBusTestCase__datadir = tempfile.mkdtemp(prefix='dbusmock_data_')
-            os.mkdir(os.path.join(DBusTestCase._DBusTestCase__datadir, 'system_services'))
-            os.mkdir(os.path.join(DBusTestCase._DBusTestCase__datadir, 'services'))
+            DBusTestCase._DBusTestCase__datadir = Path(tempfile.mkdtemp(prefix='dbusmock_data_'))
+            (DBusTestCase._DBusTestCase__datadir / 'system_services').mkdir()
+            (DBusTestCase._DBusTestCase__datadir / 'services').mkdir()
 
-        return os.path.join(DBusTestCase._DBusTestCase__datadir, services_dir)
+        return str(DBusTestCase._DBusTestCase__datadir / services_dir)
 
     @classmethod
     def tearDownClass(cls):
-        setattr(cls, '_DBusTestCase__datadir', '')
+        setattr(cls, '_DBusTestCase__datadir', None)
         if cls._DBusTestCase__datadir:
             shutil.rmtree(cls._DBusTestCase__datadir)
 
@@ -80,9 +81,10 @@ class DBusTestCase(unittest.TestCase):
         This gets stopped automatically at class teardown.
         '''
         cls.get_services_dir()
+        assert cls._DBusTestCase__datadir
 
-        with open(os.path.join(DBusTestCase._DBusTestCase__datadir, f'dbusmock_{bus_type}_cfg'), 'w', encoding='ascii') as c:
-            c.write(f'''<!DOCTYPE busconfig PUBLIC "-//freedesktop//DTD D-Bus Bus Configuration 1.0//EN"
+        conf = cls._DBusTestCase__datadir / f'dbusmock_{bus_type}_cfg'
+        conf.write_text(f'''<!DOCTYPE busconfig PUBLIC "-//freedesktop//DTD D-Bus Bus Configuration 1.0//EN"
  "http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
 <busconfig>
   <type>{bus_type}</type>
@@ -98,8 +100,7 @@ class DBusTestCase(unittest.TestCase):
   </policy>
 </busconfig>
 ''')
-            c.flush()
-            (pid, addr) = cls.start_dbus(conf=c.name)
+        (pid, addr) = cls.start_dbus(conf=conf)
         os.environ[f'DBUS_{bus_type.upper()}_BUS_ADDRESS'] = addr
         setattr(cls, f'{bus_type}_bus_pid', pid)
 
@@ -120,7 +121,7 @@ class DBusTestCase(unittest.TestCase):
         DBusTestCase.__start_bus('system')
 
     @classmethod
-    def start_dbus(cls, conf: str = None) -> Tuple[int, str]:
+    def start_dbus(cls, conf: Union[str, Path] = None) -> Tuple[int, str]:
         '''Start a D-Bus daemon
 
         Return (pid, address) pair.
@@ -130,7 +131,7 @@ class DBusTestCase(unittest.TestCase):
         '''
         argv = ['dbus-daemon', '--fork', '--print-address=1', '--print-pid=1']
         if conf:
-            argv.append('--config-file=' + conf)
+            argv.append('--config-file=' + str(conf))
         else:
             argv.append('--session')
         lines = subprocess.check_output(argv, universal_newlines=True).strip().splitlines()
@@ -306,9 +307,9 @@ class DBusTestCase(unittest.TestCase):
         xdg_data_dirs = os.environ.get('XDG_DATA_DIRS') or '/usr/local/share/:/usr/share/'
 
         for d in xdg_data_dirs.split(':'):
-            src = os.path.join(d, 'dbus-1', services_dir, service + '.service')
-            if os.path.exists(src):
-                os.symlink(src, os.path.join(cls.get_services_dir(system_bus), service + '.service'))
+            src = Path(d, 'dbus-1', services_dir, service + '.service')
+            if src.exists():
+                Path(cls.get_services_dir(system_bus), service + '.service').symlink_to(src)
                 break
         else:
             raise AssertionError(f"Service {service} not found in XDG_DATA_DIRS ({xdg_data_dirs})")
@@ -329,7 +330,7 @@ class DBusTestCase(unittest.TestCase):
         daemon configuration if a test bus is running.
         '''
         try:
-            os.unlink(os.path.join(cls.get_services_dir(system_bus), service + '.service'))
+            Path(cls.get_services_dir(system_bus), service + '.service').unlink()
         except OSError:
             raise AssertionError(f"Service {service} not found") from None
 

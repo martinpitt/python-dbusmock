@@ -9,13 +9,13 @@
 __author__ = 'Martin Pitt'
 __copyright__ = '(c) 2013 Canonical Ltd.'
 
-import os
 import re
 import shutil
 import subprocess
 import sys
-import unittest
 import tracemalloc
+import unittest
+from pathlib import Path
 
 import dbus
 import dbusmock
@@ -25,7 +25,7 @@ have_loginctl = shutil.which('loginctl')
 
 
 @unittest.skipUnless(have_loginctl, 'loginctl not installed')
-@unittest.skipUnless(os.path.exists('/run/systemd/system'), '/run/systemd/system does not exist')
+@unittest.skipUnless(Path('/run/systemd/system').exists(), '/run/systemd/system does not exist')
 class TestLogind(dbusmock.DBusTestCase):
     '''Test mocking logind'''
 

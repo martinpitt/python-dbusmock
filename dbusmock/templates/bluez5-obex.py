@@ -19,7 +19,7 @@ __author__ = 'Philip Withnall'
 __copyright__ = '(c) 2013 Collabora Ltd.'
 
 import tempfile
-import os
+from pathlib import Path
 
 import dbus
 
@@ -188,7 +188,7 @@ def PullAll(self, target_file, filters):
     with tempfile.NamedTemporaryFile(suffix='.vcf',
                                      prefix='tmp-bluez5-obex-PullAll_',
                                      delete=False) as temp_file:
-        filename = os.path.abspath(temp_file.name)
+        filename = Path(temp_file.name).resolve()
 
     props = {
         'Status': dbus.String('queued', variant_level=1),
@@ -268,7 +268,7 @@ def UpdateStatus(self, is_complete):
     TransferCreated signal).
     '''
     status = 'complete' if is_complete else 'active'
-    transferred = os.path.getsize(self.props[TRANSFER_IFACE]['Filename'])
+    transferred = Path(self.props[TRANSFER_IFACE]['Filename']).stat().st_size
 
     self.props[TRANSFER_IFACE]['Status'] = status
     self.props[TRANSFER_IFACE]['Transferred'] = dbus.UInt64(transferred, variant_level=1)
