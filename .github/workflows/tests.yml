@@ -15,9 +15,12 @@ jobs:
           - docker.io/ubuntu:devel
           - docker.io/ubuntu:rolling
           - docker.io/ubuntu:latest
-          - registry.fedoraproject.org/fedora:latest
           - registry.fedoraproject.org/fedora:rawhide
           - quay.io/centos/centos:stream8
+        include:
+          # only run static code tests on a single release, to avoid contradicting requirements from e.g. different pylint releases
+          - scenario: registry.fedoraproject.org/fedora:latest
+            env: TEST_CODE=1
 
     timeout-minutes: 30
     steps:
@@ -32,4 +35,4 @@ jobs:
           dpkg -s podman docker || true
           cat /etc/apt/sources.list
           cat /etc/apt/sources.list.d/*
-          tests/run ${{ matrix.scenario }}
+          ${{ matrix.env }} tests/run ${{ matrix.scenario }}

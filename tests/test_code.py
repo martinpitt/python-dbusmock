@@ -10,31 +10,21 @@ __author__ = 'Martin Pitt'
 __copyright__ = '(c) 2012 Canonical Ltd.'
 
 import glob
+import os
 import subprocess
 import sys
 import unittest
 
 
-checkers = {}
-for checker in ['pycodestyle', 'pyflakes', 'pylint', 'mypy']:
-    try:
-        checkers[checker] = subprocess.check_output(
-                [sys.executable, '-m', checker, '--version'], stderr=subprocess.DEVNULL)
-    except subprocess.CalledProcessError:
-        pass
-
-
+@unittest.skipUnless(os.getenv("TEST_CODE", None), "$TEST_CODE not set, not running static code checks")
 class StaticCodeTests(unittest.TestCase):
-    @unittest.skipUnless('pyflakes' in checkers, 'pyflakes3 not installed')
     def test_pyflakes(self):  # pylint: disable=no-self-use
         subprocess.check_call([sys.executable, '-m', 'pyflakes', '.'])
 
-    @unittest.skipUnless('pycodestyle' in checkers, 'pycodestyle not installed')
     def test_codestyle(self):  # pylint: disable=no-self-use
         subprocess.check_call([sys.executable, '-m', 'pycodestyle',
                                '--max-line-length=130', '--ignore=E124,E402,E731,W504', '.'])
 
-    @unittest.skipUnless('pylint' in checkers, 'pylint not installed')
     def test_pylint(self):  # pylint: disable=no-self-use
         subprocess.check_call([sys.executable, '-m', 'pylint'] + glob.glob('dbusmock/*.py'))
         # signatures/arguments are not determined by us, docstrings are a bit pointless, and code repetition
@@ -49,7 +39,6 @@ class StaticCodeTests(unittest.TestCase):
                                '--disable=too-many-public-methods,too-many-lines,too-many-statements,R0801',
                                'tests/'])
 
-    @unittest.skipUnless('mypy' in checkers, 'mypy not installed')
     def test_types(self):  # pylint: disable=no-self-use
         subprocess.check_call([sys.executable, '-m', 'mypy', 'dbusmock/', 'tests/'])
 

@@ -14,7 +14,6 @@ eatmydata apt-get -y --purge dist-upgrade
 eatmydata apt-get install --no-install-recommends -y git \
     python3-all python3-setuptools python3-build python3-venv \
     python3-dbus python3-gi gir1.2-glib-2.0 \
-    pyflakes3 pycodestyle \
     dbus libnotify-bin upower network-manager bluez ofono ofono-scripts
 
 # systemd's tools otherwise fail on "not been booted with systemd"
@@ -24,6 +23,7 @@ mkdir -p /run/systemd/system
 useradd build
 su -s /bin/sh - build << EOF || { [ -z "$DEBUG" ] || sleep infinity; exit 1; }
 set -ex
+export TEST_CODE="$TEST_CODE"
 cp -r $(pwd) /tmp/source
 cd /tmp/source
 python3 -m unittest -v
