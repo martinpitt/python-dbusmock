@@ -15,4 +15,4 @@ fi
 
 OS=${IMAGE##*/}
 OS=${OS%:*}
-$RUNC run --interactive -e DEBUG=${DEBUG:-} --rm ${RUNC_OPTIONS:-} ${PYLINT:-} --volume `pwd`:/source:ro --workdir /source "$IMAGE" /bin/sh tests/run-$OS
+$RUNC run --interactive -e DEBUG=${DEBUG:-} -e TEST_CODE="${TEST_CODE:-}" --rm ${RUNC_OPTIONS:-} ${PYLINT:-} --volume `pwd`:/source:ro --workdir /source "$IMAGE" /bin/sh tests/run-$OS
