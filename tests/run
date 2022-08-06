@@ -10,9 +10,9 @@ fi
 
 # only run pylint on a single release, too annoying to keep the code compatible with multiple versions
 if [ "${IMAGE%fedora:latest}" != "$IMAGE" ]; then
-    PYLINT="-e PYLINT=1"
+    TEST_CODE="1"
 fi
 
 OS=${IMAGE##*/}
 OS=${OS%:*}
-$RUNC run --interactive -e DEBUG=${DEBUG:-} -e TEST_CODE="${TEST_CODE:-}" --rm ${RUNC_OPTIONS:-} ${PYLINT:-} --volume `pwd`:/source:ro --workdir /source "$IMAGE" /bin/sh tests/run-$OS
+$RUNC run --interactive -e DEBUG=${DEBUG:-} -e TEST_CODE="${TEST_CODE:-}" --rm ${RUNC_OPTIONS:-} --volume `pwd`:/source:ro --workdir /source "$IMAGE" /bin/sh tests/run-$OS
