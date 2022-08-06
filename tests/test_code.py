@@ -18,12 +18,8 @@ import unittest
 
 @unittest.skipUnless(os.getenv("TEST_CODE", None), "$TEST_CODE not set, not running static code checks")
 class StaticCodeTests(unittest.TestCase):
-    def test_pyflakes(self):  # pylint: disable=no-self-use
-        subprocess.check_call([sys.executable, '-m', 'pyflakes', '.'])
-
-    def test_codestyle(self):  # pylint: disable=no-self-use
-        subprocess.check_call([sys.executable, '-m', 'pycodestyle',
-                               '--max-line-length=130', '--ignore=E124,E402,E731,W504', '.'])
+    def test_flake8(self):  # pylint: disable=no-self-use
+        subprocess.check_call(['flake8'])
 
     def test_pylint(self):  # pylint: disable=no-self-use
         subprocess.check_call([sys.executable, '-m', 'pylint'] + glob.glob('dbusmock/*.py'))

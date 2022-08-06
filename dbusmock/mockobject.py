@@ -454,7 +454,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
         # mock_method(); using message_keyword with this dynamic approach fails
         # because inspect cannot handle those, so pass on interface and method
         # name as first positional arguments
-        method = lambda self, *args, **kwargs: DBusMockObject.mock_method(
+        method = lambda self, *args, **kwargs: DBusMockObject.mock_method(  # noqa: E731
             self, interface, name, in_sig, *args, **kwargs)
 
         # we cannot specify in_signature here, as that trips over a consistency
