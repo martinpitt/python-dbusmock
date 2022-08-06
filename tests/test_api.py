@@ -665,6 +665,9 @@ assert args[2] == 5
         obj1 = self.dbus_con.get_object('org.freedesktop.Test', '/obj1')
         self.assertRaises(dbus.exceptions.DBusException, obj1.GetAll, '')
 
+    def test_version(self):
+        self.assertGreater(dbusmock.__version__, "0.28.0")
+
 
 class TestTemplates(dbusmock.DBusTestCase):
     '''Test template API'''
@@ -1070,9 +1073,6 @@ class TestServiceAutostart(dbusmock.DBusTestCase):
         self.addCleanup(self.disable_service, 'org.TestSystem', system_bus=True)
 
         dbus_if.StartServiceByName('org.TestSystem', 0)
-
-    def test_version(self):
-        self.assertGreater(dbusmock.__version__, "0.28.0")
 
 
 if __name__ == '__main__':
