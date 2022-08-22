@@ -616,7 +616,8 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
 
         args = _convert_args(signature, sigargs)
 
-        sig = dbus.lowlevel.SignalMessage(self.path, interface, name)
+        path = details.get("path", self.path)
+        sig = dbus.lowlevel.SignalMessage(path, interface, name)
         sig.append(*args, signature=signature)
         dest = details.get("destination", None)
         if dest is not None:
@@ -625,7 +626,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
         for location in self.locations:
             conn = location[0]
             conn.send_message(sig)
-        self.log(f'emit {self.path} {interface}.{name}{_format_args(args)}')
+        self.log(f'emit {path} {interface}.{name}{_format_args(args)}')
 
     @dbus.service.method(MOCK_IFACE,
                          in_signature='sssav',
@@ -662,6 +663,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
               "signature"
         details: dictionary with a string key/value entries. Supported keys are:
             "destination": for the signal destination
+            "path": for the object path to send the signal from
         '''
         self._emit_signal(interface, name, signature, sigargs, details)
 

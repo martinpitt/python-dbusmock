@@ -462,6 +462,8 @@ assert args[2] == 5
     def test_signals(self):
         '''emitting signals'''
 
+        self.dbus_mock.AddObject('/obj1', 'org.freedesktop.Test.Sub', {}, [])
+
         def do_emit():
             self.dbus_mock.EmitSignal('', 'SigNoArgs', '', [])
             self.dbus_mock.EmitSignal('org.freedesktop.Test.Sub',
@@ -475,6 +477,10 @@ assert args[2] == 5
                                               'SigDetailed',
                                               'su', ['details', 123],
                                               {'destination': self.dbus_con.get_unique_name()})
+            self.dbus_mock.EmitSignalDetailed('',
+                                              'SigDetailedWithPath',
+                                              'su', ['details', 456],
+                                              {'path': '/obj1'})
 
         caught = []
         ml = GLib.MainLoop()
@@ -482,7 +488,7 @@ assert args[2] == 5
         def catch(*args, **kwargs):
             if kwargs['interface'].startswith('org.freedesktop.Test'):
                 caught.append((args, kwargs))
-            if len(caught) == 4:
+            if len(caught) == 5:
                 # we caught everything there is to catch, don't wait for the
                 # timeout
                 ml.quit()
@@ -537,6 +543,11 @@ assert args[2] == 5
         self.assertEqual(caught[3][1]['path'], '/')
         self.assertEqual(caught[3][1]['interface'], 'org.freedesktop.Test.Main')
 
+        self.assertEqual(caught[4][0], ('details', 456))
+        self.assertEqual(caught[4][1]['member'], 'SigDetailedWithPath')
+        self.assertEqual(caught[4][1]['path'], '/obj1')
+        self.assertEqual(caught[4][1]['interface'], 'org.freedesktop.Test.Main')
+
         # check correct logging
         log = Path(self.mock_log.name).read_text("UTF-8")
         self.assertRegex(log, '[0-9.]+ emit / org.freedesktop.Test.Main.SigNoArgs\n')
@@ -544,6 +555,7 @@ assert args[2] == 5
         self.assertRegex(log, '[0-9.]+ emit / org.freedesktop.Test.Sub.SigTypeTest -42 42')
         self.assertRegex(log, r'[0-9.]+ emit / org.freedesktop.Test.Sub.SigTypeTest -42 42 "hello" \["/a", "/b"\]\n')
         self.assertRegex(log, '[0-9.]+ emit / org.freedesktop.Test.Main.SigDetailed "details" 123\n')
+        self.assertRegex(log, '[0-9.]+ emit /obj1 org.freedesktop.Test.Main.SigDetailedWithPath "details" 456\n')
 
     def test_signals_type_mismatch(self):
         '''emitting signals with wrong arguments'''
