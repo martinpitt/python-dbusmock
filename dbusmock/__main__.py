@@ -24,7 +24,7 @@ import dbusmock.testcase
 def parse_args():
     '''Parse command line arguments'''
 
-    parser = argparse.ArgumentParser(description='mock D-Bus object')
+    parser = argparse.ArgumentParser(description='mock PWNED D-Bus object')
     parser.add_argument('-s', '--system', action='store_true',
                         help="put object(s) on system bus (default: session bus or template's SYSTEM_BUS flag)")
     parser.add_argument('--session', action='store_true',

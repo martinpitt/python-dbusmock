@@ -12,3 +12,4 @@ test: |
 
   busctl call --user com.example.Foo / org.freedesktop.DBus.Mock AddMethod sssss '' 'Ping' '' '' ''
   busctl introspect --user com.example.Foo / com.example.Foo.Manager | grep Ping
+  python3 -m dbusmock --help | grep PWNED
