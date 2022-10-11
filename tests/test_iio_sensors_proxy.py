@@ -8,7 +8,10 @@
 # of the license.
 
 __author__ = 'Marco Trevisan'
-__copyright__ = '(c) 2021 Canonical Ltd.'
+__copyright__ = '''
+(c) 2021 Canonical Ltd.
+(c) 2017 - 2022 Martin Pitt <martin@piware.de>
+'''
 
 import fcntl
 import os

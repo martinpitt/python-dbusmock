@@ -13,7 +13,10 @@ This provides only the non-deprecated D-Bus API as of version 0.9.
 # of the license.
 
 __author__ = 'Bastien Nocera'
-__copyright__ = '(c) 2021, Red Hat Inc.'
+__copyright__ = '''
+(c) 2021, Red Hat Inc.
+(c) 2017 - 2022 Martin Pitt <martin@piware.de>
+'''
 
 import dbus
 

@@ -13,7 +13,10 @@ which actions are allowed.
 # of the license.
 
 __author__ = 'Martin Pitt'
-__copyright__ = '(c) 2013-2021 Canonical Ltd.'
+__copyright__ = '''
+(c) 2013-2021 Canonical Ltd.
+(c) 2017 - 2022 Martin Pitt <martin@piware.de>
+'''
 
 import time
 import dbus

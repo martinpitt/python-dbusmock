@@ -7,7 +7,10 @@
 # of the license.
 
 __author__ = 'Bastien Nocera'
-__copyright__ = '(c) 2019 Red Hat Inc.'
+__copyright__ = '''
+(c) 2019 Red Hat Inc.
+(c) 2017 - 2022 Martin Pitt <martin@piware.de>
+'''
 
 import unittest
 import sys

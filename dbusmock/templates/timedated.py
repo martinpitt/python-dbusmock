@@ -12,7 +12,10 @@ org.freedesktop.timedate object. You can specify D-Bus property values like
 # of the license.
 
 __author__ = 'Iain Lane'
-__copyright__ = '(c) 2013 Canonical Ltd.'
+__copyright__ = '''
+(c) 2013 Canonical Ltd.
+(c) 2017 - 2022 Martin Pitt <martin@piware.de>
+'''
 
 import dbus
 

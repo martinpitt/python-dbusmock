@@ -13,7 +13,10 @@ This provides only the 2.0 D-Bus API of low-memory-monitor.
 # of the license.
 
 __author__ = 'Bastien Nocera'
-__copyright__ = '(c) 2019, Red Hat Inc.'
+__copyright__ = '''
+(c) 2019, Red Hat Inc.
+(c) 2017 - 2022 Martin Pitt <martin@piware.de>
+'''
 
 import dbus
 

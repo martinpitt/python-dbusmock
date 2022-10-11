@@ -11,7 +11,10 @@ org.gnome.ScreenSaver object.
 # of the license.
 
 __author__ = 'Bastien Nocera'
-__copyright__ = '(c) 2013 Red Hat Inc.'
+__copyright__ = '''
+(c) 2013 Red Hat Inc.
+(c) 2017 - 2022 Martin Pitt <martin@piware.de>
+'''
 
 BUS_NAME = 'org.gnome.ScreenSaver'
 MAIN_OBJ = '/org/gnome/ScreenSaver'

@@ -12,7 +12,10 @@ like "CanSuspend" or the return value of Inhibit() in "parameters".
 # of the license.
 
 __author__ = 'Martin Pitt'
-__copyright__ = '(c) 2013 Canonical Ltd.'
+__copyright__ = '''
+(c) 2013 Canonical Ltd.
+(c) 2017 - 2022 Martin Pitt <martin@piware.de>
+'''
 
 import os
 import dbus

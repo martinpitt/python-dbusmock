@@ -7,7 +7,10 @@
 # of the license.
 
 __author__ = 'Jonas Ådahl'
-__copyright__ = '(c) 2021 Red Hat'
+__copyright__ = '''
+(c) 2021 Red Hat
+(c) 2017 - 2022 Martin Pitt <martin@piware.de>
+'''
 
 import subprocess
 import sys
