@@ -17,7 +17,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y python3-setuptools
+          sudo apt-get install -y python3-setuptools python3-setuptools-scm
 
       - name: Build release tarball
         run: ./setup.py sdist
