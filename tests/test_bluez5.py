@@ -8,7 +8,10 @@
 # of the license.
 
 __author__ = 'Philip Withnall'
-__copyright__ = '(c) 2013 Collabora Ltd.'
+__copyright__ = '''
+(c) 2013 Collabora Ltd.
+(c) 2017 - 2022 Martin Pitt <martin@piware.de>
+'''
 
 
 import os

@@ -15,7 +15,10 @@ This provides the 1.0 D-Bus API of upower.
 # of the license.
 
 __author__ = 'Martin Pitt'
-__copyright__ = '(c) 2012, 2013 Canonical Ltd.'
+__copyright__ = '''
+(c) 2012, 2013 Canonical Ltd.
+(c) 2017 - 2022 Martin Pitt <martin@piware.de>
+'''
 
 import dbus
 

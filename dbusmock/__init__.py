@@ -8,7 +8,10 @@
 # of the license.
 
 __author__ = 'Martin Pitt'
-__copyright__ = '(c) 2012 Canonical Ltd.'
+__copyright__ = '''
+(c) 2012 Canonical Ltd.
+(c) 2017 - 2022 Martin Pitt <martin@piware.de>
+'''
 
 
 from dbusmock.mockobject import (DBusMockObject, MOCK_IFACE,

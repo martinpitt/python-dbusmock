@@ -12,7 +12,10 @@ such as urfkill in "parameters".
 # of the license.
 
 __author__ = 'Jussi Pakkanen'
-__copyright__ = '(C) 2015 Canonical ltd'
+__copyright__ = '''
+(C) 2015 Canonical ltd
+(c) 2017 - 2022 Martin Pitt <martin@piware.de>
+'''
 
 import dbus
 
