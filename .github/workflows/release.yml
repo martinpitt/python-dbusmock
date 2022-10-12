@@ -17,10 +17,23 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y python3-setuptools python3-setuptools-scm
+          sudo apt-get install -y python3-setuptools python3-setuptools-scm python3-dbus
+          dpkg -l
 
       - name: Build release tarball
         run: ./setup.py sdist
+
+      - name: Sanity check
+        run: |
+          set -eux
+          mkdir tmp
+          cd tmp
+          tar xf ../dist/python-dbusmock-${{ github.ref_name }}.tar.gz
+          cd python-dbusmock-*
+          test "$(PYTHONPATH=. python3 -c 'import dbusmock; print(dbusmock.__version__)')" = "${{ github.ref_name }}"
+          PYTHONPATH=. python3 tests/test_api.py
+          cd ../..
+          rm -rf tmp
 
       - name: Create GitHub release
         uses: eloquent/github-release-action@v2
