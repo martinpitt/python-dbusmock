@@ -97,8 +97,8 @@ class DBusTestCase(unittest.TestCase):
   <servicedir>{cls.get_services_dir(bus_type == 'system')}</servicedir>
 
   <policy context="default">
-    <allow send_destination="*" eavesdrop="true"/>
-    <allow eavesdrop="true"/>
+    <allow send_destination="*"/>
+    <allow eavesdrop="false"/>
     <allow own="*"/>
   </policy>
 </busconfig>
