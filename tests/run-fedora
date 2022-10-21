@@ -2,7 +2,7 @@
 set -eux
 # install build dependencies
 dnf -y install python3-setuptools python3 python3-gobject-base \
-    python3-dbus dbus-x11 util-linux \
+    python3-dbus dbus-broker util-linux \
     upower NetworkManager bluez libnotify polkit
 
 if ! grep -q :el8 /etc/os-release; then

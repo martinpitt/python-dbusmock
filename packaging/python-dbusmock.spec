@@ -15,7 +15,7 @@ BuildRequires:    python3-dbus
 BuildRequires:    python3-devel
 BuildRequires:    python3-setuptools
 BuildRequires:    python3-gobject
-BuildRequires:    dbus-x11
+BuildRequires:    dbus-broker
 BuildRequires:    upower
 
 %global _description\
@@ -29,7 +29,9 @@ the state of the real services to what you expect in your tests.
 
 %package -n python3-dbusmock
 Summary: %summary (Python3)
-Requires:         python3-dbus, python3-gobject, dbus-x11
+Requires: python3-dbus
+Requires: python3-gobject
+Requires: (dbus-broker or dbus-x11)
 %description -n python3-dbusmock %_description
 
 %prep

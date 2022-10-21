@@ -16,6 +16,7 @@ import errno
 import os
 import shutil
 import signal
+import socket
 import subprocess
 import sys
 import tempfile
@@ -131,7 +132,50 @@ class DBusTestCase(unittest.TestCase):
 
         Normally you do not need to call this directly. Use start_system_bus()
         and start_session_bus() instead.
+
+        This supports dbus-broker and dbus-daemon
         '''
+        if shutil.which('dbus-broker-launch'):
+            return cls._start_dbus_broker(conf)
+        else:
+            return cls._start_dbus_daemon(conf)
+
+    @classmethod
+    def _start_dbus_broker(cls, conf: Union[str, Path] = None) -> Tuple[int, str]:
+        '''Start a D-Bus daemon
+
+        Return (pid, address) pair.
+
+        Normally you do not need to call this directly. Use start_system_bus()
+        and start_session_bus() instead.
+        '''
+        dbus_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        (fd, sock_path) = tempfile.mkstemp(suffix='.sock', dir=DBusTestCase._DBusTestCase__datadir)
+        os.close(fd)
+        os.unlink(sock_path)
+        dbus_sock.bind(sock_path)
+        dbus_sock.listen(5)
+
+        def setup_broker():
+            # pass the socket to dbus-broker-launch like systemd activation does, see sd_listen_fds(3) */
+            # fd is CLOEXEC, so dup2 on our first fd 3 will be a no-op; force duping
+            dbus_fd_dup = os.dup(dbus_sock.fileno())
+            assert dbus_fd_dup != 3
+            os.dup2(dbus_fd_dup, 3)
+            os.close(dbus_fd_dup)
+            os.environ['LISTEN_FDS'] = '1'
+            os.environ['LISTEN_PID'] = str(os.getpid())
+
+        assert conf
+        dbus_broker = subprocess.Popen(['dbus-broker-launch', '--config-file', conf],
+                                       close_fds=False,
+                                       preexec_fn=setup_broker)
+        dbus_sock.close()
+
+        return (dbus_broker.pid, 'unix:path=' + sock_path)
+
+    @classmethod
+    def _start_dbus_daemon(cls, conf: Union[str, Path] = None) -> Tuple[int, str]:
         argv = ['dbus-daemon', '--fork', '--print-address=1', '--print-pid=1']
         if conf:
             argv.append('--config-file=' + str(conf))
