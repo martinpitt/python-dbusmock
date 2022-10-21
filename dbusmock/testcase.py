@@ -161,6 +161,10 @@ class DBusTestCase(unittest.TestCase):
                 if e.errno == errno.ESRCH:
                     break
                 raise
+            try:
+                os.waitpid(pid, os.WNOHANG)
+            except ChildProcessError:
+                pass
             time.sleep(0.1)
         else:
             sys.stderr.write('ERROR: timed out waiting for bus process to terminate\n')
