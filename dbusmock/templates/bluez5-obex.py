@@ -225,7 +225,7 @@ def PullAll(self, target_file, filters):
 
     # Emit a behind-the-scenes signal that a new transfer has been created.
     manager.EmitSignal(OBEX_MOCK_IFACE, 'TransferCreated', 'sa{sv}s',
-                       [transfer_path, filters, filename])
+                       [transfer_path, filters, str(filename)])
 
     return (transfer_path, props)
 
