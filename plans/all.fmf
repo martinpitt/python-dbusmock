@@ -1,6 +1,14 @@
-summary:
-    Run all tests
 discover:
-    how: fmf
+  how: fmf
 execute:
-    how: tmt
+  how: tmt
+
+/smoke:
+  summary: Run smoke test
+  discover+:
+    test: /tests/smoke
+
+/second:
+  summary: Additional test plan
+  discover+:
+    test: /tests/pwned

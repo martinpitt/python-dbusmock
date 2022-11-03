@@ -1,8 +1,0 @@
-summary:
-    Additional test plan
-provision:
-    how: virtual
-execute:
-    how: shell
-    script:
-    - rpm -qa
