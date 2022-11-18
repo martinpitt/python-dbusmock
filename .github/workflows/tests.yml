@@ -18,6 +18,7 @@ jobs:
           - registry.fedoraproject.org/fedora:latest
           - registry.fedoraproject.org/fedora:rawhide
           - quay.io/centos/centos:stream8
+          - quay.io/centos/centos:stream9
 
     timeout-minutes: 30
     steps:
