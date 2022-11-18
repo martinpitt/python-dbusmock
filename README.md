@@ -1,3 +1,5 @@
+![CI status](https://github.com/martinpitt/python-dbusmock/actions/workflows/tests.yml/badge.svg)
+
 python-dbusmock
 ===============
 
