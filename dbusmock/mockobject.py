@@ -357,7 +357,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
     @dbus.service.method(MOCK_IFACE,
                          in_signature='s',
                          out_signature='')
-    def RemoveObject(self, path: str) -> None:  # pylint: disable=no-self-use
+    def RemoveObject(self, path: str) -> None:
         '''Remove a D-Bus object from the mock
 
         As with AddObject, this will *not* emit the InterfacesRemoved signal if
@@ -457,6 +457,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
         # mock_method(); using message_keyword with this dynamic approach fails
         # because inspect cannot handle those, so pass on interface and method
         # name as first positional arguments
+        # pylint: disable=unnecessary-lambda-assignment
         method = lambda self, *args, **kwargs: DBusMockObject.mock_method(  # noqa: E731
             self, interface, name, in_sig, *args, **kwargs)
 

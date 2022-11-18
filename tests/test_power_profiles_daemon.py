@@ -69,7 +69,7 @@ class TestPowerProfilesDaemon(dbusmock.DBusTestCase):
                                       universal_newlines=True)
         self.assertEqual(out, 'performance\n')
 
-    def run_powerprofilesctl_list_holds(self):  # pylint: disable=no-self-use
+    def run_powerprofilesctl_list_holds(self):
         return subprocess.check_output(['powerprofilesctl', 'list-holds'],
                                        universal_newlines=True)
 

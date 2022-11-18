@@ -51,7 +51,7 @@ class TestTimedated(dbusmock.DBusTestCase):
             self.p_mock.terminate()
             self.p_mock.wait()
 
-    def run_timedatectl(self):  # pylint: disable=no-self-use
+    def run_timedatectl(self):
         return subprocess.check_output(['timedatectl'],
                                        universal_newlines=True)
 
