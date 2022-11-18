@@ -270,3 +270,23 @@ python-dbusmock is hosted on https://github.com/martinpitt/python-dbusmock
 Run the unit tests with
 
     python3 -m unittest
+
+In CI, the unit tests run in containers. You can run them locally with e.g.
+
+    tests/run registry.fedoraproject.org/fedora:latest
+
+Check the [unit-tests GitHub workflow](.github/workflows/tests.yml) for the
+operating systems/container images on which python-dbusmock is tested and
+supported.
+
+To debug failures interactively, run
+
+    DEBUG=1 tests/run [image]
+
+which will sleep on failures. You can then attach to the running container
+image with e.g. `podman -itl bash`. The `/source` directory is mounted from the
+host, i.e. edit files in your normal git checkout outside of the container, and
+re-run all tests in the container shell like above. You can also run a specific
+test:
+
+    python3 -m unittest tests.test_api.TestAPI.test_onearg_ret
