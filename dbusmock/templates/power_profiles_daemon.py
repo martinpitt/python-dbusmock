@@ -64,7 +64,7 @@ def load(mock, parameters):
             dbus.Dictionary({'Profile': 'balanced', 'Driver': 'dbusmock'}, signature='sv'),
             dbus.Dictionary({'Profile': 'performance', 'Driver': 'dbusmock'}, signature='sv')
         ],
-        'Actions': dbus.Array([], signature='(as)'),
+        'Actions': dbus.Array([], signature='s'),
         'ActiveProfileHolds': dbus.Array([], signature='(aa{sv})'),
     }
     mock.AddProperties(MAIN_IFACE, dbus.Dictionary(props, signature='sv'))
