@@ -10,5 +10,9 @@ execute:
 
 /second:
   summary: Additional test plan
+  prepare:
+  - name: flag file
+    how: shell
+    script: echo us > /tmp/WeWereHere
   discover+:
     test: /tests/pwned
