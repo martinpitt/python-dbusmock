@@ -756,6 +756,33 @@ def load(mock, parameters):
         self.assertEqual(len(args), 1)
         self.assertEqual(args[0], 'foo')
 
+    def test_xdg_data_dir(self):
+        '''Load a template from XDG_DATA_DIRS'''
+
+        with tempfile.TemporaryDirectory(prefix='xdg-test') as xdg_data_dir:
+            os.environ['XDG_DATA_DIRS'] = '/non/existing:' + xdg_data_dir
+            template_dir = Path(xdg_data_dir) / 'python-dbusmock' / 'templates'
+            template_dir.mkdir(parents=True)
+
+            (template_dir / 'answer.py').write_text('''
+BUS_NAME = 'universe.Ultimate'
+MAIN_OBJ = '/'
+MAIN_IFACE = 'universe.Ultimate'
+SYSTEM_BUS = False
+
+def load(mock, parameters):
+    mock.AddMethods(MAIN_IFACE, [('Answer', 's', 'i', 'ret = 42')])
+''')
+
+            (p_mock, dbus_ultimate) = self.spawn_server_template('answer', stdout=subprocess.PIPE)
+            self.addCleanup(p_mock.wait)
+            self.addCleanup(p_mock.terminate)
+            self.addCleanup(p_mock.stdout.close)
+
+            xml = dbus_ultimate.Introspect()
+            self.assertIn('<interface name="universe.Ultimate">', xml)
+            self.assertIn('<method name="Answer">', xml)
+
     def test_static_method(self):
         '''Static method in a template'''
 

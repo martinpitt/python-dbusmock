@@ -227,10 +227,24 @@ methods and the standard [dbus-python](https://dbus.freedesktop.org/doc/dbus-pyt
 [`@dbus.service.method`](https://dbus.freedesktop.org/doc/dbus-python/dbus.service.html#dbus.service.method)
 decorator.
 
-If you want to contribute a template, look at
-dbusmock/templates/upower.py for a real-life implementation. You can
-copy dbusmock/templates/SKELETON to your new template file name and
-replace `CHANGEME` with the actual code/values.
+To build your own template, you can copy
+[dbusmock/templates/SKELETON](./dbusmock/templates/SKELETON) to your
+new template file name and replace `CHANGEME` with the actual code/values.
+Look at [dbusmock/templates/upower.py](./dbusmock/templates/upower.py) for
+a real-life implementation.
+
+A template can be loaded from these locations:
+
+ * Provide a path to its `.py` file. This is intended for running tests out of
+   git/build trees with very project specific or unstable templates.
+
+ * From [`$XDG_DATA_DIRS/python-dbusmock/templates/`*name*`.py`](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html).
+   This is intended for shipping reusable templates in distribution development
+   packages. Load them by module name.
+
+ * python-dbusmock [ships a set of widely applicable templates](./dbusmock/templates/)
+   which are collaboratively maintained, like the `upower` one in the example
+   above. Load them by module name.
 
 ## More Examples
 
