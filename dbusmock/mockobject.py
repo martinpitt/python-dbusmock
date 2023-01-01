@@ -45,18 +45,34 @@ MethodType = Tuple[str, str, str, str]
 CallLogType = Tuple[int, str, Sequence[Any]]
 
 
+def load_module_from_path(path: Path, template_name: str):
+    '''Load a mock template from a file path'''
+    spec = importlib.util.spec_from_file_location(template_name, path)
+    assert spec
+    mod = importlib.util.module_from_spec(spec)
+    exec(path.read_text("UTF-8"), mod.__dict__, mod.__dict__)  # pylint: disable=exec-used
+    return mod
+
+
 def load_module(name: str):
-    '''Load a mock template Python module from dbusmock/templates/'''
+    '''Load a mock template Python module
 
+    This can be a path to the template's .py file, a bare module name in
+    $XDG_DATA_DIRS/python-dbusmock/templates/, or a bare module name in dbusmock's shipped templates.
+    '''
+    # specified by path
     pname = Path(name)
-
     if pname.exists() and pname.suffix == '.py':
-        spec = importlib.util.spec_from_file_location(pname.stem, name)
-        assert spec
-        mod = importlib.util.module_from_spec(spec)
-        exec(pname.read_text("UTF-8"), mod.__dict__, mod.__dict__)  # pylint: disable=exec-used
-        return mod
+        return load_module_from_path(pname, pname.stem)
 
+    # XDG_DATA_DIRS
+    xdg_data_dirs = os.environ.get('XDG_DATA_DIRS') or '/usr/local/share/:/usr/share/'
+    for d in xdg_data_dirs.split(':'):
+        src = Path(d, 'python-dbusmock', 'templates', name + '.py')
+        if src.exists():
+            return load_module_from_path(src, name)
+
+    # shipped inside dbusmock package
     return importlib.import_module('dbusmock.templates.' + name)
 
 
