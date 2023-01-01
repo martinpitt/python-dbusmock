@@ -286,7 +286,7 @@ To debug failures interactively, run
     DEBUG=1 tests/run [image]
 
 which will sleep on failures. You can then attach to the running container
-image with e.g. `podman -itl bash`. The `/source` directory is mounted from the
+image with e.g. `podman exec -itl bash`. The `/source` directory is mounted from the
 host, i.e. edit files in your normal git checkout outside of the container, and
 re-run all tests in the container shell like above. You can also run a specific
 test:
