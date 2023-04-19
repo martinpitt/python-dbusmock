@@ -19,6 +19,13 @@ srpm_build_deps:
   - python3-setuptools_scm
 
 jobs:
+  - job: copr_build
+    trigger: pull_request
+    targets:
+    - fedora-all
+    - centos-stream-8-x86_64
+    - centos-stream-9-x86_64
+  
   - job: tests
     trigger: pull_request
     targets:
