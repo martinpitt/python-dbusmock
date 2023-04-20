@@ -22,7 +22,7 @@ import tempfile
 import time
 import unittest
 from pathlib import Path
-from typing import Tuple, Dict, Any, Union
+from typing import Tuple, Dict, Any, Optional
 
 import dbus
 
@@ -103,7 +103,7 @@ class DBusTestCase(unittest.TestCase):
   </policy>
 </busconfig>
 ''')
-        (pid, addr) = cls.start_dbus(conf=conf)
+        (pid, addr) = cls.start_dbus(conf=str(conf))
         os.environ[f'DBUS_{bus_type.upper()}_BUS_ADDRESS'] = addr
         setattr(cls, f'{bus_type}_bus_pid', pid)
 
@@ -124,7 +124,7 @@ class DBusTestCase(unittest.TestCase):
         DBusTestCase.__start_bus('system')
 
     @classmethod
-    def start_dbus(cls, conf: Union[str, Path] = None) -> Tuple[int, str]:
+    def start_dbus(cls, conf: Optional[str] = None) -> Tuple[int, str]:
         '''Start a D-Bus daemon
 
         Return (pid, address) pair.
@@ -216,7 +216,7 @@ class DBusTestCase(unittest.TestCase):
             assert timeout > 0, f'timed out waiting for D-Bus object {path}: {last_exc}'
 
     @classmethod
-    def spawn_server(cls, name: str, path: str, interface: str, system_bus: bool = False, stdout: int = None):
+    def spawn_server(cls, name: str, path: str, interface: str, system_bus: bool = False, stdout=None):
         '''Run a DBusMockObject instance in a separate process
 
         The daemon will terminate automatically when the D-Bus that it connects
@@ -248,7 +248,11 @@ class DBusTestCase(unittest.TestCase):
         return daemon
 
     @classmethod
-    def spawn_server_template(cls, template: str, parameters: Dict[str, Any] = None, stdout: int = None, system_bus: bool = None):
+    def spawn_server_template(cls,
+                              template: str,
+                              parameters: Optional[Dict[str, Any]] = None,
+                              stdout=None,
+                              system_bus: Optional[bool] = None):
         '''Run a D-Bus mock template instance in a separate process
 
         This starts a D-Bus mock process and loads the given template with
