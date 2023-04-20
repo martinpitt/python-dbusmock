@@ -14,6 +14,10 @@ jobs:
           # need this to also fetch tags
           fetch-depth: 0
 
+      # https://github.blog/2022-04-12-git-security-vulnerability-announced/
+      - name: Pacify git's permission check
+        run: git config --global --add safe.directory /__w
+
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -36,9 +40,9 @@ jobs:
           rm -rf tmp
 
       - name: Create GitHub release
-        uses: eloquent/github-release-action@v2
+        uses: cockpit-project/action-release@88d994da62d1451c7073e26748c18413fcdf46e9
         with:
-          prerelease: "false"
+          filename: "dist/python-dbusmock-${{ github.ref_name }}.tar.gz"
 
       - name: Create PyPy release
         uses: pypa/gh-action-pypi-publish@release/v1
