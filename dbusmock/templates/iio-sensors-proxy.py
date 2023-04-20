@@ -181,7 +181,8 @@ def SetInternalProperty(self, interface, property_name, value):
     if is_valid_sensor_for_interface(sensor, interface):
 
         if not getattr(self, f'has_{sensor}'):
-            raise Exception(f'No {sensor} sensor available')
+            raise dbus.exceptions.DBusException(f'No {sensor} sensor available',
+                                                name='org.freedesktop.DBus.Mock.Error')
 
         owners = getattr(self, f'{sensor}_owners')
         # We allow setting a property from any client here, even if not claiming

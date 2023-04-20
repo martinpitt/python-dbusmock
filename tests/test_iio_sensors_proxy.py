@@ -129,8 +129,8 @@ class TestIIOSensorsProxy(TestIIOSensorsProxyBase):
         with self.assertRaises(dbus.exceptions.DBusException) as ctx:
             self.set_internal_property('AccelerometerOrientation', 'normal')
         self.assertEqual(ctx.exception.get_dbus_name(),
-                         'org.freedesktop.DBus.Python.Exception')
-        self.assertIn('Exception: No accelerometer sensor available',
+                         'org.freedesktop.DBus.Mock.Error')
+        self.assertIn('No accelerometer sensor available',
                       ctx.exception.get_dbus_message().split('\n'))
 
     def test_accelerometer_claimed_properties_changes(self):
@@ -170,14 +170,14 @@ class TestIIOSensorsProxy(TestIIOSensorsProxyBase):
         with self.assertRaises(dbus.exceptions.DBusException) as ctx:
             self.set_internal_property('LightLevelUnit', 'vendor')
         self.assertEqual(ctx.exception.get_dbus_name(),
-                         'org.freedesktop.DBus.Python.Exception')
-        self.assertIn('Exception: No ambient_light sensor available',
+                         'org.freedesktop.DBus.Mock.Error')
+        self.assertIn('No ambient_light sensor available',
                       ctx.exception.get_dbus_message().split('\n'))
         with self.assertRaises(dbus.exceptions.DBusException) as ctx:
             self.set_internal_property('LightLevel', 0.5)
         self.assertEqual(ctx.exception.get_dbus_name(),
-                         'org.freedesktop.DBus.Python.Exception')
-        self.assertIn('Exception: No ambient_light sensor available',
+                         'org.freedesktop.DBus.Mock.Error')
+        self.assertIn('No ambient_light sensor available',
                       ctx.exception.get_dbus_message().split('\n'))
 
     def test_ambient_light_claimed_properties_changes(self):
@@ -219,8 +219,8 @@ class TestIIOSensorsProxy(TestIIOSensorsProxyBase):
         with self.assertRaises(dbus.exceptions.DBusException) as ctx:
             self.set_internal_property('ProximityNear', True)
         self.assertEqual(ctx.exception.get_dbus_name(),
-                         'org.freedesktop.DBus.Python.Exception')
-        self.assertIn('Exception: No proximity sensor available',
+                         'org.freedesktop.DBus.Mock.Error')
+        self.assertIn('No proximity sensor available',
                       ctx.exception.get_dbus_message().split('\n'))
 
     def test_proximity_claimed_properties_changes(self):
@@ -266,8 +266,8 @@ class TestIIOSensorsProxyCompass(TestIIOSensorsProxyBase):
         with self.assertRaises(dbus.exceptions.DBusException) as ctx:
             self.set_internal_property('CompassHeading', 180)
         self.assertEqual(ctx.exception.get_dbus_name(),
-                         'org.freedesktop.DBus.Python.Exception')
-        self.assertIn('Exception: No compass sensor available',
+                         'org.freedesktop.DBus.Mock.Error')
+        self.assertIn('No compass sensor available',
                       ctx.exception.get_dbus_message().split('\n'))
 
     def test_compass_claimed_properties_changes(self):
