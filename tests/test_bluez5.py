@@ -53,7 +53,9 @@ def _run_bluetoothctl(command):
 
         # Ignore output on stderr unless bluetoothctl dies.
         if process.returncode != 0:
-            raise Exception('bluetoothctl died with status ' + str(process.returncode) + ' and errors: ' + (err or ""))
+            raise dbus.exceptions.DBusException(
+                f'bluetoothctl died with status {process.returncode} and errors: {err or ""}',
+                name='org.freedesktop.DBus.Mock.Error')
 
     # Strip the prompt from the start of every line, then remove empty
     # lines.
