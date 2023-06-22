@@ -157,6 +157,9 @@ class DBusTestCase(unittest.TestCase):
         for _ in range(50):
             try:
                 os.kill(pid, signal.SIGTERM)
+                os.waitpid(pid, os.WNOHANG)
+            except ChildProcessError:
+                pass
             except OSError as e:
                 if e.errno == errno.ESRCH:
                     break
@@ -165,7 +168,10 @@ class DBusTestCase(unittest.TestCase):
         else:
             sys.stderr.write('ERROR: timed out waiting for bus process to terminate\n')
             os.kill(pid, signal.SIGKILL)
-            time.sleep(0.5)
+            try:
+                os.waitpid(pid, 0)
+            except ChildProcessError:
+                pass
         signal.signal(signal.SIGTERM, signal.SIG_DFL)
 
     @classmethod
