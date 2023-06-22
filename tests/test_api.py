@@ -1068,6 +1068,7 @@ class TestServiceAutostart(dbusmock.DBusTestCase):
     @classmethod
     def tearDownClass(cls):
         shutil.rmtree(cls.xdg_data_dir)
+        dbusmock.DBusTestCase.tearDownClass()
 
     def test_session_service_function_raise(self):
         with self.assertRaises(AssertionError):
