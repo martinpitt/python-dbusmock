@@ -5,7 +5,7 @@ Version:          0.23.0
 Release:          1%{?dist}
 Summary:          Mock D-Bus objects
 
-License:          LGPLv3+
+License:          LGPL-3.0-or-later
 URL:              https://pypi.python.org/pypi/python-dbusmock
 Source0:          https://files.pythonhosted.org/packages/source/p/%{name}/%{name}-%{version}.tar.gz
 
