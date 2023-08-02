@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 """ Tests for accounts service """
 
 # This program is free software; you can redistribute it and/or modify it under
