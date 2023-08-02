@@ -23,16 +23,16 @@ class StaticCodeTests(unittest.TestCase):
         subprocess.check_call(['flake8'])
 
     def test_pylint(self):
-        subprocess.check_call([sys.executable, '-m', 'pylint'] + glob.glob('dbusmock/*.py'))
+        subprocess.check_call([sys.executable, '-m', 'pylint', *glob.glob('dbusmock/*.py')])
         # signatures/arguments are not determined by us, docstrings are a bit pointless, and code repetition
         # is impractical to avoid (e.g. bluez4 and bluez5)
-        subprocess.check_call([sys.executable, '-m', 'pylint'] +
-                              ['--score=n', '--disable=missing-function-docstring,R0801',
+        subprocess.check_call([sys.executable, '-m', 'pylint', '--score=n',
+                               '--disable=missing-function-docstring,R0801',
                                '--disable=too-many-arguments,too-many-instance-attributes',
                                'dbusmock/templates/'])
-        subprocess.check_call([sys.executable, '-m', 'pylint'] +
-                              ['--score=n',
-                               '--disable=missing-module-docstring,missing-class-docstring,missing-function-docstring',
+        subprocess.check_call([sys.executable, '-m', 'pylint', '--score=n',
+                               '--disable=missing-module-docstring,missing-class-docstring',
+                               '--disable=missing-function-docstring',
                                '--disable=too-many-public-methods,too-many-lines,too-many-statements,R0801',
                                'tests/'])
 

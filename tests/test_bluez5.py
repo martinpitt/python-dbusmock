@@ -56,10 +56,10 @@ def _run_bluetoothctl(command):
     # Strip the prompt from the start of every line, then remove empty
     # lines.
     #
-    # The prompt looks like ‘[bluetooth]# ’, potentially containing command
+    # The prompt looks like `[bluetooth]# `, potentially containing command
     # line colour control codes. Split at the first space.
     #
-    # Sometimes we end up with the final line being ‘\x1b[K’ (partial
+    # Sometimes we end up with the final line being `\x1b[K` (partial
     # control code), which we need to ignore.
     def remove_prefix(line):
         if line.startswith('[bluetooth]#') or line.startswith('\x1b'):
@@ -160,7 +160,7 @@ class TestBlueZ5(dbusmock.DBusTestCase):
         out = _run_bluetoothctl('devices')
         self.assertIn('Device ' + address + ' ' + alias, out)
 
-        # Check the device’s properties.
+        # Check the device's properties.
         out = '\n'.join(_run_bluetoothctl('info ' + address))
         self.assertIn('Device ' + address, out)
         self.assertIn('Name: ' + alias, out)
@@ -186,7 +186,7 @@ class TestBlueZ5(dbusmock.DBusTestCase):
         # Pair with the device.
         self.dbusmock_bluez.PairDevice(adapter_name, address, 5898764)
 
-        # Check the device’s properties.
+        # Check the device's properties.
         out = '\n'.join(_run_bluetoothctl('info ' + address))
         self.assertIn('Device ' + address, out)
         self.assertIn('Paired: yes', out)

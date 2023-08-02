@@ -427,7 +427,7 @@ def PairDevice(_self, adapter_device_name, device_address, class_):
 
     This unblocks the device if it was blocked.
 
-    If the specified adapter or device don’t exist, a NoSuchAdapter or
+    If the specified adapter or device doesn't exist, a NoSuchAdapter or
     NoSuchDevice error will be returned on the bus.
 
     Returns nothing.
@@ -503,7 +503,7 @@ def BlockDevice(_self, adapter_device_name, device_address):
 
     This disconnects the device if it was connected.
 
-    If the specified adapter or device don’t exist, a NoSuchAdapter or
+    If the specified adapter or device doesn't exist, a NoSuchAdapter or
     NoSuchDevice error will be returned on the bus.
 
     Returns nothing.
@@ -546,7 +546,7 @@ def ConnectDevice(_self, adapter_device_name, device_address):
 
     This unblocks the device if it was blocked.
 
-    If the specified adapter or device don’t exist, a NoSuchAdapter or
+    If the specified adapter or device doesn't exist, a NoSuchAdapter or
     NoSuchDevice error will be returned on the bus.
 
     Returns nothing.
@@ -590,9 +590,9 @@ def DisconnectDevice(_self, adapter_device_name, device_address):
     address (e.g. 'AA:BB:CC:DD:EE:FF'). The adapter device name is the
     device_name passed to AddAdapter.
 
-    This does not change the device’s blocked status.
+    This does not change the device's blocked status.
 
-    If the specified adapter or device don’t exist, a NoSuchAdapter or
+    If the specified adapter or device doesn't exist, a NoSuchAdapter or
     NoSuchDevice error will be returned on the bus.
 
     Returns nothing.
