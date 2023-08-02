@@ -249,16 +249,16 @@ class TestBlueZObex(dbusmock.DBusTestCase):
             transfer = dbus.Interface(obj, 'org.bluez.obex.transfer1.Mock')
 
             Path(transfer_filename).write_bytes(
-                b'BEGIN:VCARD\r\n' +
-                b'VERSION:3.0\r\n' +
-                b'FN:Forrest Gump\r\n' +
-                b'TEL;TYPE=WORK,VOICE:(111) 555-1212\r\n' +
-                b'TEL;TYPE=HOME,VOICE:(404) 555-1212\r\n' +
-                b'EMAIL;TYPE=PREF,INTERNET:forrestgump@example.com\r\n' +
-                b'EMAIL:test@example.com\r\n' +
-                b'URL;TYPE=HOME:http://example.com/\r\n' +
-                b'URL:http://forest.com/\r\n' +
-                b'URL:https://test.com/\r\n' +
+                b'BEGIN:VCARD\r\n'
+                b'VERSION:3.0\r\n'
+                b'FN:Forrest Gump\r\n'
+                b'TEL;TYPE=WORK,VOICE:(111) 555-1212\r\n'
+                b'TEL;TYPE=HOME,VOICE:(404) 555-1212\r\n'
+                b'EMAIL;TYPE=PREF,INTERNET:forrestgump@example.com\r\n'
+                b'EMAIL:test@example.com\r\n'
+                b'URL;TYPE=HOME:http://example.com/\r\n'
+                b'URL:http://forest.com/\r\n'
+                b'URL:https://test.com/\r\n'
                 b'END:VCARD\r\n'
             )
 

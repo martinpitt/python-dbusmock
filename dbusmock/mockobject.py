@@ -246,10 +246,8 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
         else:
             cond = f'k.startswith(\'{self.path}/\')'
 
-        self.AddMethod(OBJECT_MANAGER_IFACE,
-                       'GetManagedObjects', '', 'a{oa{sa{sv}}}',
-                       'ret = {dbus.ObjectPath(k): objects[k].props ' +
-                       '  for k in objects.keys() if ' + cond + '}')
+        code = f'ret = {{dbus.ObjectPath(k): objects[k].props for k in objects.keys() if {cond} }}'
+        self.AddMethod(OBJECT_MANAGER_IFACE, 'GetManagedObjects', '', 'a{oa{sa{sv}}}', code)
         self.object_manager = self
 
     def _reset(self, props: PropsType) -> None:

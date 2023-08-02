@@ -1046,7 +1046,7 @@ class TestServiceAutostart(dbusmock.DBusTestCase):
         session_dir.mkdir()
 
         (system_dir / 'org.TestSystem.service').write_text(
-            '[D-BUS Service]\n' +
+            '[D-BUS Service]\n'
             'Name=org.TestSystem\n'
             'Exec=/usr/bin/python3 -c "import sys; from gi.repository import GLib, Gio; '
             '     Gio.bus_own_name(Gio.BusType.SYSTEM, \'org.TestSystem\', 0, None, None, lambda *args: sys.exit(0)); '
