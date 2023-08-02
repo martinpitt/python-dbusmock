@@ -257,8 +257,8 @@ def HangupAll(self):
 #        };
 
 def get_all_operators(mock):
-    return 'ret = [(m, objects[m].GetAll("org.ofono.NetworkOperator")) ' \
-           f'for m in objects if "{mock.name}/operator/" in m]'
+    return ('ret = [(m, objects[m].GetAll("org.ofono.NetworkOperator")) '
+            f'for m in objects if "{mock.name}/operator/" in m]')
 
 
 def add_netreg_api(mock):

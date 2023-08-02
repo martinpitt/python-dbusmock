@@ -65,6 +65,7 @@ select = [
     "G",       # flake8-logging-format
     "I",       # isort
     "ICN",     # flake8-import-conventions
+    "ISC",     # flake8-implicit-str-concat
     "PLE",     # pylint errors
     "PGH",     # pygrep-hooks
     "RSE",     # flake8-raise
