@@ -13,7 +13,7 @@ eatmydata apt-get -y --purge dist-upgrade
 # install build dependencies
 eatmydata apt-get install --no-install-recommends -y git \
     python3-all python3-setuptools python3-setuptools-scm python3-build python3-venv \
-    python3-dbus python3-gi gir1.2-glib-2.0 \
+    python3-dbus python3-pytest python3-gi gir1.2-glib-2.0 \
     dbus libnotify-bin upower network-manager bluez ofono ofono-scripts
 
 # systemd's tools otherwise fail on "not been booted with systemd"
@@ -27,6 +27,7 @@ export TEST_CODE="$TEST_CODE"
 cp -r $(pwd) /tmp/source
 cd /tmp/source
 python3 -m unittest -v
+python3 -m pytest -vv -k 'test_pytest or TestAPI'
 # massively parallel test to check for races
 for i in \$(seq 100); do
     ( PYTHONPATH=. python3 tests/test_api.py TestTemplates || touch /tmp/fail ) &

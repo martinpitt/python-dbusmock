@@ -36,7 +36,8 @@ When using a local system/session bus, you can do unit or integration
 testing without needing root privileges or disturbing a running system.
 The Python API offers some convenience functions like
 `start_session_bus()` and `start_system_bus()` for this, in a
-`DBusTestCase` class (subclass of the standard `unittest.TestCase`).
+`DBusTestCase` class (subclass of the standard `unittest.TestCase`) or
+alternatively as a `@pytest.fixture`.
 
 You can use this with any programming language, as you can run the
 mocker as a normal program. The actual setup of the mock (adding
@@ -44,7 +45,7 @@ objects, methods, properties, and signals) all happen via D-Bus methods
 on the `org.freedesktop.DBus.Mock` interface. You just don't have the
 convenience D-Bus launch API that way.
 
-## Simple example in Python
+## Simple example using Python's unittest
 
 Picking up the above example about mocking upower's `Suspend()` method,
 this is how you would set up a mock upower in your test case:
@@ -124,6 +125,80 @@ Let's walk through:
      machine suspend. Our mock process will log the method call
      together with a time stamp; you can use the latter for doing
      timing related tests, but we just ignore it here.
+
+## Simple example using pytest
+
+The same functionality as above but instead using the pytest fixture provided
+by this package.
+
+```python
+import subprocess
+
+import dbus
+import pytest
+
+import dbusmock
+
+
+@pytest.fixture
+def upower_mock(dbusmock_system):
+    p_mock = dbusmock_system.spawn_server(
+        'org.freedesktop.UPower',
+        '/org/freedesktop/UPower',
+        'org.freedesktop.UPower',
+        system_bus=True,
+        stdout=subprocess.PIPE)
+
+    # Get a proxy for the UPower object's Mock interface
+    dbus_upower_mock = dbus.Interface(dbusmock_system.get_dbus(True).get_object(
+        'org.freedesktop.UPower',
+        '/org/freedesktop/UPower'
+    ), dbusmock.MOCK_IFACE)
+    dbus_upower_mock.AddMethod('', 'Suspend', '', '', '')
+
+    yield p_mock
+
+    p_mock.stdout.close()
+    p_mock.terminate()
+    p_mock.wait()
+
+
+def test_suspend_on_idle(upower_mock):
+    # run your program in a way that should trigger one suspend call
+
+    # now check the log that we got one Suspend() call
+    assert upower_mock.stdout.readline() == b'^[0-9.]+ Suspend$'
+```
+
+Let's walk through:
+
+- We import the `dbusmock_system` fixture from dbusmock which provides us
+  with a system bus started for our test case wherever the
+  `dbusmock_system` argument is used by a test case and/or a pytest
+  fixture.
+
+- The `upower_mock` fixture spawns the mock D-Bus server process for an initial
+  `/org/freedesktop/UPower` object with an `org.freedesktop.UPower`
+  D-Bus interface on the system bus. We capture its stdout to be
+  able to verify that methods were called.
+
+  We then call `org.freedesktop.DBus.Mock.AddMethod()` to add a
+  `Suspend()` method to our new object to the default D-Bus
+  interface. This will not do anything (except log its call to
+  stdout). It takes no input arguments, returns nothing, and does
+  not run any custom code.
+
+  This mock server process is yielded to the test function that uses
+  the `upower_mock` fixture - once the test is complete the process is
+  terminated again.
+
+- `test_suspend_on_idle()` is the actual test case. It needs to run
+  your program in a way that should trigger one suspend call. Your
+  program will try to call `Suspend()`, but as that's now being
+  served by our mock instead of upower, there will not be any actual
+  machine suspend. Our mock process will log the method call
+  together with a time stamp; you can use the latter for doing
+  timing related tests, but we just ignore it here.
 
 ## Simple example from shell
 
@@ -301,9 +376,7 @@ the mock server as a program.
 
 python-dbusmock is hosted on https://github.com/martinpitt/python-dbusmock
 
-Run the unit tests with
-
-    python3 -m unittest
+Run the unit tests with `python3 -m unittest` or `pytest`.
 
 In CI, the unit tests run in containers. You can run them locally with e.g.
 
