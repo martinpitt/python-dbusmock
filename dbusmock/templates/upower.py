@@ -22,8 +22,8 @@ __copyright__ = '''
 
 import dbus
 
-from dbusmock import MOCK_IFACE, mockobject
 import dbusmock
+from dbusmock import MOCK_IFACE, mockobject
 
 BUS_NAME = 'org.freedesktop.UPower'
 MAIN_OBJ = '/org/freedesktop/UPower'

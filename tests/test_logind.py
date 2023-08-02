@@ -21,6 +21,7 @@ import unittest
 from pathlib import Path
 
 import dbus
+
 import dbusmock
 
 tracemalloc.start(25)

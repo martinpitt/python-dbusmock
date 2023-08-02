@@ -19,6 +19,7 @@ import unittest
 from pathlib import Path
 
 import dbus
+
 import dbusmock
 
 script_dir = Path(os.environ.get('OFONO_SCRIPT_DIR', '/usr/share/ofono/scripts'))

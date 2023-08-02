@@ -19,6 +19,7 @@ __copyright__ = '''
 '''
 
 import time
+
 import dbus
 
 from dbusmock import MOCK_IFACE

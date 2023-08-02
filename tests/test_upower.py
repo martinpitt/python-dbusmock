@@ -18,8 +18,8 @@ import shutil
 import subprocess
 import sys
 import time
-import unittest
 import tracemalloc
+import unittest
 
 import dbus
 

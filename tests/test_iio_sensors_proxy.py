@@ -23,8 +23,8 @@ import unittest
 
 import dbus
 import dbus.mainloop.glib
-
 from gi.repository import GLib
+
 import dbusmock
 
 dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)

@@ -14,8 +14,7 @@ __copyright__ = '''
 '''
 
 
-from dbusmock.mockobject import (DBusMockObject, MOCK_IFACE,
-                                 OBJECT_MANAGER_IFACE, get_object, get_objects)
+from dbusmock.mockobject import MOCK_IFACE, OBJECT_MANAGER_IFACE, DBusMockObject, get_object, get_objects
 from dbusmock.testcase import DBusTestCase
 
 try:

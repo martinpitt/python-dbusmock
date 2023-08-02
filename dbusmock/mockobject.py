@@ -22,7 +22,7 @@ import sys
 import time
 import types
 from pathlib import Path
-from typing import Optional, Dict, Any, List, Tuple, Sequence, KeysView
+from typing import Any, Dict, KeysView, List, Optional, Sequence, Tuple
 from xml.etree import ElementTree
 
 import dbus

@@ -63,6 +63,7 @@ select = [
     "E",       # pycodestyle
     "F",       # pyflakes
     "G",       # flake8-logging-format
+    "I",       # isort
     "ICN",     # flake8-import-conventions
     "PLE",     # pylint errors
     "PGH",     # pygrep-hooks

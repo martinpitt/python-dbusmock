@@ -25,7 +25,6 @@ from pathlib import Path
 
 import dbus
 import dbus.mainloop.glib
-
 from gi.repository import GLib
 
 import dbusmock

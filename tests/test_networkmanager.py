@@ -17,23 +17,26 @@ import re
 import shutil
 import subprocess
 import sys
-import unittest
 import tracemalloc
+import unittest
 
-from gi.repository import GLib
 import dbus
 import dbus.mainloop.glib
+from gi.repository import GLib
 
 import dbusmock
-
-from dbusmock.templates.networkmanager import DeviceState
-from dbusmock.templates.networkmanager import NM80211ApSecurityFlags
-from dbusmock.templates.networkmanager import InfrastructureMode
-from dbusmock.templates.networkmanager import NMActiveConnectionState
-from dbusmock.templates.networkmanager import NMState
-from dbusmock.templates.networkmanager import NMConnectivityState
-from dbusmock.templates.networkmanager import (CSETTINGS_IFACE, MANAGER_IFACE,
-                                               SETTINGS_OBJ, SETTINGS_IFACE)
+from dbusmock.templates.networkmanager import (
+    CSETTINGS_IFACE,
+    MANAGER_IFACE,
+    SETTINGS_IFACE,
+    SETTINGS_OBJ,
+    DeviceState,
+    InfrastructureMode,
+    NM80211ApSecurityFlags,
+    NMActiveConnectionState,
+    NMConnectivityState,
+    NMState,
+)
 
 tracemalloc.start(25)
 dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)

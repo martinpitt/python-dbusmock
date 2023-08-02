@@ -12,11 +12,11 @@ __copyright__ = '''
 (c) 2017 - 2022 Martin Pitt <martin@piware.de>
 '''
 
-import unittest
-import os
-import sys
-import subprocess
 import fcntl
+import os
+import subprocess
+import sys
+import unittest
 
 import dbusmock
 

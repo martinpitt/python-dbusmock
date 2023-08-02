@@ -17,8 +17,8 @@ import os
 import shutil
 import subprocess
 import sys
-import unittest
 import time
+import unittest
 
 import dbus
 import dbus.mainloop.glib

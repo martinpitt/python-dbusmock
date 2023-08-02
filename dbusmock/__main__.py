@@ -61,8 +61,9 @@ def parse_args():
 
 if __name__ == '__main__':
     import ctypes
-    import dbus.service
+
     import dbus.mainloop.glib
+    import dbus.service
 
     args = parse_args()
     dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)

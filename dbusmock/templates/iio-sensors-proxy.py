@@ -16,6 +16,7 @@ __copyright__ = '''
 import re
 
 import dbus
+
 from dbusmock import MOCK_IFACE
 
 BUS_NAME = 'net.hadess.SensorProxy'
