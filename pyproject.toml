@@ -61,6 +61,7 @@ select = [
     "C4",      # flake8-comprehensions
     "DTZ",     # flake8-datetimez
     "E",       # pycodestyle
+    "EXE",     # flake8-executable
     "F",       # pyflakes
     "G",       # flake8-logging-format
     "I",       # isort
