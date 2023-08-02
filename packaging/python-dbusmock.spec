@@ -15,6 +15,7 @@ BuildRequires:    python3-dbus
 BuildRequires:    python3-devel
 BuildRequires:    python3-setuptools
 BuildRequires:    python3-gobject
+BuildRequires:    python3-pytest
 BuildRequires:    dbus-x11
 BuildRequires:    upower
 
