@@ -57,7 +57,7 @@ def emit_signal_to_destination(mock, interface, name, signature, destination, *a
     message = dbus.lowlevel.SignalMessage(mock.path, interface, name)
     if destination:
         message.set_destination(destination)
-    message.append(signature=signature, *args)
+    message.append(*args, signature=signature)
     for location in mock.locations:
         location[0].send_message(message)
 
