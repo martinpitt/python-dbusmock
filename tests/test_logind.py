@@ -55,15 +55,15 @@ class TestLogind(dbusmock.DBusTestCase):
         cmd = ['loginctl']
         if self.version >= '209':
             cmd.append('--no-legend')
-        out = subprocess.check_output(cmd + ['list-sessions'],
+        out = subprocess.check_output([*cmd, 'list-sessions'],
                                       universal_newlines=True)
         self.assertEqual(out, '')
 
-        out = subprocess.check_output(cmd + ['list-seats'],
+        out = subprocess.check_output([*cmd, 'list-seats'],
                                       universal_newlines=True)
         self.assertEqual(out, '')
 
-        out = subprocess.check_output(cmd + ['list-users'],
+        out = subprocess.check_output([*cmd, 'list-users'],
                                       universal_newlines=True)
         self.assertEqual(out, '')
 

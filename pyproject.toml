@@ -71,8 +71,13 @@ select = [
     "PLE",     # pylint errors
     "PGH",     # pygrep-hooks
     "RSE",     # flake8-raise
+    "RUF",     # ruff rules
     "T10",     # flake8-debugger
     "TCH",     # flake8-type-checking
     "W",       # warnings (mostly whitespace)
     "YTT",     # flake8-2020
+]
+
+ignore = [
+    "RUF012", # Mutable class attributes should be annotated with `typing.ClassVar`
 ]

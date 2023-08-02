@@ -52,7 +52,7 @@ class TestCLI(dbusmock.DBusTestCase):
 
     def start_mock(self, args, wait_name, wait_path, wait_system=False):
         # pylint: disable=consider-using-with
-        self.p_mock = subprocess.Popen([sys.executable, '-m', 'dbusmock'] + args,
+        self.p_mock = subprocess.Popen([sys.executable, '-m', 'dbusmock', *args],
                                        stdout=subprocess.PIPE,
                                        universal_newlines=True)
         self.wait_for_bus_object(wait_name, wait_path, wait_system)

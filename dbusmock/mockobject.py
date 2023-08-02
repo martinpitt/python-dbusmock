@@ -155,7 +155,7 @@ def _convert_args(signature: str, args: Tuple[Any, ...]) -> List[Any]:
         m.append(*args, signature=signature)
         return m.get_args_list()
     except Exception as e:
-        raise dbus.exceptions.DBusException(f'Invalid arguments: {str(e)}',
+        raise dbus.exceptions.DBusException(f'Invalid arguments: {e!s}',
                                             name='org.freedesktop.DBus.Error.InvalidArgs') from e
 
 
@@ -206,7 +206,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
                  GetMethodCalls().
         is_object_manager: If True, the GetManagedObjects method will
                            automatically be implemented on the object, returning
-                           all objects which have this one’s path as a prefix of
+                           all objects which have this one's path as a prefix of
                            theirs. Note that the InterfacesAdded and
                            InterfacesRemoved signals will not be automatically
                            emitted.
@@ -375,7 +375,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
         '''Remove a D-Bus object from the mock
 
         As with AddObject, this will *not* emit the InterfacesRemoved signal if
-        it’s an ObjectManager instance.
+        it's an ObjectManager instance.
         '''
         try:
             objects[path].remove_from_connection()
@@ -597,7 +597,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
         try:
             module = load_module(template)
         except ImportError as e:
-            raise dbus.exceptions.DBusException(f'Cannot add template {template}: {str(e)}',
+            raise dbus.exceptions.DBusException(f'Cannot add template {template}: {e!s}',
                                                 name='org.freedesktop.DBus.Mock.TemplateError') from e
 
         # If the template specifies this is an ObjectManager, set that up

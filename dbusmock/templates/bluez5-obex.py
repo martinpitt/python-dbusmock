@@ -62,7 +62,7 @@ def CreateSession(self, destination, args):
 
     The destination must be the address of the destination Bluetooth device.
     The given arguments must be a map from well-known keys to values,
-    containing at least the ‘Target’ key, whose value must be ‘PBAP’ (other
+    containing at least the `Target` key, whose value must be `PBAP` (other
     keys and values are accepted by the real daemon, but not by this mock
     daemon at the moment). If the target is missing or incorrect, an
     Unsupported error is returned on the bus.
@@ -160,7 +160,7 @@ def PullAll(self, target_file, filters):
     '''OBEX method to start a pull transfer of a phone book.
 
     This doesn't complete the transfer; code to mock up activating and
-    completing the transfer must be provided by the test driver, as it’s
+    completing the transfer must be provided by the test driver, as it is
     too complex and test-specific to put here.
 
     The target_file is the absolute path for a file which will have zero or

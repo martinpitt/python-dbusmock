@@ -113,7 +113,7 @@ assert args[1] == ['/foo']
 assert type(args[1]) == dbus.Array
 assert type(args[1][0]) == dbus.ObjectPath
 assert args[2] == 5
-assert args[3] == {repr(UNICODE)}
+assert args[3] == {UNICODE!r}
 ''')
         self.assertEqual(self.dbus_test.Do(-1, ['/foo'], 5, UNICODE), None)
 
