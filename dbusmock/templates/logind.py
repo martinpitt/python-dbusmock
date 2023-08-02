@@ -18,9 +18,10 @@ __copyright__ = '''
 '''
 
 import os
-import dbus
 
+import dbus
 from gi.repository import GLib
+
 from dbusmock import MOCK_IFACE, mockobject
 
 BUS_NAME = 'org.freedesktop.login1'

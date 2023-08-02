@@ -13,8 +13,8 @@ __copyright__ = '''
 (c) 2017 - 2022 Martin Pitt <martin@piware.de>
 '''
 
-from gi.repository import GLib
 import dbus
+from gi.repository import GLib
 
 from dbusmock import MOCK_IFACE, mockobject
 

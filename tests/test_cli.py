@@ -25,7 +25,6 @@ import dbus
 
 import dbusmock
 
-
 tracemalloc.start(25)
 have_upower = shutil.which('upower')
 

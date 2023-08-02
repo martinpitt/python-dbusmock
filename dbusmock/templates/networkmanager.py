@@ -18,14 +18,13 @@ __copyright__ = '''
 (c) 2017 - 2022 Martin Pitt <martin@piware.de>
 '''
 
-import uuid
 import binascii
+import uuid
 
 import dbus
 
-from dbusmock import MOCK_IFACE
 import dbusmock
-
+from dbusmock import MOCK_IFACE
 
 BUS_NAME = 'org.freedesktop.NetworkManager'
 MAIN_OBJ = '/org/freedesktop'

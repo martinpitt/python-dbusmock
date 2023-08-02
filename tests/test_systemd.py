@@ -15,9 +15,9 @@ __copyright__ = '''
 import subprocess
 import sys
 import unittest
+
 import dbus
 import dbus.mainloop.glib
-
 from gi.repository import GLib
 
 import dbusmock
