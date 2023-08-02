@@ -41,6 +41,9 @@ class StaticCodeTests(unittest.TestCase):
     def test_types(self):
         subprocess.check_call([sys.executable, '-m', 'mypy', 'dbusmock/', 'tests/'])
 
+    def test_ruff(self):
+        subprocess.check_call(['ruff', 'check', '--no-cache', '.'])
+
 
 if __name__ == '__main__':
     # avoid writing to stderr

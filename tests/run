@@ -8,7 +8,7 @@ else
     RUNC="sudo docker"
 fi
 
-# only run pylint on a single release, too annoying to keep the code compatible with multiple versions
+# only run static code checks on a single release, too annoying to keep the code compatible with multiple versions
 if [ "${IMAGE%fedora:latest}" != "$IMAGE" ]; then
     TEST_CODE="1"
 fi

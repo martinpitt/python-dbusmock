@@ -52,3 +52,23 @@ warn_unused_configs = true
 [[tool.mypy.overrides]]
 module = ["dbus.*", "gi.repository", "dbusmock._version"]
 ignore_missing_imports = true
+
+[tool.ruff]
+line-length = 130
+
+select = [
+    "A",       # flake8-builtins
+    "C4",      # flake8-comprehensions
+    "DTZ",     # flake8-datetimez
+    "E",       # pycodestyle
+    "F",       # pyflakes
+    "G",       # flake8-logging-format
+    "ICN",     # flake8-import-conventions
+    "PLE",     # pylint errors
+    "PGH",     # pygrep-hooks
+    "RSE",     # flake8-raise
+    "T10",     # flake8-debugger
+    "TCH",     # flake8-type-checking
+    "W",       # warnings (mostly whitespace)
+    "YTT",     # flake8-2020
+]
