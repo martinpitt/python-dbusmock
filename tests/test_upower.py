@@ -160,9 +160,9 @@ class TestUPower(dbusmock.DBusTestCase):
         # defines the properties which are defined
         self.assertEqual(
             set(props.keys()),
-            set(['Type', 'State', 'Percentage', 'Energy', 'EnergyFull',
-                 'EnergyRate', 'TimeToEmpty', 'TimeToFull', 'IsPresent',
-                 'IconName', 'WarningLevel']))
+            {'Type', 'State', 'Percentage', 'Energy', 'EnergyFull',
+             'EnergyRate', 'TimeToEmpty', 'TimeToFull', 'IsPresent',
+             'IconName', 'WarningLevel'})
 
         # not set up by default, so should not present
         self.assertEqual(props['IsPresent'], False)
