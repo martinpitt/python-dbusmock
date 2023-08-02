@@ -63,7 +63,7 @@ class DBusTestCase(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        setattr(cls, '_DBusTestCase__datadir', None)
+        cls._DBusTestCase__datadir = None
         if cls._DBusTestCase__datadir:
             shutil.rmtree(cls._DBusTestCase__datadir)
 

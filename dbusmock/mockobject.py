@@ -29,7 +29,7 @@ import dbus
 import dbus.service
 
 # we do not use this ourselves, but mock methods often want to use this
-os  # pyflakes pylint: disable=pointless-statement
+os  # pyflakes pylint: disable=pointless-statement  # noqa: B018
 
 # global path -> DBusMockObject mapping
 objects: Dict[str, 'DBusMockObject'] = {}
@@ -152,11 +152,11 @@ def _convert_args(signature: str, args: Tuple[Any, ...]) -> List[Any]:
         if signature == '' and len(args) > 0:
             raise TypeError('Fewer items found in D-Bus signature than in Python arguments')
         m = dbus.connection.MethodCallMessage('a.b', '/a', 'a.b', 'a')
-        m.append(signature=signature, *args)
+        m.append(*args, signature=signature)
         return m.get_args_list()
     except Exception as e:
         raise dbus.exceptions.DBusException(f'Invalid arguments: {str(e)}',
-                                            name='org.freedesktop.DBus.Error.InvalidArgs')
+                                            name='org.freedesktop.DBus.Error.InvalidArgs') from e
 
 
 def loggedmethod(self, func):
@@ -598,7 +598,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
             module = load_module(template)
         except ImportError as e:
             raise dbus.exceptions.DBusException(f'Cannot add template {template}: {str(e)}',
-                                                name='org.freedesktop.DBus.Mock.TemplateError')
+                                                name='org.freedesktop.DBus.Mock.TemplateError') from e
 
         # If the template specifies this is an ObjectManager, set that up
         if hasattr(module, 'IS_OBJECT_MANAGER') and module.IS_OBJECT_MANAGER:
