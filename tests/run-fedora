@@ -6,11 +6,7 @@ dnf -y install python3-setuptools python3 python3-gobject-base \
     upower NetworkManager bluez libnotify polkit
 
 if ! grep -q :el /etc/os-release; then
-    dnf -y install iio-sensor-proxy
-fi
-# HACK: powerprofilectl started to SIGTRAP in Fedora Rawhide https://github.com/martinpitt/python-dbusmock/issues/177
-if [ -n "$TEST_CODE" ]; then
-    dnf -y install power-profiles-daemon
+    dnf -y install power-profiles-daemon iio-sensor-proxy
 fi
 
 if [ -n "$TEST_CODE" ]; then
