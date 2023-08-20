@@ -59,7 +59,7 @@ class TestCLI(dbusmock.DBusTestCase):
         self.wait_for_bus_object(wait_name, wait_path, wait_system)
 
     def start_mock_process(self, args):
-        return subprocess.check_output([sys.executable, '-m', 'dbusmock'] + args,
+        return subprocess.check_output([sys.executable, '-m', 'dbusmock', *args],
                                        universal_newlines=True)
 
     def test_session_bus(self):
