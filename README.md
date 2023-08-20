@@ -50,8 +50,12 @@ Picking up the above example about mocking upower's `Suspend()` method,
 this is how you would set up a mock upower in your test case:
 
 ```python
+import subprocess
+
 import dbus
+
 import dbusmock
+
 
 class TestMyProgram(dbusmock.DBusTestCase):
     @classmethod
