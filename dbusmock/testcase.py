@@ -159,7 +159,7 @@ class DBusTestCase(unittest.TestCase):
                 os.kill(pid, signal.SIGTERM)
                 os.waitpid(pid, os.WNOHANG)
             except ChildProcessError:
-                pass
+                break
             except OSError as e:
                 if e.errno == errno.ESRCH:
                     break
