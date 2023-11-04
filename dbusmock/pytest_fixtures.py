@@ -20,7 +20,10 @@ import dbusmock.testcase
 def fixture_dbusmock_test() -> Iterator[dbusmock.testcase.DBusTestCase]:
     '''Export the whole DBusTestCase as a fixture.'''
 
-    testcase = dbusmock.testcase.DBusTestCase()
+    class _MockFixture(dbusmock.testcase.DBusTestCase):
+        pass
+
+    testcase = _MockFixture()
     testcase.setUp()
     yield testcase
     testcase.tearDown()
