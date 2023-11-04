@@ -60,9 +60,9 @@ class DBusTestCase(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        cls._DBusTestCase__datadir = None
         if cls._DBusTestCase__datadir:
             shutil.rmtree(cls._DBusTestCase__datadir)
+            cls._DBusTestCase__datadir = None
 
         for bus_type in ['system', 'session']:
             pid = getattr(cls, f'{bus_type}_bus_pid')
