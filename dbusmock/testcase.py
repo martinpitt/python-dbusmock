@@ -60,9 +60,9 @@ class DBusTestCase(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        if cls._DBusTestCase__datadir:
-            shutil.rmtree(cls._DBusTestCase__datadir)
-            cls._DBusTestCase__datadir = None
+        if DBusTestCase._DBusTestCase__datadir:
+            shutil.rmtree(DBusTestCase._DBusTestCase__datadir)
+            DBusTestCase._DBusTestCase__datadir = None
 
         for bus_type in ['system', 'session']:
             pid = getattr(cls, f'{bus_type}_bus_pid')
@@ -81,9 +81,9 @@ class DBusTestCase(unittest.TestCase):
         This gets stopped automatically at class teardown.
         '''
         cls.get_services_dir()
-        assert cls._DBusTestCase__datadir
+        assert DBusTestCase._DBusTestCase__datadir
 
-        conf = cls._DBusTestCase__datadir / f'dbusmock_{bus_type}_cfg'
+        conf = DBusTestCase._DBusTestCase__datadir / f'dbusmock_{bus_type}_cfg'
         conf.write_text(f'''<!DOCTYPE busconfig PUBLIC "-//freedesktop//DTD D-Bus Bus Configuration 1.0//EN"
  "http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
 <busconfig>
