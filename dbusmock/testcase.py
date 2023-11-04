@@ -110,7 +110,8 @@ class DBusTestCase(unittest.TestCase):
 
         This gets stopped automatically at class teardown.
         '''
-        DBusTestCase.__start_bus('session')
+        assert cls.session_bus_pid is None
+        cls.__start_bus('session')
 
     @classmethod
     def start_system_bus(cls) -> None:
@@ -118,7 +119,8 @@ class DBusTestCase(unittest.TestCase):
 
         This gets stopped automatically at class teardown.
         '''
-        DBusTestCase.__start_bus('system')
+        assert cls.system_bus_pid is None
+        cls.__start_bus('system')
 
     @classmethod
     def start_dbus(cls, conf: Optional[str] = None) -> Tuple[int, str]:
