@@ -103,6 +103,8 @@ class DBusTestCase(unittest.TestCase):
         (pid, addr) = cls.start_dbus(conf=str(conf))
         os.environ[f'DBUS_{bus_type.upper()}_BUS_ADDRESS'] = addr
         setattr(cls, f'{bus_type}_bus_pid', pid)
+        assert DBusTestCase.session_bus_pid is None
+        assert DBusTestCase.system_bus_pid is None
 
     @classmethod
     def start_session_bus(cls) -> None:
