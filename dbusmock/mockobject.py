@@ -58,7 +58,7 @@ def load_module(name: str):
     '''Load a mock template Python module
 
     This can be a path to the template's .py file, a bare module name in
-    $XDG_DATA_DIRS/python-dbusmock/templates/, or a bare module name in dbusmock's shipped templates.
+    ``$XDG_DATA_DIRS/python-dbusmock/templates/``, or a bare module name in dbusmock's shipped templates.
     '''
     # specified by path
     pname = Path(name)
@@ -186,30 +186,30 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
     and properties via methods on the org.freedesktop.DBus.Mock interface, so
     that you can control the mock from any programming language.
 
-    Beyond that "remote control" API, this is a standard dbus-python service object, see
-    <https://dbus.freedesktop.org/doc/dbus-python/tutorial.html#exporting-objects>.
+    Beyond that "remote control" API, this is a standard
+    `dbus-python service object <https://dbus.freedesktop.org/doc/dbus-python/tutorial.html#exporting-objects>`_.
     '''
 
     def __init__(self, bus_name: str, path: str, interface: str, props: PropsType,
                  logfile: Optional[str] = None, is_object_manager: bool = False) -> None:
         '''Create a new DBusMockObject
 
-        bus_name: A dbus.service.BusName instance where the object will be put on
-        path: D-Bus object path
-        interface: Primary D-Bus interface name of this object (where
-                   properties and methods will be put on)
-        props: A property_name (string) → property (Variant) map with initial
-               properties on "interface"
-        logfile: When given, method calls will be logged into that file name;
-                 if None, logging will be written to stdout. Note that you can
-                 also query the called methods over D-Bus with GetCalls() and
-                 GetMethodCalls().
-        is_object_manager: If True, the GetManagedObjects method will
-                           automatically be implemented on the object, returning
-                           all objects which have this one's path as a prefix of
-                           theirs. Note that the InterfacesAdded and
-                           InterfacesRemoved signals will not be automatically
-                           emitted.
+        :param bus_name: A dbus.service.BusName instance where the object will be put on
+        :param path: D-Bus object path
+        :param interface: Primary D-Bus interface name of this object (where
+                          properties and methods will be put on)
+        :param props: A property_name (string) → property (Variant) map with initial
+                      properties on "interface"
+        :param logfile: When given, method calls will be logged into that file name;
+                        if None, logging will be written to stdout. Note that you can
+                        also query the called methods over D-Bus with GetCalls() and
+                        GetMethodCalls().
+        :param is_object_manager: If True, the GetManagedObjects method will
+                        automatically be implemented on the object, returning
+                        all objects which have this one's path as a prefix of
+                        theirs. Note that the InterfacesAdded and
+                        InterfacesRemoved signals will not be automatically
+                        emitted.
         '''
         dbus.service.Object.__init__(self, bus_name, path)
 
@@ -324,12 +324,12 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
     def AddObject(self, path: str, interface: str, properties: PropsType, methods: List[MethodType]) -> None:
         '''Dynamically add a new D-Bus object to the mock
 
-        path: D-Bus object path
-        interface: Primary D-Bus interface name of this object (where
+        :param path: D-Bus object path
+        :param interface: Primary D-Bus interface name of this object (where
                    properties and methods will be put on)
-        properties: A property_name (string) → value map with initial
+        :param properties: A property_name (string) → value map with initial
                     properties on "interface"
-        methods: An array of 4-tuples (name, in_sig, out_sig, code) describing
+        :param methods: An array of 4-tuples (name, in_sig, out_sig, code) describing
                  methods to add to "interface"; see AddMethod() for details of
                  the tuple values
 
@@ -338,17 +338,18 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
         manually if desired. This is because AddInterface may be called after
         AddObject, but before the InterfacesAdded signal should be emitted.
 
-        Example:
-        dbus_proxy.AddObject('/com/example/Foo/Manager',
-                             'com.example.Foo.Control',
-                             {
-                                 'state': dbus.String('online', variant_level=1),
-                             },
-                             [
-                                 ('Start', '', '', ''),
-                                 ('EchoInt', 'i', 'i', 'ret = args[0]'),
-                                 ('GetClients', '', 'ao', 'ret = ["/com/example/Foo/Client1"]'),
-                             ])
+        Example::
+
+            dbus_proxy.AddObject('/com/example/Foo/Manager',
+                                 'com.example.Foo.Control',
+                                 {
+                                     'state': dbus.String('online', variant_level=1),
+                                 },
+                                 [
+                                     ('Start', '', '', ''),
+                                     ('EchoInt', 'i', 'i', 'ret = args[0]'),
+                                     ('GetClients', '', 'ao', 'ret = ["/com/example/Foo/Client1"]'),
+                                 ])
         '''
         if path in objects:
             raise dbus.exceptions.DBusException(f'object {path} already exists', name='org.freedesktop.DBus.Mock.NameError')
@@ -421,34 +422,33 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
     def AddMethod(self, interface, name: str, in_sig: str, out_sig: str, code: str) -> None:
         '''Dynamically add a method to this object
 
-        interface: D-Bus interface to add this to. For convenience you can
-                   specify '' here to add the method to the object's main
-                   interface (as specified on construction).
-        name: Name of the method
-        in_sig: Signature of input arguments; for example "ias" for a method
-                that takes an int32 and a string array as arguments; see
-                http://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-signatures
-        out_sig: Signature of output arguments; for example "s" for a method
-                 that returns a string; use '' for methods that do not return
-                 anything.
-        code: Python 3 code to run in the method call; you have access to the
-              arguments through the "args" list, and can set the return value
-              by assigning a value to the "ret" variable. You can also read the
-              global "objects" variable, which is a dictionary mapping object
-              paths to DBusMockObject instances.
+        :param interface: D-Bus interface to add this to. For convenience you can
+                          specify '' here to add the method to the object's main
+                          interface (as specified on construction).
+        :param name: Name of the method
+        :param in_sig: Signature of input arguments; for example "ias" for a method
+                       that takes an int32 and a string array as arguments; see
+                       `the DBus spec <http://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-signatures>`_.
+        :param out_sig: Signature of output arguments; for example "s" for a method
+                       that returns a string; use '' for methods that do not return
+                       anything.
+        :param code: Python 3 code to run in the method call; you have access to the
+                     arguments through the "args" list, and can set the return value
+                     by assigning a value to the "ret" variable. You can also read the
+                     global "objects" variable, which is a dictionary mapping object
+                     paths to DBusMockObject instances.
 
-              For keeping state across method calls, you are free to use normal
-              Python members of the "self" object, which will be persistent for
-              the whole mock's life time. E. g. you can have a method with
-              "self.my_state = True", and another method that returns it with
-              "ret = self.my_state".
+                     For keeping state across method calls, you are free to use normal
+                     Python members of the "self" object, which will be persistent for
+                     the whole mock's life time. E. g. you can have a method with
+                     "self.my_state = True", and another method that returns it with
+                     "ret = self.my_state".
 
-              Methods can raise exceptions in the usual way, in particular
-              dbus.exceptions.DBusException:
-              <https://dbus.freedesktop.org/doc/dbus-python/dbus.html#dbus.DBusException>
+                     Methods can raise exceptions in the usual way, in particular
+                     `dbus.exceptions.DBusException <https://dbus.freedesktop.org/doc/dbus-python/dbus.html#dbus.DBusException>`_.
 
-              When specifying '', the method will not do anything (except
-              logging) and return None.
+                     When specifying '', the method will not do anything (except
+                     logging) and return None.
 
 
         This is meant for adding a method to a mock at runtime, from any programming language.
@@ -493,11 +493,11 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
     def AddMethods(self, interface: str, methods: List[MethodType]) -> None:
         '''Add several methods to this object
 
-        interface: D-Bus interface to add this to. For convenience you can
-                   specify '' here to add the method to the object's main
-                   interface (as specified on construction).
-        methods: list of 4-tuples (name, in_sig, out_sig, code) describing one
-                 method each. See AddMethod() for details of the tuple values.
+        :param interface: D-Bus interface to add this to. For convenience you can
+                          specify '' here to add the method to the object's main
+                          interface (as specified on construction).
+        :param methods: list of 4-tuples (name, in_sig, out_sig, code) describing one
+                        method each. See AddMethod() for details of the tuple values.
         '''
         for method in methods:
             self.AddMethod(interface, *method)
@@ -517,10 +517,10 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
     def UpdateProperties(self, interface: str, properties: PropsType) -> None:
         '''Update properties on this object and send a PropertiesChanged signal
 
-        interface: D-Bus interface to update this to. For convenience you can
-                   specify '' here to add the property to the object's main
-                   interface (as specified on construction).
-        properties: A property_name (string) → value map
+        :param interface: D-Bus interface to update this to. For convenience you can
+                          specify '' here to add the property to the object's main
+                          interface (as specified on construction).
+        :param properties: A property_name (string) → value map
         '''
         changed_props = {}
 
@@ -542,11 +542,11 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
     def AddProperty(self, interface: str, name: str, value: Any) -> None:
         '''Add property to this object
 
-        interface: D-Bus interface to add this to. For convenience you can
-                   specify '' here to add the property to the object's main
-                   interface (as specified on construction).
-        name: Property name.
-        value: Property value.
+        :param interface: D-Bus interface to add this to. For convenience you can
+                           specify '' here to add the property to the object's main
+                           interface (as specified on construction).
+        :param name: Property name.
+        :param value: Property value.
         '''
         if not interface:
             interface = self.interface
@@ -561,10 +561,10 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
     def AddProperties(self, interface: str, properties: PropsType) -> None:
         '''Add several properties to this object
 
-        interface: D-Bus interface to add this to. For convenience you can
-                   specify '' here to add the property to the object's main
-                   interface (as specified on construction).
-        properties: A property_name (string) → value map
+        :param interface: D-Bus interface to add this to. For convenience you can
+                          specify '' here to add the property to the object's main
+                          interface (as specified on construction).
+        :param properties: A property_name (string) → value map
         '''
         for k, v in properties.items():
             self.AddProperty(interface, k, v)
@@ -581,15 +581,15 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
         properties for the tests, and not the skeleton of common properties,
         interfaces, and methods.
 
-        template: Name of the template to load or the full path to a *.py file
-                  for custom templates. See "pydoc dbusmock.templates" for a
-                  list of available templates from python-dbusmock package, and
-                  "pydoc dbusmock.templates.NAME" for documentation about
-                  template NAME.
-        parameters: A parameter (string) → value (variant) map, for
-                    parameterizing templates. Each template can define their
-                    own, see documentation of that particular template for
-                    details.
+        :param template: Name of the template to load or the full path to a *.py file
+                         for custom templates. See "pydoc dbusmock.templates" for a
+                         list of available templates from python-dbusmock package, and
+                         "pydoc dbusmock.templates.NAME" for documentation about
+                         template NAME.
+        :param parameters: A parameter (string) → value (variant) map, for
+                           parameterizing templates. Each template can define their
+                           own, see documentation of that particular template for
+                           details.
         '''
         try:
             module = load_module(template)
@@ -649,15 +649,15 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
     def EmitSignal(self, interface: str, name: str, signature: str, sigargs: Tuple[Any, ...]) -> None:
         '''Emit a signal from the object.
 
-        interface: D-Bus interface to send the signal from. For convenience you
-                   can specify '' here to add the method to the object's main
-                   interface (as specified on construction).
-        name: Name of the signal
-        signature: Signature of input arguments; for example "ias" for a signal
-                that takes an int32 and a string array as arguments; see
-                http://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-signatures
-        args: variant array with signal arguments; must match order and type in
-              "signature"
+        :param interface: D-Bus interface to send the signal from. For convenience you
+                          can specify '' here to add the method to the object's main
+                          interface (as specified on construction).
+        :param name: Name of the signal
+        :param signature: Signature of input arguments; for example "ias" for a signal
+                          that takes an int32 and a string array as arguments; see
+                          http://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-signatures
+        :param args: variant array with signal arguments; must match order and type in
+                     "signature"
         '''
         self._emit_signal(interface, name, signature, sigargs, {})
 
@@ -667,18 +667,18 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
     def EmitSignalDetailed(self, interface: str, name: str, signature: str, sigargs: Tuple[Any, ...], details: PropsType) -> None:
         '''Emit a signal from the object with extra details.
 
-        interface: D-Bus interface to send the signal from. For convenience you
-                   can specify '' here to add the method to the object's main
-                   interface (as specified on construction).
-        name: Name of the signal
-        signature: Signature of input arguments; for example "ias" for a signal
-                that takes an int32 and a string array as arguments; see
-                http://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-signatures
-        args: variant array with signal arguments; must match order and type in
-              "signature"
-        details: dictionary with a string key/value entries. Supported keys are:
-            "destination": for the signal destination
-            "path": for the object path to send the signal from
+        :param interface: D-Bus interface to send the signal from. For convenience you
+                          can specify '' here to add the method to the object's main
+                          interface (as specified on construction).
+        :param name: Name of the signal
+        :param signature: Signature of input arguments; for example "ias" for a signal
+                       that takes an int32 and a string array as arguments; see
+                       http://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-signatures
+        :param args: variant array with signal arguments; must match order and type in
+                     "signature"
+        :param details: dictionary with a string key/value entries. Supported keys are:
+                   "destination": for the signal destination
+                   "path": for the object path to send the signal from
         '''
         self._emit_signal(interface, name, signature, sigargs, details)
 

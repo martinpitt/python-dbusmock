@@ -1,0 +1,52 @@
+name: Deploy to GitHub pages
+
+on:
+  push:
+    branches: ["main"]
+
+  # Allow running this workflow manually from the Actions tab
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-22.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+
+      - name: Install dependencies from pip
+        run: pip install sphinx sphinx-rtd-theme sphinx-autoapi myst-parser
+
+      - name: Build with sphinx
+        run: sphinx-build -M html doc/ doc/
+
+      - name: Move output to target directory
+        run: mv doc/html public_html/
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+
+      - name: Upload pages artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: public_html/
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
