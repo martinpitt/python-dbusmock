@@ -13,34 +13,20 @@ from typing import Iterator
 
 import pytest
 
-import dbusmock.testcase
-
-
-@pytest.fixture(name='dbusmock_test', scope='session')
-def fixture_dbusmock_test() -> Iterator[dbusmock.testcase.DBusTestCase]:
-    '''Export the whole DBusTestCase as a fixture.'''
-
-    class _MockFixture(dbusmock.testcase.DBusTestCase):
-        pass
-
-    testcase = _MockFixture()
-    testcase.setUp()
-    yield testcase
-    testcase.tearDown()
-    testcase.tearDownClass()
+from dbusmock.testcase import BusType, PrivateDBus
 
 
 @pytest.fixture(scope='session')
-def dbusmock_system(dbusmock_test) -> dbusmock.testcase.DBusTestCase:
+def dbusmock_system() -> Iterator[PrivateDBus]:
     '''Export the whole DBusTestCase as a fixture, with the system bus started'''
 
-    dbusmock_test.start_system_bus()
-    return dbusmock_test
+    with PrivateDBus(BusType.SYSTEM) as bus:
+        yield bus
 
 
 @pytest.fixture(scope='session')
-def dbusmock_session(dbusmock_test) -> dbusmock.testcase.DBusTestCase:
+def dbusmock_session() -> Iterator[PrivateDBus]:
     '''Export the whole DBusTestCase as a fixture, with the session bus started'''
 
-    dbusmock_test.start_session_bus()
-    return dbusmock_test
+    with PrivateDBus(BusType.SESSION) as bus:
+        yield bus
