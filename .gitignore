@@ -1,6 +1,8 @@
-/dist
-/dbusmock/_version.py
-__pycache__
 *.egg-info
-MANIFEST
 /build
+/dbusmock/_version.py
+/dist
+/doc/doctrees
+/doc/html
+MANIFEST
+__pycache__
