@@ -26,6 +26,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
 import dbus
+import dbus.proxies
 
 from dbusmock.mockobject import MOCK_IFACE, OBJECT_MANAGER_IFACE, load_module
 
@@ -234,10 +235,11 @@ class PrivateDBus:
         if self._daemon:
             self.bustype.reload_configuration()
 
-    def spawn_server(self, name: str, path: str, interface: str, system_bus: bool = False, stdout=None):
+    def spawn_server(self, name: str, path: str, interface: str, system_bus: bool = False, stdout=None) -> subprocess.Popen:
         '''Wrapper around ``spawn_server`` for backwards compatibility'''
         assert not system_bus or self.bustype == BusType.SYSTEM, "Mismatching bus types"
-        return spawn_server(name=name, path=path, interface=interface, bustype=self.bustype, stdout=stdout)
+        server = SpawnedMock.spawn_for_name(name, path, interface, bustype=self.bustype, stdout=stdout)
+        return server.process
 
     def wait_for_bus_object(self, dest: str, path: str, system_bus: bool = False, timeout: int = 600):
         '''Wrapper around ``BusType.wait_for_bus_object()`` for backwards compatibility'''
@@ -248,13 +250,14 @@ class PrivateDBus:
                               template: str,
                               parameters: Optional[Dict[str, Any]] = None,
                               stdout=None,
-                              system_bus: Optional[bool] = None):
+                              system_bus: Optional[bool] = None) -> Tuple[subprocess.Popen, dbus.proxies.ProxyObject]:
         '''Wrapper around ``spawn_server_template`` for backwards compatibility'''
         if system_bus is not None:  # noqa: SIM108
             bustype = BusType.SYSTEM if system_bus else BusType.SESSION
         else:
             bustype = None
-        return spawn_server_template(template=template, parameters=parameters, bustype=bustype, stdout=stdout)
+        server = SpawnedMock.spawn_server_template(template=template, parameters=parameters, bustype=bustype, stdout=stdout)
+        return server.process, server.obj
 
     def get_dbus(self, system_bus: bool = False) -> dbus.Bus:
         '''Wrapper around ``BusType.get_connection()`` for backwards compatibility'''
@@ -409,7 +412,7 @@ class DBusTestCase(unittest.TestCase):
         bustype.wait_for_bus_object(dest, path, timeout)
 
     @staticmethod
-    def spawn_server(name: str, path: str, interface: str, system_bus: bool = False, stdout=None):
+    def spawn_server(name: str, path: str, interface: str, system_bus: bool = False, stdout=None) -> subprocess.Popen:
         '''Run a DBusMockObject instance in a separate process
 
         The daemon will terminate automatically when the D-Bus that it connects
@@ -421,16 +424,18 @@ class DBusTestCase(unittest.TestCase):
 
         Returns the Popen object of the spawned daemon.
 
-        This is a legacy method kept for backwards compatibility, use ``spawn_server()`` instead.
+        This is a legacy method kept for backwards compatibility,
+        use SpawnedMock.spawn_for_name() instead.
         '''
         bustype = BusType.SYSTEM if system_bus else BusType.SESSION
-        return spawn_server(name, path, interface, bustype, stdout)
+        server = SpawnedMock.spawn_for_name(name, path, interface, bustype, stdout=stdout, stderr=None)
+        return server.process
 
     @staticmethod
     def spawn_server_template(template: str,
                               parameters: Optional[Dict[str, Any]] = None,
                               stdout=None,
-                              system_bus: Optional[bool] = None):
+                              system_bus: Optional[bool] = None) -> Tuple[subprocess.Popen, dbus.proxies.ProxyObject]:
         '''Run a D-Bus mock template instance in a separate process
 
         This starts a D-Bus mock process and loads the given template with
@@ -450,13 +455,15 @@ class DBusTestCase(unittest.TestCase):
 
         Returns a pair (daemon Popen object, main dbus object).
 
-        This is a legacy method kept for backwards compatibility, use ``spawn_server_template()`` instead.
+        This is a legacy method kept for backwards compatibility,
+        use SpawnedMock.spawn_with_template() instead.
         '''
         if system_bus is not None:  # noqa: SIM108
             bustype = BusType.SYSTEM if system_bus else BusType.SESSION
         else:
             bustype = None
-        return spawn_server_template(template=template, parameters=parameters, stdout=stdout, bustype=bustype)
+        server = SpawnedMock.spawn_with_template(template, parameters, bustype, stdout, stderr=None)
+        return server.process, server.obj
 
     @staticmethod
     def enable_service(service, system_bus: bool = False) -> None:
@@ -487,81 +494,147 @@ class DBusTestCase(unittest.TestCase):
         bus.disable_service(service)
 
 
-def spawn_server(name: str, path: str, interface: str,
-                 bustype: BusType = BusType.SESSION,
-                 stdout=None):
-    '''Run a DBusMockObject instance in a separate process
-
-    The daemon will terminate automatically when the D-Bus that it connects
-    to goes down.  If that does not happen (e. g. you test on the actual
-    system/session bus), you need to kill it manually.
-
-    This function blocks until the spawned DBusMockObject is ready and
-    listening on the bus.
-
-    Returns the Popen object of the spawned daemon.
+class SpawnedMock:
     '''
-    argv = [sys.executable, '-m', 'dbusmock', f'--{bustype.value}', name, path, interface]
-    bus = bustype.get_connection()
-    if bus.name_has_owner(name):
-        raise AssertionError(f'Trying to spawn a server for name {name} but it is already owned!')
+    An instance of a D-Bus mock template instance in a separate process.
 
-    # pylint: disable=consider-using-with
-    daemon = subprocess.Popen(argv, stdout=stdout)
-
-    # wait for daemon to start up
-    bustype.wait_for_bus_object(name, path)
-
-    return daemon
-
-
-def spawn_server_template(template: str,
-                          parameters: Optional[Dict[str, Any]] = None,
-                          bustype: Optional[BusType] = None,
-                          stdout=None):
-    '''Run a D-Bus mock template instance in a separate process
-
-    This starts a D-Bus mock process and loads the given template with
-    (optional) parameters into it. For details about templates see
-    dbusmock.DBusMockObject.AddTemplate().
-
-    Usually a template should specify SYSTEM_BUS = False/True to select whether it
-    gets loaded on the session or system bus. This can be overridden with the system_bus
-    parameter. For templates which don't set SYSTEM_BUS, this parameter has to be set.
-
-    The daemon will terminate automatically when the D-Bus that it connects
-    to goes down.  If that does not happen (e. g. you test on the actual
-    system/session bus), you need to kill it manually.
-
-    This function blocks until the spawned DBusMockObject is ready and
-    listening on the bus.
-
-    Returns a pair (daemon Popen object, main dbus object).
+    See SpawnedMock.spawn_for_name() and SpawnedMock.spawn_with_template()
+    the typical entry points.
     '''
+    def __init__(self, process: subprocess.Popen, obj: dbus.proxies.ProxyObject):
+        self._process = process
+        self._process_is_running = True
+        self._obj = obj
 
-    # we need the bus address from the template module
-    module = load_module(template)
+    @property
+    def process(self) -> subprocess.Popen:
+        '''Returns the process that is this mock template'''
+        return self._process
 
-    is_object_manager = module.IS_OBJECT_MANAGER if hasattr(module, 'IS_OBJECT_MANAGER') else False
+    @property
+    def obj(self):
+        '''The D-Bus object this server was spawned for'''
+        return self._obj
 
-    if is_object_manager and not hasattr(module, 'MAIN_IFACE'):  # noqa: SIM108
-        interface_name = OBJECT_MANAGER_IFACE
-    else:
-        interface_name = module.MAIN_IFACE
+    def __enter__(self) -> "SpawnedMock":
+        return self
 
-    if bustype is None:
-        bustype = BusType.SYSTEM if module.SYSTEM_BUS else BusType.SESSION
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.terminate()
 
-    assert bustype is not None
+    def terminate(self):
+        '''Terminate the process'''
+        if self._process.returncode is None:
+            self._process.poll()
 
-    daemon = spawn_server(module.BUS_NAME, module.MAIN_OBJ,
-                          interface_name, bustype, stdout)
+        if self._process.returncode is None:
+            if self._process.stdout:
+                self._process.stdout.close()
+            if self._process.stderr:
+                self._process.stderr.close()
+            try:
+                self._process.terminate()
+                try:
+                    self._process.wait(timeout=1)
+                except subprocess.TimeoutExpired:
+                    self._process.kill()
+            except ProcessLookupError:
+                pass
 
-    bus = bustype.get_connection()
-    obj = bus.get_object(module.BUS_NAME, module.MAIN_OBJ)
-    if not parameters:
-        parameters = dbus.Dictionary({}, signature='sv')
-    obj.AddTemplate(template, parameters,
-                    dbus_interface=MOCK_IFACE)
+    @property
+    def stdout(self):
+        '''
+        The stdout of the process, if no caller-specific stdout
+        was specified in spawn_for_name() or spawn_with_template().
+        '''
+        return self._process.stdout
 
-    return (daemon, obj)
+    @property
+    def stderr(self):
+        '''
+        The stderr of the process, if no caller-specific stderr
+        was specified in spawn_for_name() or spawn_with_template().
+        '''
+        return self._process.stderr
+
+    @classmethod
+    def spawn_for_name(cls, name: str, path: str, interface: str,
+                       bustype: BusType = BusType.SESSION,
+                       stdout=subprocess.PIPE,
+                       stderr=subprocess.PIPE) -> "SpawnedMock":
+        '''Run a DBusMockObject instance in a separate process
+
+        The daemon will terminate automatically when the D-Bus that it connects
+        to goes down.  If that does not happen (e. g. you test on the actual
+        system/session bus), you need to kill it manually.
+
+        This function blocks until the spawned DBusMockObject is ready and
+        listening on the bus.
+
+        By default, stdout and stderr of the spawned process is available via the
+        SpawnedMock.stdout and SpawnedMock.stderr properties on the returned object.
+        '''
+        argv = [sys.executable, '-m', 'dbusmock', f'--{bustype.value}', name, path, interface]
+        bus = bustype.get_connection()
+        if bus.name_has_owner(name):
+            raise AssertionError(f'Trying to spawn a server for name {name} but it is already owned!')
+
+        # pylint: disable=consider-using-with
+        daemon = subprocess.Popen(argv, stdout=stdout, stderr=stderr)
+
+        # wait for daemon to start up
+        bustype.wait_for_bus_object(name, path)
+        obj = bus.get_object(name, path)
+
+        return cls(
+            process=daemon,
+            obj=obj
+        )
+
+    @classmethod
+    def spawn_with_template(cls,
+                            template: str,
+                            parameters: Optional[Dict[str, Any]] = None,
+                            bustype: Optional[BusType] = None,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE):
+        '''Run a D-Bus mock template instance in a separate process
+
+        This starts a D-Bus mock process and loads the given template with
+        (optional) parameters into it. For details about templates see
+        dbusmock.DBusMockObject.AddTemplate().
+
+        Usually a template should specify SYSTEM_BUS = False/True to select whether it
+        gets loaded on the session or system bus. This can be overridden with the system_bus
+        parameter. For templates which don't set SYSTEM_BUS, this parameter has to be set.
+
+        The daemon will terminate automatically when the D-Bus that it connects
+        to goes down.  If that does not happen (e. g. you test on the actual
+        system/session bus), you need to kill it manually.
+
+        This function blocks until the spawned DBusMockObject is ready and
+        listening on the bus.
+
+        Returns a pair (daemon Popen object, main dbus object).
+        '''
+
+        # we need the bus address from the template module
+        module = load_module(template)
+
+        is_object_manager = module.IS_OBJECT_MANAGER if hasattr(module, 'IS_OBJECT_MANAGER') else False
+
+        if is_object_manager and not hasattr(module, 'MAIN_IFACE'):  # noqa: SIM108
+            interface_name = OBJECT_MANAGER_IFACE
+        else:
+            interface_name = module.MAIN_IFACE
+
+        if bustype is None:
+            bustype = BusType.SYSTEM if module.SYSTEM_BUS else BusType.SESSION
+
+        assert bustype is not None
+
+        server = SpawnedMock.spawn_for_name(module.BUS_NAME, module.MAIN_OBJ, interface_name, bustype, stdout, stderr)
+        if not parameters:
+            parameters = dbus.Dictionary({}, signature='sv')
+        server.obj.AddTemplate(template, parameters, dbus_interface=MOCK_IFACE)
+        return server

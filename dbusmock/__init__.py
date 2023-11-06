@@ -15,7 +15,7 @@ __copyright__ = '''
 
 
 from dbusmock.mockobject import MOCK_IFACE, OBJECT_MANAGER_IFACE, DBusMockObject, get_object, get_objects
-from dbusmock.testcase import BusType, DBusTestCase, PrivateDBus, spawn_server, spawn_server_template
+from dbusmock.testcase import BusType, DBusTestCase, PrivateDBus, SpawnedMock
 
 try:
     # created by setuptools_scm
@@ -25,4 +25,4 @@ except ImportError:
 
 
 __all__ = ['DBusMockObject', 'MOCK_IFACE', 'OBJECT_MANAGER_IFACE',
-           'DBusTestCase', 'PrivateDBus', 'BusType', 'get_object', 'get_objects', 'spawn_server', 'spawn_server_template']
+           'DBusTestCase', 'PrivateDBus', 'BusType', 'SpawnedMock', 'get_object', 'get_objects']
