@@ -291,7 +291,7 @@ def add_netreg_api(mock):
                    [
                        ('GetProperties', '', 'a{sv}', 'ret = self.GetAll("org.ofono.NetworkOperator")'),
                        ('Register', '', '', ''),
-                   ]  # : silly pep8 error here about hanging indent
+                   ]
                   )
 
     mock.AddMethods('org.ofono.NetworkRegistration', [

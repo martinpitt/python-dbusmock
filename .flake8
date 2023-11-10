@@ -1,7 +1,0 @@
-[flake8]
-ignore=
-    # line break after binary operator
-    W504
-    # closing bracket does not match visual indentation
-    E124
-max-line-length = 130

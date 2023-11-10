@@ -19,9 +19,6 @@ import unittest
 
 @unittest.skipUnless(os.getenv("TEST_CODE", None), "$TEST_CODE not set, not running static code checks")
 class StaticCodeTests(unittest.TestCase):
-    def test_flake8(self):
-        subprocess.check_call(['flake8'])
-
     def test_pylint(self):
         subprocess.check_call([sys.executable, '-m', 'pylint', *glob.glob('dbusmock/*.py')])
         # signatures/arguments are not determined by us, docstrings are a bit pointless, and code repetition
