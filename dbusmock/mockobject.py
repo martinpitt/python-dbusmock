@@ -775,7 +775,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
         '''
         fd = self.logfile.fileno() if self.logfile else sys.stdout.fileno()
 
-        os.write(fd, f'{time.time():.3f} {msg}\n'.encode('UTF-8'))
+        os.write(fd, f'{time.time():.3f} {msg}\n'.encode())
 
     @dbus.service.method(dbus.INTROSPECTABLE_IFACE,
                          in_signature='',

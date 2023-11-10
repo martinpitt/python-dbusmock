@@ -307,7 +307,7 @@ class TestNetworkManager(dbusmock.DBusTestCase):
                 'uuid': uuid,
                 'type': '802-11-wireless'}, signature='sv'),
             '802-11-wireless': dbus.Dictionary({
-                'ssid': dbus.ByteArray('The_SSID'.encode('UTF-8'))}, signature='sv')
+                'ssid': dbus.ByteArray(b'The_SSID')}, signature='sv')
         }, signature='sa{sv}')
         con1 = self.settings.AddConnection(settings)
 
@@ -338,7 +338,7 @@ class TestNetworkManager(dbusmock.DBusTestCase):
                 'uuid': uuid,
                 'type': '802-11-wireless'}, signature='sv'),
             '802-11-wireless': dbus.Dictionary({
-                'ssid': dbus.ByteArray('The_SSID'.encode('UTF-8'))}, signature='sv')
+                'ssid': dbus.ByteArray(b'The_SSID')}, signature='sv')
         }, signature='sa{sv}')
 
         con1 = self.settings.AddConnection(settings)
@@ -554,7 +554,7 @@ class TestNetworkManager(dbusmock.DBusTestCase):
                 'uuid': uuid,
                 'type': '802-11-wireless'}, signature='sv'),
             '802-11-wireless': dbus.Dictionary({
-                'ssid': dbus.ByteArray('The_SSID'.encode('UTF-8'))}, signature='sv')
+                'ssid': dbus.ByteArray(b'The_SSID')}, signature='sv')
         }, signature='sa{sv}')
         connectionPath = self.settings.AddConnection(settings)
         self.assertEqual(self.settings.GetConnectionByUuid(uuid), connectionPath)
