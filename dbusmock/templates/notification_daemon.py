@@ -29,10 +29,7 @@ default_caps = ['body', 'body-markup', 'icon-static', 'image/svg+xml',
 
 
 def load(mock, parameters):
-    if 'capabilities' in parameters:
-        caps = parameters['capabilities'].split()
-    else:
-        caps = default_caps
+    caps = parameters['capabilities'].split() if 'capabilities' in parameters else default_caps
 
     # next notification ID
     mock.next_id = 1

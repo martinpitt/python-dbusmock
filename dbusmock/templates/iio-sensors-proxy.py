@@ -193,7 +193,7 @@ def SetInternalProperty(self, interface, property_name, value):
     if pre_value != value:
         setattr(self, property_attribute, value)
         if owners:
-            for owner in owners.keys():
+            for owner in owners:
                 emit_properties_changed(self, interface, property_name, owner)
         elif owners is None:
             emit_properties_changed(self, interface, property_name, None)

@@ -70,10 +70,7 @@ def block(self, index, should_block):
     if index not in type2objectname:
         return False
     objname = type2objectname[index]
-    if should_block:
-        new_block_state = 1
-    else:
-        new_block_state = 0
+    new_block_state = 1 if should_block else 0
     if self.internal_states[objname] != new_block_state:
         path = '/org/freedesktop/URfkill/' + objname
         obj = dbusmock.get_object(path)

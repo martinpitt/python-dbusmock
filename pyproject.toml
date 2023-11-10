@@ -75,6 +75,7 @@ select = [
     "RET",     # flake8-return
     "RSE",     # flake8-raise
     "RUF",     # ruff rules
+    "SIM",     # flake8-simplify
     "T10",     # flake8-debugger
     "TCH",     # flake8-type-checking
     "W",       # warnings (mostly whitespace)
@@ -83,4 +84,5 @@ select = [
 
 ignore = [
     "RUF012", # Mutable class attributes should be annotated with `typing.ClassVar`
+    "SIM105", # Use `contextlib.suppress(KeyError)` instead of `try`-`except`-`pass`
 ]

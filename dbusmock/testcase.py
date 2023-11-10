@@ -50,10 +50,7 @@ class DBusTestCase(unittest.TestCase):
         '''
         # NOTE: Explicitly use the attribute of DBusTestCase, as cls may be a
         # different class depending on how the method is called.
-        if system_bus:
-            services_dir = 'system_services'
-        else:
-            services_dir = 'services'
+        services_dir = 'system_services' if system_bus else 'services'
         if not DBusTestCase._DBusTestCase__datadir:
             DBusTestCase._DBusTestCase__datadir = Path(tempfile.mkdtemp(prefix='dbusmock_data_'))
             (DBusTestCase._DBusTestCase__datadir / 'system_services').mkdir()
@@ -281,12 +278,9 @@ class DBusTestCase(unittest.TestCase):
         # we need the bus address from the template module
         module = load_module(template)
 
-        if hasattr(module, 'IS_OBJECT_MANAGER'):
-            is_object_manager = module.IS_OBJECT_MANAGER
-        else:
-            is_object_manager = False
+        is_object_manager = module.IS_OBJECT_MANAGER if hasattr(module, 'IS_OBJECT_MANAGER') else False
 
-        if is_object_manager and not hasattr(module, 'MAIN_IFACE'):
+        if is_object_manager and not hasattr(module, 'MAIN_IFACE'):  # noqa: SIM108
             interface_name = OBJECT_MANAGER_IFACE
         else:
             interface_name = module.MAIN_IFACE

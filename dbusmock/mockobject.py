@@ -223,7 +223,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
         self._template_parameters: Optional[PropsType] = None
 
         # pylint: disable=consider-using-with
-        self.logfile = open(logfile, 'wb') if logfile else None
+        self.logfile = open(logfile, 'wb') if logfile else None  # noqa: SIM115
         self.is_logfile_owner = True
         self.call_log: List[CallLogType] = []
 
@@ -241,10 +241,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
 
     def _set_up_object_manager(self) -> None:
         '''Set up this mock object as a D-Bus ObjectManager.'''
-        if self.path == '/':
-            cond = 'k != \'/\''
-        else:
-            cond = f'k.startswith(\'{self.path}/\')'
+        cond = "k != '/'" if self.path == "/" else f"k.startswith('{self.path}/')"
 
         code = f'ret = {{dbus.ObjectPath(k): objects[k].props for k in objects.keys() if {cond} }}'
         self.AddMethod(OBJECT_MANAGER_IFACE, 'GetManagedObjects', '', 'a{oa{sa{sv}}}', code)
@@ -776,10 +773,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
         If a log file was specified in the constructor, it is written there,
         otherwise it goes to stdout.
         '''
-        if self.logfile:
-            fd = self.logfile.fileno()
-        else:
-            fd = sys.stdout.fileno()
+        fd = self.logfile.fileno() if self.logfile else sys.stdout.fileno()
 
         os.write(fd, f'{time.time():.3f} {msg}\n'.encode('UTF-8'))
 
