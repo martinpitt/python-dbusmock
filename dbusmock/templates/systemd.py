@@ -90,8 +90,7 @@ def StopUnit(self, name, _mode):
 
 @dbus.service.method(MAIN_IFACE, in_signature='s', out_signature='o')
 def GetUnit(self, name):
-    unit_path = self.units[str(name)]
-    return unit_path
+    return self.units[str(name)]
 
 
 @dbus.service.method(MOCK_IFACE, in_signature='s')

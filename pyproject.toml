@@ -68,8 +68,11 @@ select = [
     "I",       # isort
     "ICN",     # flake8-import-conventions
     "ISC",     # flake8-implicit-str-concat
+    "PIE",     # unnecessary type wrappers
     "PLE",     # pylint errors
     "PGH",     # pygrep-hooks
+    "PYI",     # https://pypi.org/project/flake8-pyi/ type hints
+    "RET",     # flake8-return
     "RSE",     # flake8-raise
     "RUF",     # ruff rules
     "T10",     # flake8-debugger

@@ -62,7 +62,7 @@ def _run_bluetoothctl(command):
     # Sometimes we end up with the final line being `\x1b[K` (partial
     # control code), which we need to ignore.
     def remove_prefix(line):
-        if line.startswith('[bluetooth]#') or line.startswith('\x1b'):
+        if line.startswith(('[bluetooth]#', '\x1b')):
             parts = line.split(' ', 1)
             try:
                 return parts[1].strip()
@@ -75,10 +75,7 @@ def _run_bluetoothctl(command):
     lines = filter(lambda line: line != '', lines)
 
     # Filter out the echoed commands. (bluetoothctl uses readline.)
-    lines = filter(lambda line: line not in ['list', command, 'quit'], lines)
-    lines = list(lines)
-
-    return lines
+    return list(filter(lambda line: line not in ['list', command, 'quit'], lines))
 
 
 @unittest.skipUnless(have_bluetoothctl, 'bluetoothctl not installed')

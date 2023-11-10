@@ -167,9 +167,7 @@ def activate_connection(self, conn, dev, ap):
     devices = []
     if str(dev) != '/':
         devices.append(dev)
-    active_conn = dbus.ObjectPath(AddActiveConnection(self, devices, conn, ap, str(count), state))
-
-    return active_conn
+    return dbus.ObjectPath(AddActiveConnection(self, devices, conn, ap, str(count), state))
 
 
 def deactivate_connection(self, active_conn_path):
