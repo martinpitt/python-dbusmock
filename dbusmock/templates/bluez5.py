@@ -177,8 +177,8 @@ def AddAdapter(self, device_name, system_name):
     '''
     path = '/org/bluez/' + device_name
     address_start = int(device_name[-1])
-    address = (f"{address_start:02d}:{address_start+1:02d}:{address_start+2:02d}:"
-               f"{address_start+3:02d}:{address_start+4:02d}:{address_start+5:02d}")
+    address = (f"{address_start:02d}:{address_start + 1:02d}:{address_start + 2:02d}:"
+               f"{address_start + 3:02d}:{address_start + 4:02d}:{address_start + 5:02d}")
     adapter_properties = {
         'UUIDs': dbus.Array([
             # Reference:
