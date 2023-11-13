@@ -235,35 +235,6 @@ class PrivateDBus:
         if self._daemon:
             self.bustype.reload_configuration()
 
-    def spawn_server(self, name: str, path: str, interface: str, system_bus: bool = False, stdout=None) -> subprocess.Popen:
-        '''Wrapper around ``spawn_server`` for backwards compatibility'''
-        assert not system_bus or self.bustype == BusType.SYSTEM, "Mismatching bus types"
-        server = SpawnedMock.spawn_for_name(name, path, interface, bustype=self.bustype, stdout=stdout)
-        return server.process
-
-    def wait_for_bus_object(self, dest: str, path: str, system_bus: bool = False, timeout: int = 600):
-        '''Wrapper around ``BusType.wait_for_bus_object()`` for backwards compatibility'''
-        assert not system_bus or self.bustype == BusType.SYSTEM, "Mismatching bus types"
-        self.bustype.wait_for_bus_object(dest, path, timeout)
-
-    def spawn_server_template(self,
-                              template: str,
-                              parameters: Optional[Dict[str, Any]] = None,
-                              stdout=None,
-                              system_bus: Optional[bool] = None) -> Tuple[subprocess.Popen, dbus.proxies.ProxyObject]:
-        '''Wrapper around ``spawn_server_template`` for backwards compatibility'''
-        if system_bus is not None:  # noqa: SIM108
-            bustype = BusType.SYSTEM if system_bus else BusType.SESSION
-        else:
-            bustype = None
-        server = SpawnedMock.spawn_server_template(template=template, parameters=parameters, bustype=bustype, stdout=stdout)
-        return server.process, server.obj
-
-    def get_dbus(self, system_bus: bool = False) -> dbus.Bus:
-        '''Wrapper around ``BusType.get_connection()`` for backwards compatibility'''
-        assert not system_bus or self.bustype == BusType.SYSTEM, "Mismatching bus types"
-        return self.bustype.get_connection()
-
 
 class DBusTestCase(unittest.TestCase):
     '''Base class for D-Bus mock tests.
