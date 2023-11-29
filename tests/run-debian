@@ -23,7 +23,7 @@ mkdir -p /run/systemd/system
 useradd build
 su -s /bin/sh - build << EOF || { [ -z "$DEBUG" ] || sleep infinity; exit 1; }
 set -ex
-export TEST_CODE="$TEST_CODE"
+export SKIP_STATIC_CHECKS="$SKIP_STATIC_CHECKS"
 cp -r $(pwd) /tmp/source
 cd /tmp/source
 python3 -m unittest -v
