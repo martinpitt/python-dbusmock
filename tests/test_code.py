@@ -17,7 +17,7 @@ import sys
 import unittest
 
 
-@unittest.skipUnless(os.getenv("TEST_CODE", None), "$TEST_CODE not set, not running static code checks")
+@unittest.skipIf(os.getenv("SKIP_STATIC_CHECKS", "0") == "1", "$SKIP_STATIC_CHECKS set, not running static code checks")
 class StaticCodeTests(unittest.TestCase):
     def test_pylint(self):
         subprocess.check_call([sys.executable, '-m', 'pylint', *glob.glob('dbusmock/*.py')])
