@@ -66,12 +66,11 @@ class BusType(enum.Enum):
         dbus_if = dbus.Interface(dbus_obj, 'org.freedesktop.DBus')
         dbus_if.ReloadConfig()
 
-    def wait_for_bus_object(self, dest: str, path: str, timeout: int = 600):
+    def wait_for_bus_object(self, dest: str, path: str, timeout: float = 60.0):
         '''Wait for an object to appear on D-Bus
 
         Raise an exception if object does not appear within one minute. You can
-        change the timeout with the "timeout" keyword argument which specifies
-        deciseconds.
+        change the timeout in seconds with the "timeout" keyword argument.
         '''
         bus = self.get_connection()
 
@@ -91,7 +90,7 @@ class BusType(enum.Enum):
                     if '.UnknownInterface' in str(e):
                         break
 
-            timeout -= 1
+            timeout -= 0.1
             time.sleep(0.1)
         if timeout <= 0:
             assert timeout > 0, f'timed out waiting for D-Bus object {path}: {last_exc}'
@@ -380,7 +379,7 @@ class DBusTestCase(unittest.TestCase):
         BusType.wait_for_bus_object() instead.
         '''
         bustype = BusType.SYSTEM if system_bus else BusType.SESSION
-        bustype.wait_for_bus_object(dest, path, timeout)
+        bustype.wait_for_bus_object(dest, path, timeout / 10.0)
 
     @staticmethod
     def spawn_server(name: str, path: str, interface: str, system_bus: bool = False, stdout=None) -> subprocess.Popen:
