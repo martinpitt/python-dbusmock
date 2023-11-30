@@ -4,11 +4,11 @@
 # later version.  See http://www.gnu.org/copyleft/lgpl.html for the full text
 # of the license.
 
-__author__ = 'Jonas Ådahl'
-__copyright__ = '''
+__author__ = "Jonas Ådahl"
+__copyright__ = """
 (c) 2021 Red Hat
 (c) 2017 - 2022 Martin Pitt <martin@piware.de>
-'''
+"""
 
 import subprocess
 import sys
@@ -24,7 +24,7 @@ dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 
 
 class TestSystemd(dbusmock.DBusTestCase):
-    '''Test mocking systemd'''
+    """Test mocking systemd"""
 
     @classmethod
     def setUpClass(cls):
@@ -43,15 +43,13 @@ class TestSystemd(dbusmock.DBusTestCase):
             self.p_mock.wait()
 
     def _assert_unit_property(self, unit_obj, name, expect):
-        value = unit_obj.Get('org.freedesktop.systemd1.Unit', name)
+        value = unit_obj.Get("org.freedesktop.systemd1.Unit", name)
         self.assertEqual(str(value), expect)
 
     def _test_base(self, bus, system_bus=True):
-        dummy_service = 'dummy-dbusmock.service'
+        dummy_service = "dummy-dbusmock.service"
 
-        (self.p_mock, obj_systemd) = self.spawn_server_template('systemd', {},
-                                                                subprocess.PIPE,
-                                                                system_bus=system_bus)
+        (self.p_mock, obj_systemd) = self.spawn_server_template("systemd", {}, subprocess.PIPE, system_bus=system_bus)
 
         systemd_mock = dbus.Interface(obj_systemd, dbusmock.MOCK_IFACE)
         systemd_mock.AddMockUnit(dummy_service)
@@ -61,8 +59,7 @@ class TestSystemd(dbusmock.DBusTestCase):
         removed_jobs = []
 
         def catch_job_removed(*args, **kwargs):
-            if (kwargs['interface'] == 'org.freedesktop.systemd1.Manager' and
-                    kwargs['member'] == 'JobRemoved'):
+            if kwargs["interface"] == "org.freedesktop.systemd1.Manager" and kwargs["member"] == "JobRemoved":
                 job_path = str(args[1])
                 removed_jobs.append(job_path)
                 main_loop.quit()
@@ -73,28 +70,27 @@ class TestSystemd(dbusmock.DBusTestCase):
                 if path in removed_jobs:
                     break
 
-        bus.add_signal_receiver(catch_job_removed,
-                                interface_keyword='interface',
-                                path_keyword='path',
-                                member_keyword='member')
+        bus.add_signal_receiver(
+            catch_job_removed, interface_keyword="interface", path_keyword="path", member_keyword="member"
+        )
 
         unit_path = obj_systemd.GetUnit(dummy_service)
 
-        unit_obj = bus.get_object('org.freedesktop.systemd1', unit_path)
+        unit_obj = bus.get_object("org.freedesktop.systemd1", unit_path)
 
-        self._assert_unit_property(unit_obj, 'Id', dummy_service)
-        self._assert_unit_property(unit_obj, 'LoadState', 'loaded')
-        self._assert_unit_property(unit_obj, 'ActiveState', 'inactive')
+        self._assert_unit_property(unit_obj, "Id", dummy_service)
+        self._assert_unit_property(unit_obj, "LoadState", "loaded")
+        self._assert_unit_property(unit_obj, "ActiveState", "inactive")
 
-        job_path = obj_systemd.StartUnit(dummy_service, 'fail')
-
-        wait_for_job(job_path)
-        self._assert_unit_property(unit_obj, 'ActiveState', 'active')
-
-        job_path = obj_systemd.StopUnit(dummy_service, 'fail')
+        job_path = obj_systemd.StartUnit(dummy_service, "fail")
 
         wait_for_job(job_path)
-        self._assert_unit_property(unit_obj, 'ActiveState', 'inactive')
+        self._assert_unit_property(unit_obj, "ActiveState", "active")
+
+        job_path = obj_systemd.StopUnit(dummy_service, "fail")
+
+        wait_for_job(job_path)
+        self._assert_unit_property(unit_obj, "ActiveState", "inactive")
 
         self.p_mock.stdout.close()
         self.p_mock.terminate()
@@ -108,6 +104,6 @@ class TestSystemd(dbusmock.DBusTestCase):
         self._test_base(self.system_bus, system_bus=True)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # avoid writing to stderr
     unittest.main(testRunner=unittest.TextTestRunner(stream=sys.stdout))

@@ -4,11 +4,11 @@
 # later version.  See http://www.gnu.org/copyleft/lgpl.html for the full text
 # of the license.
 
-__author__ = 'Martin Pitt'
-__copyright__ = '''
+__author__ = "Martin Pitt"
+__copyright__ = """
 (c) 2013 Canonical Ltd.
 (c) 2017 - 2022 Martin Pitt <martin@piware.de>
-'''
+"""
 
 import re
 import shutil
@@ -23,13 +23,13 @@ import dbus
 import dbusmock
 
 tracemalloc.start(25)
-have_loginctl = shutil.which('loginctl')
+have_loginctl = shutil.which("loginctl")
 
 
-@unittest.skipUnless(have_loginctl, 'loginctl not installed')
-@unittest.skipUnless(Path('/run/systemd/system').exists(), '/run/systemd/system does not exist')
+@unittest.skipUnless(have_loginctl, "loginctl not installed")
+@unittest.skipUnless(Path("/run/systemd/system").exists(), "/run/systemd/system does not exist")
 class TestLogind(dbusmock.DBusTestCase):
-    '''Test mocking logind'''
+    """Test mocking logind"""
 
     @classmethod
     def setUpClass(cls):
@@ -37,9 +37,8 @@ class TestLogind(dbusmock.DBusTestCase):
         cls.dbus_con = cls.get_dbus(True)
 
         if have_loginctl:
-            out = subprocess.check_output(['loginctl', '--version'],
-                                          universal_newlines=True)
-            cls.version = re.search(r'(\d+)', out.splitlines()[0]).group(1)
+            out = subprocess.check_output(["loginctl", "--version"], universal_newlines=True)
+            cls.version = re.search(r"(\d+)", out.splitlines()[0]).group(1)
 
     def setUp(self):
         self.p_mock = None
@@ -51,41 +50,35 @@ class TestLogind(dbusmock.DBusTestCase):
             self.p_mock.wait()
 
     def test_empty(self):
-        (self.p_mock, _) = self.spawn_server_template('logind', {}, stdout=subprocess.PIPE)
-        cmd = ['loginctl']
-        if self.version >= '209':
-            cmd.append('--no-legend')
-        out = subprocess.check_output([*cmd, 'list-sessions'],
-                                      universal_newlines=True)
-        self.assertEqual(out, '')
+        (self.p_mock, _) = self.spawn_server_template("logind", {}, stdout=subprocess.PIPE)
+        cmd = ["loginctl"]
+        if self.version >= "209":
+            cmd.append("--no-legend")
+        out = subprocess.check_output([*cmd, "list-sessions"], universal_newlines=True)
+        self.assertEqual(out, "")
 
-        out = subprocess.check_output([*cmd, 'list-seats'],
-                                      universal_newlines=True)
-        self.assertEqual(out, '')
+        out = subprocess.check_output([*cmd, "list-seats"], universal_newlines=True)
+        self.assertEqual(out, "")
 
-        out = subprocess.check_output([*cmd, 'list-users'],
-                                      universal_newlines=True)
-        self.assertEqual(out, '')
+        out = subprocess.check_output([*cmd, "list-users"], universal_newlines=True)
+        self.assertEqual(out, "")
 
     def test_session(self):
-        (self.p_mock, obj_logind) = self.spawn_server_template('logind', {}, stdout=subprocess.PIPE)
+        (self.p_mock, obj_logind) = self.spawn_server_template("logind", {}, stdout=subprocess.PIPE)
 
-        obj_logind.AddSession('c1', 'seat0', 500, 'joe', True)
+        obj_logind.AddSession("c1", "seat0", 500, "joe", True)
 
-        out = subprocess.check_output(['loginctl', 'list-seats'],
-                                      universal_newlines=True)
-        self.assertRegex(out, r'(^|\n)seat0\s+')
+        out = subprocess.check_output(["loginctl", "list-seats"], universal_newlines=True)
+        self.assertRegex(out, r"(^|\n)seat0\s+")
 
-        out = subprocess.check_output(['loginctl', 'show-seat', 'seat0'],
-                                      universal_newlines=True)
-        self.assertRegex(out, 'Id=seat0')
-        if self.version <= '208':
-            self.assertRegex(out, 'ActiveSession=c1')
-            self.assertRegex(out, 'Sessions=c1')
+        out = subprocess.check_output(["loginctl", "show-seat", "seat0"], universal_newlines=True)
+        self.assertRegex(out, "Id=seat0")
+        if self.version <= "208":
+            self.assertRegex(out, "ActiveSession=c1")
+            self.assertRegex(out, "Sessions=c1")
 
-        out = subprocess.check_output(['loginctl', 'list-users'],
-                                      universal_newlines=True)
-        self.assertRegex(out, r'(^|\n)\s*500\s+joe\s*')
+        out = subprocess.check_output(["loginctl", "list-users"], universal_newlines=True)
+        self.assertRegex(out, r"(^|\n)\s*500\s+joe\s*")
 
         # note, this does an actual getpwnam() in the client, so we cannot call
         # this with hardcoded user names; get from actual user in the system
@@ -97,57 +90,53 @@ class TestLogind(dbusmock.DBusTestCase):
         # self.assertRegex(out, 'Sessions=c1')
         # self.assertRegex(out, 'State=active')
 
-        out = subprocess.check_output(['loginctl', 'list-sessions'],
-                                      universal_newlines=True)
-        self.assertRegex(out, 'c1 +500 +joe +seat0')
+        out = subprocess.check_output(["loginctl", "list-sessions"], universal_newlines=True)
+        self.assertRegex(out, "c1 +500 +joe +seat0")
 
-        out = subprocess.check_output(['loginctl', 'show-session', 'c1'],
-                                      universal_newlines=True)
-        self.assertRegex(out, 'Id=c1')
-        self.assertRegex(out, 'Class=user')
-        self.assertRegex(out, 'Active=yes')
-        self.assertRegex(out, 'State=active')
-        self.assertRegex(out, 'Name=joe')
-        self.assertRegex(out, 'LockedHint=no')
+        out = subprocess.check_output(["loginctl", "show-session", "c1"], universal_newlines=True)
+        self.assertRegex(out, "Id=c1")
+        self.assertRegex(out, "Class=user")
+        self.assertRegex(out, "Active=yes")
+        self.assertRegex(out, "State=active")
+        self.assertRegex(out, "Name=joe")
+        self.assertRegex(out, "LockedHint=no")
 
-        session_mock = dbus.Interface(self.dbus_con.get_object(
-            'org.freedesktop.login1', '/org/freedesktop/login1/session/c1'),
-            'org.freedesktop.login1.Session')
+        session_mock = dbus.Interface(
+            self.dbus_con.get_object("org.freedesktop.login1", "/org/freedesktop/login1/session/c1"),
+            "org.freedesktop.login1.Session",
+        )
         session_mock.SetLockedHint(True)
 
-        out = subprocess.check_output(['loginctl', 'show-session', 'c1'],
-                                      universal_newlines=True)
-        self.assertRegex(out, 'Id=c1')
-        self.assertRegex(out, 'LockedHint=yes')
+        out = subprocess.check_output(["loginctl", "show-session", "c1"], universal_newlines=True)
+        self.assertRegex(out, "Id=c1")
+        self.assertRegex(out, "LockedHint=yes")
 
     def test_properties(self):
-        (self.p_mock, obj_logind) = self.spawn_server_template('logind', {}, stdout=subprocess.PIPE)
-        props = obj_logind.GetAll('org.freedesktop.login1.Manager',
-                                  interface='org.freedesktop.DBus.Properties')
-        self.assertEqual(props['PreparingForSleep'], False)
-        self.assertEqual(props['IdleSinceHint'], 0)
+        (self.p_mock, obj_logind) = self.spawn_server_template("logind", {}, stdout=subprocess.PIPE)
+        props = obj_logind.GetAll("org.freedesktop.login1.Manager", interface="org.freedesktop.DBus.Properties")
+        self.assertEqual(props["PreparingForSleep"], False)
+        self.assertEqual(props["IdleSinceHint"], 0)
 
     def test_inhibit(self):
-        (self.p_mock, obj_logind) = self.spawn_server_template('logind', {}, stdout=subprocess.PIPE)
+        (self.p_mock, obj_logind) = self.spawn_server_template("logind", {}, stdout=subprocess.PIPE)
 
         # what, who, why, mode
-        fd = obj_logind.Inhibit('suspend', 'testcode', 'purpose', 'delay')
+        fd = obj_logind.Inhibit("suspend", "testcode", "purpose", "delay")
 
         # Our inhibitor is held
-        out = subprocess.check_output(['systemd-inhibit'],
-                                      universal_newlines=True)
+        out = subprocess.check_output(["systemd-inhibit"], universal_newlines=True)
         self.assertRegex(
-            out.replace('\n', ' '),
-            '(testcode +[0-9]+ +[^ ]* +[0-9]+ +[^ ]* +suspend purpose delay)|'
-            '(Who: testcode.*What: suspend.*Why: purpose.*Mode: delay.*)')
+            out.replace("\n", " "),
+            "(testcode +[0-9]+ +[^ ]* +[0-9]+ +[^ ]* +suspend purpose delay)|"
+            "(Who: testcode.*What: suspend.*Why: purpose.*Mode: delay.*)",
+        )
 
         del fd
         # No inhibitor is held
-        out = subprocess.check_output(['systemd-inhibit'],
-                                      universal_newlines=True)
-        self.assertRegex(out, 'No inhibitors|0 inhibitors listed')
+        out = subprocess.check_output(["systemd-inhibit"], universal_newlines=True)
+        self.assertRegex(out, "No inhibitors|0 inhibitors listed")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # avoid writing to stderr
     unittest.main(testRunner=unittest.TextTestRunner(stream=sys.stdout))
