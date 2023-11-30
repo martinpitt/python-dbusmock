@@ -4,10 +4,10 @@
 # later version.  See http://www.gnu.org/copyleft/lgpl.html for the full text
 # of the license.
 
-__author__ = 'Martin Pitt'
-__copyright__ = '''
+__author__ = "Martin Pitt"
+__copyright__ = """
 (c) 2023 Martin Pitt <martin@piware.de>
-'''
+"""
 
 import subprocess
 
@@ -18,23 +18,23 @@ import dbusmock
 
 def test_dbusmock_test(dbusmock_session):
     assert dbusmock_session
-    test_iface = 'org.freedesktop.Test.Main'
+    test_iface = "org.freedesktop.Test.Main"
 
-    with dbusmock.SpawnedMock.spawn_for_name('org.freedesktop.Test', '/', test_iface) as server:
+    with dbusmock.SpawnedMock.spawn_for_name("org.freedesktop.Test", "/", test_iface) as server:
         obj_test = server.obj
-        obj_test.AddMethod('', 'Upper', 's', 's', 'ret = args[0].upper()', interface_name=dbusmock.MOCK_IFACE)
-        assert obj_test.Upper('hello', interface=test_iface) == 'HELLO'
+        obj_test.AddMethod("", "Upper", "s", "s", "ret = args[0].upper()", interface_name=dbusmock.MOCK_IFACE)
+        assert obj_test.Upper("hello", interface=test_iface) == "HELLO"
 
 
-@pytest.fixture(name='upower_mock')
+@pytest.fixture(name="upower_mock")
 def fixture_upower_mock(dbusmock_system):
     assert dbusmock_system
-    with dbusmock.SpawnedMock.spawn_with_template('upower') as server:
+    with dbusmock.SpawnedMock.spawn_with_template("upower") as server:
         yield server.obj
 
 
 def test_dbusmock_test_template(upower_mock):
     assert upower_mock
-    out = subprocess.check_output(['upower', '--dump'], universal_newlines=True)
-    assert 'version:' in out
-    assert '0.99' in out
+    out = subprocess.check_output(["upower", "--dump"], universal_newlines=True)
+    assert "version:" in out
+    assert "0.99" in out

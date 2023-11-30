@@ -1,8 +1,8 @@
-'''gnome-shell screensaver mock template
+"""gnome-shell screensaver mock template
 
 This creates the expected methods and properties of the
 org.gnome.ScreenSaver object.
-'''
+"""
 
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU Lesser General Public License as published by the Free
@@ -10,28 +10,31 @@ org.gnome.ScreenSaver object.
 # later version.  See http://www.gnu.org/copyleft/lgpl.html for the full text
 # of the license.
 
-__author__ = 'Bastien Nocera'
-__copyright__ = '''
+__author__ = "Bastien Nocera"
+__copyright__ = """
 (c) 2013 Red Hat Inc.
 (c) 2017 - 2022 Martin Pitt <martin@piware.de>
-'''
+"""
 
-BUS_NAME = 'org.gnome.ScreenSaver'
-MAIN_OBJ = '/org/gnome/ScreenSaver'
-MAIN_IFACE = 'org.gnome.ScreenSaver'
+BUS_NAME = "org.gnome.ScreenSaver"
+MAIN_OBJ = "/org/gnome/ScreenSaver"
+MAIN_IFACE = "org.gnome.ScreenSaver"
 SYSTEM_BUS = False
 
 
 def load(mock, _parameters):
-    mock.AddMethods(MAIN_IFACE, [
-        ('GetActive', '', 'b', 'ret = self.is_active'),
-        ('GetActiveTime', '', 'u', 'ret = 1'),
-        ('SetActive', 'b', '', 'self.is_active = args[0]; self.EmitSignal('
-                               '"", "ActiveChanged", "b", [self.is_active])'),
-        ('Lock', '', '', 'time.sleep(1); self.SetActive(True)'),
-        ('ShowMessage', 'sss', '', ''),
-        ('SimulateUserActivity', '', '', ''),
-    ])
+    mock.AddMethods(
+        MAIN_IFACE,
+        [
+            ("GetActive", "", "b", "ret = self.is_active"),
+            ("GetActiveTime", "", "u", "ret = 1"),
+            # fmt: off
+            ("SetActive", "b", "", 'self.is_active = args[0]; self.EmitSignal("", "ActiveChanged", "b", [self.is_active])'),
+            ("Lock", "", "", "time.sleep(1); self.SetActive(True)"),
+            ("ShowMessage", "sss", "", ""),
+            ("SimulateUserActivity", "", "", ""),
+        ],
+    )
 
     # default state
     mock.is_active = False

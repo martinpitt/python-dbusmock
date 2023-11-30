@@ -4,11 +4,11 @@
 # later version.  See http://www.gnu.org/copyleft/lgpl.html for the full text
 # of the license.
 
-__author__ = 'Bastien Nocera'
-__copyright__ = '''
+__author__ = "Bastien Nocera"
+__copyright__ = """
 (c) 2021 Red Hat Inc.
 (c) 2017 - 2022 Martin Pitt <martin@piware.de>
-'''
+"""
 
 import fcntl
 import os
@@ -25,20 +25,20 @@ import dbusmock
 
 dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 
-have_powerprofilesctl = shutil.which('powerprofilesctl')
+have_powerprofilesctl = shutil.which("powerprofilesctl")
 
 
-@unittest.skipUnless(have_powerprofilesctl, 'powerprofilesctl not installed')
+@unittest.skipUnless(have_powerprofilesctl, "powerprofilesctl not installed")
 class TestPowerProfilesDaemon(dbusmock.DBusTestCase):
-    '''Test mocking power-profiles-daemon'''
+    """Test mocking power-profiles-daemon"""
+
     @classmethod
     def setUpClass(cls):
         cls.start_system_bus()
         cls.dbus_con = cls.get_dbus(True)
 
     def setUp(self):
-        (self.p_mock, self.obj_ppd) = self.spawn_server_template(
-            'power_profiles_daemon', {}, stdout=subprocess.PIPE)
+        (self.p_mock, self.obj_ppd) = self.spawn_server_template("power_profiles_daemon", {}, stdout=subprocess.PIPE)
         # set log to nonblocking
         flags = fcntl.fcntl(self.p_mock.stdout, fcntl.F_GETFL)
         fcntl.fcntl(self.p_mock.stdout, fcntl.F_SETFL, flags | os.O_NONBLOCK)
@@ -50,76 +50,103 @@ class TestPowerProfilesDaemon(dbusmock.DBusTestCase):
         self.p_mock.wait()
 
     def test_list_profiles(self):
-        '''List Profiles and check active profile'''
+        """List Profiles and check active profile"""
 
-        out = subprocess.check_output(['powerprofilesctl'],
-                                      universal_newlines=True)
+        out = subprocess.check_output(["powerprofilesctl"], universal_newlines=True)
 
-        self.assertIn('performance:\n', out)
-        self.assertIn('\n* balanced:\n', out)
+        self.assertIn("performance:\n", out)
+        self.assertIn("\n* balanced:\n", out)
 
     def test_change_profile(self):
-        '''Change ActiveProfile'''
+        """Change ActiveProfile"""
 
-        subprocess.check_output(['powerprofilesctl', 'set', 'performance'],
-                                universal_newlines=True)
-        out = subprocess.check_output(['powerprofilesctl', 'get'],
-                                      universal_newlines=True)
-        self.assertEqual(out, 'performance\n')
+        subprocess.check_output(["powerprofilesctl", "set", "performance"], universal_newlines=True)
+        out = subprocess.check_output(["powerprofilesctl", "get"], universal_newlines=True)
+        self.assertEqual(out, "performance\n")
 
     def run_powerprofilesctl_list_holds(self):
-        return subprocess.check_output(['powerprofilesctl', 'list-holds'],
-                                       universal_newlines=True)
+        return subprocess.check_output(["powerprofilesctl", "list-holds"], universal_newlines=True)
 
     def test_list_holds(self):
-        '''Test holds'''
+        """Test holds"""
 
         # No holds
         out = self.run_powerprofilesctl_list_holds()
-        self.assertEqual(out, '')
+        self.assertEqual(out, "")
 
         # 1 hold
         # pylint: disable=consider-using-with
-        cmd = subprocess.Popen(['powerprofilesctl', 'launch', '-p',
-                                'power-saver', '-r', 'g-s-d mock test',
-                                '-i', 'org.gnome.SettingsDaemon.Power',
-                                'sleep', '60'],
-                               stdout=subprocess.PIPE)
+        cmd = subprocess.Popen(
+            [
+                "powerprofilesctl",
+                "launch",
+                "-p",
+                "power-saver",
+                "-r",
+                "g-s-d mock test",
+                "-i",
+                "org.gnome.SettingsDaemon.Power",
+                "sleep",
+                "60",
+            ],
+            stdout=subprocess.PIPE,
+        )
         time.sleep(0.3)
 
         out = self.run_powerprofilesctl_list_holds()
-        self.assertEqual(out, 'Hold:\n'
-                              '  Profile:         power-saver\n'
-                              '  Application ID:'
-                              '  org.gnome.SettingsDaemon.Power\n'
-                              '  Reason:          g-s-d mock test\n')
+        self.assertEqual(
+            out,
+            (
+                "Hold:\n"
+                "  Profile:         power-saver\n"
+                "  Application ID:"
+                "  org.gnome.SettingsDaemon.Power\n"
+                "  Reason:          g-s-d mock test\n"
+            ),
+        )
 
         # 2 holds
         # pylint: disable=consider-using-with
-        cmd2 = subprocess.Popen(['powerprofilesctl', 'launch', '-p',
-                                 'performance', '-r', 'running some game',
-                                 '-i', 'com.game.Game', 'sleep', '60'],
-                                stdout=subprocess.PIPE)
+        cmd2 = subprocess.Popen(
+            [
+                "powerprofilesctl",
+                "launch",
+                "-p",
+                "performance",
+                "-r",
+                "running some game",
+                "-i",
+                "com.game.Game",
+                "sleep",
+                "60",
+            ],
+            stdout=subprocess.PIPE,
+        )
         out = None
         timeout = 2.0
         while timeout > 0:
             time.sleep(0.1)
             timeout -= 0.1
             out = self.run_powerprofilesctl_list_holds()
-            if out != '':
+            if out != "":
                 break
         else:
-            self.fail('could not list holds')
+            self.fail("could not list holds")
 
-        self.assertEqual(out, 'Hold:\n'
-                              '  Profile:         power-saver\n'
-                              '  Application ID:'
-                              '  org.gnome.SettingsDaemon.Power\n'
-                              '  Reason:          g-s-d mock test\n\n'
-                              'Hold:\n'
-                              '  Profile:         performance\n'
-                              '  Application ID:  com.game.Game\n'
-                              '  Reason:          running some game\n')
+        self.assertEqual(
+            out,
+            (
+                "Hold:\n"
+                "  Profile:         power-saver\n"
+                "  Application ID:"
+                "  org.gnome.SettingsDaemon.Power\n"
+                "  Reason:          g-s-d mock test\n\n"
+                "Hold:\n"
+                "  Profile:         performance\n"
+                "  Application ID:  com.game.Game\n"
+                "  Reason:          running some game\n"
+            ),
+        )
 
         cmd.stdout.close()
         cmd.terminate()
@@ -130,30 +157,32 @@ class TestPowerProfilesDaemon(dbusmock.DBusTestCase):
         cmd2.wait()
 
     def test_release_hold(self):
-        '''Test release holds'''
+        """Test release holds"""
 
         # No holds
         out = self.run_powerprofilesctl_list_holds()
-        self.assertEqual(out, '')
+        self.assertEqual(out, "")
 
         # hold profile
-        cookie = self.obj_ppd.HoldProfile('performance',
-                                          'release test',
-                                          'com.test.Test')
+        cookie = self.obj_ppd.HoldProfile("performance", "release test", "com.test.Test")
         out = self.run_powerprofilesctl_list_holds()
-        self.assertEqual(out, 'Hold:\n'
-                              '  Profile:         performance\n'
-                              '  Application ID:  com.test.Test\n'
-                              '  Reason:          release test\n')
+        self.assertEqual(
+            out,
+            (
+                "Hold:\n"
+                "  Profile:         performance\n"
+                "  Application ID:  com.test.Test\n"
+                "  Reason:          release test\n"
+            ),
+        )
 
         # release profile
         self.obj_ppd.ReleaseProfile(cookie)
         time.sleep(0.3)
         out = self.run_powerprofilesctl_list_holds()
-        self.assertEqual(out, '')
+        self.assertEqual(out, "")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # avoid writing to stderr
-    unittest.main(testRunner=unittest.TextTestRunner(stream=sys.stdout,
-                                                     verbosity=2))
+    unittest.main(testRunner=unittest.TextTestRunner(stream=sys.stdout, verbosity=2))

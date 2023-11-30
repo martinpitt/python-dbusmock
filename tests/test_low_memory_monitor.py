@@ -4,11 +4,11 @@
 # later version.  See http://www.gnu.org/copyleft/lgpl.html for the full text
 # of the license.
 
-__author__ = 'Bastien Nocera'
-__copyright__ = '''
+__author__ = "Bastien Nocera"
+__copyright__ = """
 (c) 2019 Red Hat Inc.
 (c) 2017 - 2022 Martin Pitt <martin@piware.de>
-'''
+"""
 
 import fcntl
 import os
@@ -25,7 +25,7 @@ dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 
 
 class TestLowMemoryMonitor(dbusmock.DBusTestCase):
-    '''Test mocking low-memory-monitor'''
+    """Test mocking low-memory-monitor"""
 
     @classmethod
     def setUpClass(cls):
@@ -33,8 +33,7 @@ class TestLowMemoryMonitor(dbusmock.DBusTestCase):
         cls.dbus_con = cls.get_dbus(True)
 
     def setUp(self):
-        (self.p_mock, self.obj_lmm) = self.spawn_server_template(
-            'low_memory_monitor', {}, stdout=subprocess.PIPE)
+        (self.p_mock, self.obj_lmm) = self.spawn_server_template("low_memory_monitor", {}, stdout=subprocess.PIPE)
         # set log to nonblocking
         flags = fcntl.fcntl(self.p_mock.stdout, fcntl.F_GETFL)
         fcntl.fcntl(self.p_mock.stdout, fcntl.F_SETFL, flags | os.O_NONBLOCK)
@@ -47,17 +46,17 @@ class TestLowMemoryMonitor(dbusmock.DBusTestCase):
         self.p_mock.wait()
 
     def test_low_memory_warning_signal(self):
-        '''LowMemoryWarning signal'''
+        """LowMemoryWarning signal"""
 
         self.dbusmock.EmitWarning(100)
         log = self.p_mock.stdout.read()
-        self.assertRegex(log, b'[0-9.]+ emit .*LowMemoryWarning 100\n')
+        self.assertRegex(log, b"[0-9.]+ emit .*LowMemoryWarning 100\n")
 
         self.dbusmock.EmitWarning(255)
         log = self.p_mock.stdout.read()
-        self.assertRegex(log, b'[0-9.]+ emit .*LowMemoryWarning 255\n')
+        self.assertRegex(log, b"[0-9.]+ emit .*LowMemoryWarning 255\n")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # avoid writing to stderr
     unittest.main(testRunner=unittest.TextTestRunner(stream=sys.stdout))

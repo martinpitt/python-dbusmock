@@ -1,9 +1,9 @@
-'''urfkill mock template
+"""urfkill mock template
 
 This creates the expected methods and properties of the main
 urfkill object, but no devices. You can specify any property
 such as urfkill in "parameters".
-'''
+"""
 
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU Lesser General Public License as published by the Free
@@ -11,31 +11,31 @@ such as urfkill in "parameters".
 # later version.  See http://www.gnu.org/copyleft/lgpl.html for the full text
 # of the license.
 
-__author__ = 'Jussi Pakkanen'
-__copyright__ = '''
+__author__ = "Jussi Pakkanen"
+__copyright__ = """
 (C) 2015 Canonical ltd
 (c) 2017 - 2022 Martin Pitt <martin@piware.de>
-'''
+"""
 
 import dbus
 
 import dbusmock
 
 SYSTEM_BUS = True
-BUS_NAME = 'org.freedesktop.URfkill'
-MAIN_OBJ = '/org/freedesktop/URfkill'
+BUS_NAME = "org.freedesktop.URfkill"
+MAIN_OBJ = "/org/freedesktop/URfkill"
 
-MAIN_IFACE = 'org.freedesktop.URfkill'
+MAIN_IFACE = "org.freedesktop.URfkill"
 
-individual_objects = ['BLUETOOTH', 'FM', 'GPS', 'NFC', 'UWB', 'WIMAX', 'WLAN', 'WWAN']
+individual_objects = ["BLUETOOTH", "FM", "GPS", "NFC", "UWB", "WIMAX", "WLAN", "WWAN"]
 type2objectname = {
-    1: 'WLAN',
-    2: 'BLUETOOTH',
-    3: 'UWB',
-    4: 'WIMAX',
-    5: 'WWAN',
-    6: 'GPS',
-    7: 'FM',
+    1: "WLAN",
+    2: "BLUETOOTH",
+    3: "UWB",
+    4: "WIMAX",
+    5: "WWAN",
+    6: "GPS",
+    7: "FM",
 }
 
 KS_NOTAVAILABLE = -1
@@ -53,15 +53,15 @@ def toggle_flight_mode(self, new_block_state):
         old_value = self.internal_states[i]
         if old_value == 1:
             continue  # It was already blocked so we don't need to do anything
-        path = '/org/freedesktop/URfkill/' + i
+        path = "/org/freedesktop/URfkill/" + i
         obj = dbusmock.get_object(path)
         if new_block_state:
-            obj.Set('org.freedesktop.URfkill.Killswitch', 'state', 1)
-            obj.EmitSignal('org.freedesktop.URfkill.Killswitch', 'StateChanged', '', [])
+            obj.Set("org.freedesktop.URfkill.Killswitch", "state", 1)
+            obj.EmitSignal("org.freedesktop.URfkill.Killswitch", "StateChanged", "", [])
         else:
-            obj.Set('org.freedesktop.URfkill.Killswitch', 'state', 0)
-            obj.EmitSignal('org.freedesktop.URfkill.Killswitch', 'StateChanged', '', [])
-    self.EmitSignal(MAIN_IFACE, 'FlightModeChanged', 'b', [self.flight_mode])
+            obj.Set("org.freedesktop.URfkill.Killswitch", "state", 0)
+            obj.EmitSignal("org.freedesktop.URfkill.Killswitch", "StateChanged", "", [])
+    self.EmitSignal(MAIN_IFACE, "FlightModeChanged", "b", [self.flight_mode])
     return True
 
 
@@ -72,11 +72,11 @@ def block(self, index, should_block):
     objname = type2objectname[index]
     new_block_state = 1 if should_block else 0
     if self.internal_states[objname] != new_block_state:
-        path = '/org/freedesktop/URfkill/' + objname
+        path = "/org/freedesktop/URfkill/" + objname
         obj = dbusmock.get_object(path)
         self.internal_states[objname] = new_block_state
-        obj.Set('org.freedesktop.URfkill.Killswitch', 'state', new_block_state)
-        obj.EmitSignal('org.freedesktop.URfkill.Killswitch', 'StateChanged', '', [])
+        obj.Set("org.freedesktop.URfkill.Killswitch", "state", new_block_state)
+        obj.EmitSignal("org.freedesktop.URfkill.Killswitch", "StateChanged", "", [])
     return True
 
 
@@ -89,18 +89,26 @@ def load(mock, parameters):
         mock.internal_states[oname] = KS_UNBLOCKED
 
     # First we create the main urfkill object.
-    mock.AddMethods(MAIN_IFACE, [
-        ('IsFlightMode', '', 'b', 'ret = self.flight_mode'),
-        ('FlightMode', 'b', 'b', 'ret = self.toggle_flight_mode(self, args[0])'),
-        ('Block', 'ub', 'b', 'ret = self.block(self, args[0], args[1])'),
-    ])
+    mock.AddMethods(
+        MAIN_IFACE,
+        [
+            ("IsFlightMode", "", "b", "ret = self.flight_mode"),
+            ("FlightMode", "b", "b", "ret = self.toggle_flight_mode(self, args[0])"),
+            ("Block", "ub", "b", "ret = self.block(self, args[0], args[1])"),
+        ],
+    )
 
-    mock.AddProperties(MAIN_IFACE,
-                       dbus.Dictionary({
-                           'DaemonVersion': parameters.get('DaemonVersion', '0.6.0'),
-                           'KeyControl': parameters.get('KeyControl', True)
-                       }, signature='sv'))
+    mock.AddProperties(
+        MAIN_IFACE,
+        dbus.Dictionary(
+            {
+                "DaemonVersion": parameters.get("DaemonVersion", "0.6.0"),
+                "KeyControl": parameters.get("KeyControl", True),
+            },
+            signature="sv",
+        ),
+    )
 
     for i in individual_objects:
-        path = '/org/freedesktop/URfkill/' + i
-        mock.AddObject(path, 'org.freedesktop.URfkill.Killswitch', {'state': mock.internal_states[i]}, [])
+        path = "/org/freedesktop/URfkill/" + i
+        mock.AddObject(path, "org.freedesktop.URfkill.Killswitch", {"state": mock.internal_states[i]}, [])
