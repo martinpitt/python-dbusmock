@@ -520,10 +520,12 @@ def AddWiFiConnection(self, dev_path, connection_name, ssid_name, _key_mgmt):
     # Find the access point by ssid
     access_point = None
     access_points = dev_obj.access_points
+    access_point_path = None
     for ap_path in access_points:
         ap = dbusmock.get_object(ap_path)
         if ap.Get(ACCESS_POINT_IFACE, "Ssid") == ssid:
             access_point = ap
+            access_point_path = ap_path
             break
 
     if not access_point:
@@ -589,9 +591,7 @@ def AddWiFiConnection(self, dev_path, connection_name, ssid_name, _key_mgmt):
     main_connections.append(connection_path)
     settings_obj.Set(SETTINGS_IFACE, "Connections", main_connections)
 
-    settings_obj.EmitSignal(
-        SETTINGS_IFACE, "NewConnection", "o", [ap_path]  # pylint: disable=undefined-loop-variable
-    )
+    settings_obj.EmitSignal(SETTINGS_IFACE, "NewConnection", "o", [access_point_path])
 
     return connection_path
 
