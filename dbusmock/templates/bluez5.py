@@ -516,6 +516,10 @@ def PairDevice(_self, adapter_device_name, device_address, class_):
             },
         )
 
+    device.props[DEVICE_IFACE]['Modalias'] = dbus.String("bluetooth:v000Fp1200d1436", variant_level=1)
+    device.props[DEVICE_IFACE]['Class'] = dbus.UInt32(class_, variant_level=1)
+    device.props[DEVICE_IFACE]['Icon'] = dbus.String("phone", variant_level=1)
+
     device.EmitSignal(
         dbus.PROPERTIES_IFACE,
         "PropertiesChanged",
