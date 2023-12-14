@@ -354,7 +354,8 @@ Have a look at the test suite for two real-live use cases:
 ## Documentation
 
 The `dbusmock` module has extensive documentation built in, which you
-can read with e. g. `pydoc3 dbusmock`.
+can read with e. g. `pydoc3 dbusmock` or online at
+https://martinpitt.github.io/python-dbusmock/
 
 `pydoc3 dbusmock.DBusMockObject` shows the D-Bus API of the mock object,
 i. e. methods like `AddObject()`, `AddMethod()` etc. which are used to
