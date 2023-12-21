@@ -383,7 +383,9 @@ def AddDevice(self, adapter_device_name, device_address, alias):
     for the device (e.g. as set on the device itself), and the adapter device
     name is the device_name passed to AddAdapter.
 
-    This will create a new, unpaired and unconnected device.
+    This will create a new, unpaired and unconnected device with some default properties
+    like MOCK_PHONE_CLASS "Class" and a static "Modalias". Especially when working with more
+    than one device, you may want to change these after creation.
 
     Returns the new object path.
     """
@@ -400,8 +402,8 @@ def AddDevice(self, adapter_device_name, device_address, alias):
         "Address": dbus.String(device_address, variant_level=1),
         "AddressType": dbus.String("public", variant_level=1),
         "Name": dbus.String(alias, variant_level=1),
-        "Icon": dbus.String("", variant_level=1),
-        "Class": dbus.UInt32(0, variant_level=1),
+        "Icon": dbus.String("phone", variant_level=1),
+        "Class": dbus.UInt32(MOCK_PHONE_CLASS, variant_level=1),
         "Appearance": dbus.UInt16(0, variant_level=1),
         "UUIDs": dbus.Array([], signature="s", variant_level=1),
         "Paired": dbus.Boolean(False, variant_level=1),
@@ -412,7 +414,7 @@ def AddDevice(self, adapter_device_name, device_address, alias):
         "Alias": dbus.String(alias, variant_level=1),
         "Adapter": dbus.ObjectPath(adapter_path, variant_level=1),
         "LegacyPairing": dbus.Boolean(False, variant_level=1),
-        "Modalias": dbus.String("", variant_level=1),
+        "Modalias": dbus.String("bluetooth:v000Fp1200d1436", variant_level=1),
         "RSSI": dbus.Int16(-79, variant_level=1),  # arbitrary
         "TxPower": dbus.Int16(0, variant_level=1),
         "ManufacturerData": dbus.Array([], signature="a{qv}", variant_level=1),
@@ -455,8 +457,8 @@ def AddDevice(self, adapter_device_name, device_address, alias):
     return path
 
 
-@dbus.service.method(BLUEZ_MOCK_IFACE, in_signature="ssi", out_signature="")
-def PairDevice(_self, adapter_device_name, device_address, class_):
+@dbus.service.method(BLUEZ_MOCK_IFACE, in_signature="ss", out_signature="")
+def PairDevice(_self, adapter_device_name, device_address):
     """Convenience method to mark an existing device as paired.
 
     You have to specify a device address which must be a valid Bluetooth
@@ -499,40 +501,14 @@ def PairDevice(_self, adapter_device_name, device_address, class_):
         "00001200-0000-1000-8000-00805f9b34fb",
     ]
 
-    device.props[DEVICE_IFACE]["UUIDs"] = dbus.Array(uuids, variant_level=1)
-    device.props[DEVICE_IFACE]["Paired"] = dbus.Boolean(True, variant_level=1)
-    device.props[DEVICE_IFACE]["LegacyPairing"] = dbus.Boolean(True, variant_level=1)
-    device.props[DEVICE_IFACE]["Blocked"] = dbus.Boolean(False, variant_level=1)
-
-    try:
-        device.props[DEVICE_IFACE]["Modalias"]
-    except KeyError:
-        device.AddProperties(
-            DEVICE_IFACE,
-            {
-                "Modalias": dbus.String("bluetooth:v000Fp1200d1436", variant_level=1),
-                "Class": dbus.UInt32(class_, variant_level=1),
-                "Icon": dbus.String("phone", variant_level=1),
-            },
-        )
-
-    device.EmitSignal(
-        dbus.PROPERTIES_IFACE,
-        "PropertiesChanged",
-        "sa{sv}as",
-        [
-            DEVICE_IFACE,
-            {
-                "UUIDs": dbus.Array(uuids, variant_level=1),
-                "Paired": dbus.Boolean(True, variant_level=1),
-                "LegacyPairing": dbus.Boolean(True, variant_level=1),
-                "Blocked": dbus.Boolean(False, variant_level=1),
-                "Modalias": dbus.String("bluetooth:v000Fp1200d1436", variant_level=1),
-                "Class": dbus.UInt32(class_, variant_level=1),
-                "Icon": dbus.String("phone", variant_level=1),
-            },
-            [],
-        ],
+    device.UpdateProperties(
+        DEVICE_IFACE,
+        {
+            "UUIDs": dbus.Array(uuids, variant_level=1),
+            "Paired": dbus.Boolean(True, variant_level=1),
+            "LegacyPairing": dbus.Boolean(True, variant_level=1),
+            "Blocked": dbus.Boolean(False, variant_level=1),
+        },
     )
 
 
