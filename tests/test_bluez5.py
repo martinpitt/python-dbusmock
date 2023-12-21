@@ -180,7 +180,7 @@ class TestBlueZ5(dbusmock.DBusTestCase):
         self.assertEqual(path, "/org/bluez/" + adapter_name + "/dev_" + address.replace(":", "_"))
 
         # Pair with the device.
-        self.dbusmock_bluez.PairDevice(adapter_name, address, 5898764)
+        self.dbusmock_bluez.PairDevice(adapter_name, address)
 
         # Check the device's properties.
         out = "\n".join(_run_bluetoothctl("info " + address))
