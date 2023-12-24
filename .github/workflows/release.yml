@@ -7,6 +7,9 @@ on:
 jobs:
   release:
     runs-on: ubuntu-22.04
+    environment: release
+    permissions:
+      id-token: write
     steps:
       - name: Clone repository
         uses: actions/checkout@v3
@@ -46,6 +49,3 @@ jobs:
 
       - name: Create PyPy release
         uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          user: __token__
-          password: ${{ secrets.PYPI_API_TOKEN }}
