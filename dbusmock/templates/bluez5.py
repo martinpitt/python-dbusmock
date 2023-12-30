@@ -333,7 +333,7 @@ def Pair(device):
         raise dbus.exceptions.DBusException("Device already paired", name="org.bluez.Error.AlreadyExists")
     device_address = device.props[DEVICE_IFACE]["Address"]
     adapter_device_name = Path(device.props[DEVICE_IFACE]["Adapter"]).name
-    device.PairDevice(adapter_device_name, device_address, MOCK_PHONE_CLASS)
+    device.PairDevice(adapter_device_name, device_address)
 
 
 @dbus.service.method(DEVICE_IFACE, in_signature="", out_signature="")
