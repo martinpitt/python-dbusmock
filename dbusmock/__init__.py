@@ -25,12 +25,12 @@ except ImportError:
 
 
 __all__ = [
-    "DBusMockObject",
     "MOCK_IFACE",
     "OBJECT_MANAGER_IFACE",
+    "BusType",
+    "DBusMockObject",
     "DBusTestCase",
     "PrivateDBus",
-    "BusType",
     "SpawnedMock",
     "get_object",
     "get_objects",
