@@ -810,7 +810,7 @@ def SettingsGetConnectionByUuid(self, conn_uuid):
         settings = self.conn.GetSettings()
         if settings["connection"]["uuid"] == conn_uuid:
             return o
-    raise dbus.exceptions.DBusException(f"There was no connection with uuid {conn_uuid}")
+    raise dbus.exceptions.DBusException("No connection with the UUID was found.")
 
 
 def ConnectionUpdate(self, settings):

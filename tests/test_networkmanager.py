@@ -585,9 +585,8 @@ class TestNetworkManager(dbusmock.DBusTestCase):
         connectionPath = self.settings.AddConnection(settings)
         self.assertEqual(self.settings.GetConnectionByUuid(uuid), connectionPath)
 
-        fakeuuid = "123123123213213"
-        with self.assertRaisesRegex(dbus.exceptions.DBusException, f".*uuid.*{fakeuuid}$"):
-            self.settings.GetConnectionByUuid(fakeuuid)
+        with self.assertRaisesRegex(dbus.exceptions.DBusException, "No connection with the UUID was found."):
+            self.settings.GetConnectionByUuid("123123123213213")
 
 
 if __name__ == "__main__":
