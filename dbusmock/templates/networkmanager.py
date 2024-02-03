@@ -503,7 +503,7 @@ def AddWiFiConnection(self, dev_path, connection_name, ssid_name, _key_mgmt):
 
     The SSID must match one of the previously created access points.
 
-    Please note that this does not set any global properties.
+    Please note that this only sets minimal global properties in ipv{4,6}, no others.
 
     Returns the new object path.
     """
@@ -557,6 +557,12 @@ def AddWiFiConnection(self, dev_path, connection_name, ssid_name, _key_mgmt):
             "type": "802-11-wireless",
             "id": ssid_name,
             "uuid": str(uuid.uuid4()),
+        },
+        "ipv4": {
+            "method": "auto",
+        },
+        "ipv6": {
+            "method": "auto",
         },
     }
 

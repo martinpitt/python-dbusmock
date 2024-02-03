@@ -242,6 +242,14 @@ class TestNetworkManager(dbusmock.DBusTestCase):
         self.assertEqual(ap1, "/org/freedesktop/NetworkManager/AccessPoint/Mock_AP1")
         self.assertEqual(con1, "/org/freedesktop/NetworkManager/Settings/Mock_Con1")
 
+        settings = subprocess.check_output(
+            ["nmcli", "--nocheck", "connection", "show", "The_SSID"], env=self.lang_env, universal_newlines=True
+        )
+        self.assertRegex(settings, r"ipv4.method:\s*auto")
+        self.assertRegex(settings, r"ipv4.gateway:\s*--")
+        self.assertRegex(settings, r"ipv6.method:\s*auto")
+        self.assertRegex(settings, r"ipv4.gateway:\s*--")
+
     def test_global_state(self):
         self.dbusmock.SetGlobalConnectionState(NMState.NM_STATE_CONNECTED_GLOBAL)
         self.assertRegex(self.read_general(), r"connected.*\sfull")
