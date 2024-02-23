@@ -1,11 +1,9 @@
-"""power-profiles-daemon < 0.20 mock template
+"""power-profiles-daemon >= 0.20 mock template
 
 This creates the expected methods and properties of the main
-net.hadess.PowerProfiles object.
+org.freedesktop.UPower.PowerProfiles object.
 
-This provides only the non-deprecated D-Bus API as of version 0.9.
-Note that this template is deprecated: Version 0.20 listens on a different
-bus name/object path, it is provided in upower_power_profiles_daemon.py
+This provides the D-Bus API as of version 0.20.
 """
 
 # This program is free software; you can redistribute it and/or modify it under
@@ -17,14 +15,14 @@ bus name/object path, it is provided in upower_power_profiles_daemon.py
 __author__ = "Bastien Nocera"
 __copyright__ = """
 (c) 2021, Red Hat Inc.
-(c) 2017 - 2022 Martin Pitt <martin@piware.de>
+(c) 2017 - 2024 Martin Pitt <martin@piware.de>
 """
 
 import dbus
 
-BUS_NAME = "net.hadess.PowerProfiles"
-MAIN_OBJ = "/net/hadess/PowerProfiles"
-MAIN_IFACE = "net.hadess.PowerProfiles"
+BUS_NAME = "org.freedesktop.UPower.PowerProfiles"
+MAIN_OBJ = "/org/freedesktop/UPower/PowerProfiles"
+MAIN_IFACE = "org.freedesktop.UPower.PowerProfiles"
 SYSTEM_BUS = True
 
 
