@@ -38,7 +38,19 @@ class TestPowerProfilesDaemon(dbusmock.DBusTestCase):
         cls.dbus_con = cls.get_dbus(True)
 
     def setUp(self):
-        (self.p_mock, self.obj_ppd) = self.spawn_server_template("power_profiles_daemon", {}, stdout=subprocess.PIPE)
+        # depending on the installed client version, we need to pick the right template
+        try:
+            version = subprocess.run(
+                ["powerprofilesctl", "version"], capture_output=True, text=True, check=True
+            ).stdout
+            version = ".".join(version.strip().split(".")[:2])
+            template = "power_profiles_daemon" if float(version) < 0.2 else "upower_power_profiles_daemon"
+        except subprocess.CalledProcessError as e:
+            # 0.20 crashes without daemon: https://gitlab.freedesktop.org/upower/power-profiles-daemon/-/issues/139
+            print("Failed to get powerprofilesctl version, assuming >= 0.20:", e, file=sys.stderr)
+            template = "upower_power_profiles_daemon"
+
+        (self.p_mock, self.obj_ppd) = self.spawn_server_template(template, {}, stdout=subprocess.PIPE)
         # set log to nonblocking
         flags = fcntl.fcntl(self.p_mock.stdout, fcntl.F_GETFL)
         fcntl.fcntl(self.p_mock.stdout, fcntl.F_SETFL, flags | os.O_NONBLOCK)
