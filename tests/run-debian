@@ -16,6 +16,12 @@ eatmydata apt-get install --no-install-recommends -y git \
     python3-dbus python3-pytest python3-gi gir1.2-glib-2.0 \
     dbus libnotify-bin upower network-manager bluez ofono ofono-scripts
 
+# power-profiles-daemon 0.20 did not yet land in Ubuntu 24.04
+. /etc/os-release
+if [ "$ID" = "debian" ]; then
+    eatmydata apt-get install -y power-profiles-daemon
+fi
+
 # systemd's tools otherwise fail on "not been booted with systemd"
 mkdir -p /run/systemd/system
 
