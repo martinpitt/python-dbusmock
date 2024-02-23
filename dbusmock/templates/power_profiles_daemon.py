@@ -15,14 +15,14 @@ This provides only the non-deprecated D-Bus API as of version 0.9.
 __author__ = "Bastien Nocera"
 __copyright__ = """
 (c) 2021, Red Hat Inc.
-(c) 2017 - 2022 Martin Pitt <martin@piware.de>
+(c) 2017 - 2024 Martin Pitt <martin@piware.de>
 """
 
 import dbus
 
-BUS_NAME = "net.hadess.PowerProfiles"
-MAIN_OBJ = "/net/hadess/PowerProfiles"
-MAIN_IFACE = "net.hadess.PowerProfiles"
+BUS_NAME = "org.freedesktop.UPower.PowerProfiles"
+MAIN_OBJ = "/org/freedesktop/UPower/PowerProfiles"
+MAIN_IFACE = "org.freedesktop.UPower.PowerProfiles"
 SYSTEM_BUS = True
 
 
