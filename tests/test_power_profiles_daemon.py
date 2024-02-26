@@ -12,6 +12,7 @@ __copyright__ = """
 
 import fcntl
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -40,9 +41,8 @@ class TestPowerProfilesDaemon(dbusmock.DBusTestCase):
     def setUp(self):
         # depending on the installed client version, we need to pick the right template
         try:
-            version = subprocess.run(
-                ["powerprofilesctl", "version"], capture_output=True, text=True, check=True
-            ).stdout
+            out = subprocess.run(["powerprofilesctl", "version"], capture_output=True, text=True, check=True).stdout
+            version = re.search(r"[0-9.]+", out).group(0)
             version = ".".join(version.strip().split(".")[:2])
             template = "power_profiles_daemon" if float(version) < 0.2 else "upower_power_profiles_daemon"
         except subprocess.CalledProcessError as e:
