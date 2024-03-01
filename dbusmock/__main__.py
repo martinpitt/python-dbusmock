@@ -51,7 +51,7 @@ def parse_args():
         help="template to load (instead of specifying name, path, interface)",
     )
     parser.add_argument(
-        "name",  # fmt: off
+        "name",
         metavar="NAME",
         nargs="?",
         help='D-Bus name to claim (e. g. "com.example.MyService") (if not using -t)',

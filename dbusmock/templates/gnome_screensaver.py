@@ -28,8 +28,12 @@ def load(mock, _parameters):
         [
             ("GetActive", "", "b", "ret = self.is_active"),
             ("GetActiveTime", "", "u", "ret = 1"),
-            # fmt: off
-            ("SetActive", "b", "", 'self.is_active = args[0]; self.EmitSignal("", "ActiveChanged", "b", [self.is_active])'),
+            (
+                "SetActive",
+                "b",
+                "",
+                'self.is_active = args[0]; self.EmitSignal("", "ActiveChanged", "b", [self.is_active])',
+            ),
             ("Lock", "", "", "time.sleep(1); self.SetActive(True)"),
             ("ShowMessage", "sss", "", ""),
             ("SimulateUserActivity", "", "", ""),
