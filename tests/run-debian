@@ -47,7 +47,7 @@ git clean -ffdx
 # test sdist with PyPA build; note https://bugs.debian.org/1009916
 if dpkg --compare-versions \$(dpkg-query -f '\${Version}' --show python3-build) '>=' 0.7.0-3; then
     python3 -m build --sdist
-    tar --wildcards --strip-components=1 -xvf dist/python-dbusmock-\${my_version}*.tar.gz '*/PKG-INFO'
+    tar --wildcards --strip-components=1 -xvf dist/python_dbusmock-\${my_version}*.tar.gz '*/PKG-INFO'
     grep "^Version: \${my_version}" PKG-INFO
     grep "^## Purpose" PKG-INFO
 fi
