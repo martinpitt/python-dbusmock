@@ -16,6 +16,7 @@ __copyright__ = """
 import argparse
 import json
 import os
+import platform
 import subprocess
 import sys
 
@@ -160,7 +161,10 @@ if __name__ == "__main__":
     if args.template:
         main_object.AddTemplate(args.template, parameters)
 
-    libglib = ctypes.cdll.LoadLibrary("libglib-2.0.so.0")
+    if platform.system() == "Darwin":
+        libglib = ctypes.cdll.LoadLibrary("libglib-2.0.dylib")
+    else:
+        libglib = ctypes.cdll.LoadLibrary("libglib-2.0.so.0")
 
     dbusmock.mockobject.objects[args.path] = main_object
 
