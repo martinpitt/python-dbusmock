@@ -42,7 +42,7 @@ IS_OBJECT_MANAGER = True
 
 
 # these really want to be dataclasses, but need to drop support for Python 3.6 for that
-class NMState:  # pylint: disable=too-few-public-methods
+class NMState:
     """Global state
 
     As per https://developer.gnome.org/NetworkManager/unstable/nm-dbus-types.html#NMState
@@ -58,7 +58,7 @@ class NMState:  # pylint: disable=too-few-public-methods
     NM_STATE_CONNECTED_GLOBAL = 70
 
 
-class NMConnectivityState:  # pylint: disable=too-few-public-methods
+class NMConnectivityState:
     """Connectvity state
 
     As per https://developer.gnome.org/NetworkManager/unstable/nm-dbus-types.html#NMConnectivityState
@@ -71,7 +71,7 @@ class NMConnectivityState:  # pylint: disable=too-few-public-methods
     NM_CONNECTIVITY_FULL = 4
 
 
-class NMActiveConnectionState:  # pylint: disable=too-few-public-methods
+class NMActiveConnectionState:
     """Active connection state
 
     As per https://developer.gnome.org/NetworkManager/unstable/nm-dbus-types.html#NMActiveConnectionState
@@ -84,7 +84,7 @@ class NMActiveConnectionState:  # pylint: disable=too-few-public-methods
     NM_ACTIVE_CONNECTION_STATE_DEACTIVATED = 4
 
 
-class InfrastructureMode:  # pylint: disable=too-few-public-methods
+class InfrastructureMode:
     """Infrastructure mode
 
     As per https://developer.gnome.org/NetworkManager/unstable/nm-dbus-types.html#NM80211Mode
@@ -103,7 +103,7 @@ class InfrastructureMode:  # pylint: disable=too-few-public-methods
     }
 
 
-class DeviceState:  # pylint: disable=too-few-public-methods
+class DeviceState:
     """Device states
 
     As per https://developer.gnome.org/NetworkManager/unstable/nm-dbus-types.html#NMDeviceState
@@ -124,7 +124,7 @@ class DeviceState:  # pylint: disable=too-few-public-methods
     FAILED = 120
 
 
-class NM80211ApSecurityFlags:  # pylint: disable=too-few-public-methods
+class NM80211ApSecurityFlags:
     """Security flags
 
     As per https://developer.gnome.org/NetworkManager/unstable/nm-dbus-types.html#NM80211ApSecurityFlags
@@ -147,7 +147,7 @@ class NM80211ApSecurityFlags:  # pylint: disable=too-few-public-methods
     }
 
 
-class NM80211ApFlags:  # pylint: disable=too-few-public-methods
+class NM80211ApFlags:
     """Device flags
 
     As per https://developer.gnome.org/NetworkManager/unstable/nm-dbus-types.html#NM80211ApFlags
