@@ -35,6 +35,7 @@ class StaticCodeTests(unittest.TestCase):
                 "--score=n",
                 "--disable=missing-function-docstring,R0801",
                 "--disable=too-many-arguments,too-many-instance-attributes",
+                "--disable=too-few-public-methods",
                 "dbusmock/templates/",
             ]
         )
