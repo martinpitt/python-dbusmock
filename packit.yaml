@@ -23,15 +23,17 @@ jobs:
     trigger: pull_request
     targets:
     - fedora-all
-    - centos-stream-8-x86_64
     - centos-stream-9-x86_64
+    # FIXME: broken
+    # - centos-stream-10-x86_64
 
   - job: tests
     trigger: pull_request
     targets:
       - fedora-all
-      - centos-stream-8-x86_64
       - centos-stream-9-x86_64
+      # FIXME: broken rpm build above
+      # - centos-stream-10-x86_64
 
   - job: propose_downstream
     trigger: release
