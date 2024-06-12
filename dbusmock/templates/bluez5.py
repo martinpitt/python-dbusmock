@@ -38,8 +38,14 @@ MEDIA_IFACE = "org.bluez.Media1"
 NETWORK_SERVER_IFACE = "org.bluez.Network1"
 DEVICE_IFACE = "org.bluez.Device1"
 
+LE_ADVERTISING_MANAGER_IFACE = "org.bluez.LEAdvertisingManager1"
+LE_ADVERTISEMENT_IFACE = "org.bluez.LEAdvertisement1"
+
 # The device class of some arbitrary Android phone.
 MOCK_PHONE_CLASS = 5898764
+
+# Maximum number of BLE advertisements supported per adapter.
+MAX_ADVERTISEMENT_INSTANCES = 5
 
 
 @dbus.service.method(AGENT_MANAGER_IFACE, in_signature="os", out_signature="")
@@ -107,6 +113,8 @@ def load(mock, _parameters):
     bluez.capabilities = {}
     bluez.default_agent = None
 
+    # whether to expose the LEAdvertisingManager1 interface on adapters (BLE advertising)
+    bluez.enable_advertise_api = _parameters.get("enable_advertise_api", True)
 
 @dbus.service.method(ADAPTER_IFACE, in_signature="o", out_signature="")
 def RemoveDevice(adapter, path):
@@ -221,6 +229,7 @@ def AddAdapter(self, device_name, system_name):
         "Class": dbus.UInt32(268, variant_level=1),  # Computer, Laptop
         "DiscoverableTimeout": dbus.UInt32(180, variant_level=1),
         "PairableTimeout": dbus.UInt32(0, variant_level=1),
+        "Roles": dbus.Array(["central", "peripheral"], variant_level=1),
     }
 
     self.AddObject(
@@ -252,6 +261,46 @@ def AddAdapter(self, device_name, system_name):
             ("Unregister", "s", "", ""),
         ],
     )
+
+    bluez = mockobject.objects["/org/bluez"]
+
+    # Advertising Manager
+    if bluez.enable_advertise_api:
+        # Example values below from an Intel AX200 adapter
+        advertising_manager_properties = {
+            "ActiveInstances": dbus.Byte(0, variant_level=1),
+            "SupportedInstances": dbus.Byte(MAX_ADVERTISEMENT_INSTANCES, variant_level=1),
+            "SupportedIncludes": dbus.Array(["tx-power", "appearance", "local-name", "rssi"], variant_level=1),
+            "SupportedSecondaryChannels": dbus.Array(["1M", "2M", "Coded"], variant_level=1),
+            "SupportedCapabilities": dbus.Dictionary(
+                {
+                    "MaxAdvLen": dbus.Byte(251),
+                    "MaxScnRspLen": dbus.Byte(251),
+                    "MinTxPower": dbus.Int16(-34),
+                    "MaxTxPower": dbus.Int16(7),
+                },
+                signature="sv",
+                variant_level=1,
+            ),
+            "SupportedFeatures": dbus.Array(
+                [
+                    "CanSetTxPower",
+                    "HardwareOffload",
+                ],
+                variant_level=1,
+            ),
+        }
+        adapter.AddProperties(LE_ADVERTISING_MANAGER_IFACE, advertising_manager_properties)
+        adapter.AddMethods(
+            LE_ADVERTISING_MANAGER_IFACE,
+            [
+                ("RegisterAdvertisement", "oa{sv}", "", RegisterAdvertisement),
+                ("UnregisterAdvertisement", "o", "", UnregisterAdvertisement),
+            ],
+        )
+
+        # Track advertisements per adapter
+        adapter.advertisements = []
 
     manager = mockobject.objects["/"]
     manager.EmitSignal(
@@ -652,3 +701,74 @@ def DisconnectDevice(_self, adapter_device_name, device_address):
             [],
         ],
     )
+
+
+def RegisterAdvertisement(manager, adv_path, options):  # pylint: disable=unused-argument
+    if adv_path in manager.advertisements:
+        raise dbus.exceptions.DBusException("Already registered: " + adv_path, name="org.bluez.Error.AlreadyExists")
+
+    if len(manager.advertisements) >= MAX_ADVERTISEMENT_INSTANCES:
+        raise dbus.exceptions.DBusException(
+            f"Maximum number of advertisements reached: {MAX_ADVERTISEMENT_INSTANCES}",
+            name="org.bluez.Error.NotPermitted",
+        )
+
+    manager.advertisements.append(adv_path)
+
+    manager.UpdateProperties(
+        LE_ADVERTISING_MANAGER_IFACE,
+        {
+            "ActiveInstances": dbus.Byte(len(manager.advertisements)),
+            "SupportedInstances": dbus.Byte(MAX_ADVERTISEMENT_INSTANCES - len(manager.advertisements)),
+        },
+    )
+
+
+def UnregisterAdvertisement(manager, adv_path):
+    try:
+        manager.advertisements.remove(adv_path)
+    except ValueError:
+        raise dbus.exceptions.DBusException(
+            "Unknown advertisement: " + adv_path, name="org.bluez.Error.DoesNotExist"
+        ) from None
+
+    manager.UpdateProperties(
+        LE_ADVERTISING_MANAGER_IFACE,
+        {
+            "ActiveInstances": dbus.Byte(len(manager.advertisements)),
+            "SupportedInstances": dbus.Byte(MAX_ADVERTISEMENT_INSTANCES - len(manager.advertisements)),
+        },
+    )
+
+
+@dbus.service.method(BLUEZ_MOCK_IFACE, in_signature="s", out_signature="s")
+def AddAdvertisement(self, adv_name):
+    """Convenience method to add an Advertisement object
+
+    Creates a simple broadcast advertisement with some manufacturer data.
+
+    Returns the new object path.
+    """
+    path = "/org/dbusmock/bluez/advertisement/" + adv_name
+
+    adv_properties = {
+        "Type": dbus.String("broadcast", variant_level=1),
+        "ManufacturerData": dbus.Dictionary(
+            # 0xFFFF is the Bluetooth Company Identifier reserved for internal use and testing.
+            {dbus.UInt16(0xFFFF): dbus.Array([0x00, 0x01], variant_level=2)},
+            signature="qv",
+            variant_level=1,
+        ),
+        "Includes": dbus.Array(["local-name"], variant_level=1),
+    }
+
+    self.AddObject(
+        path,
+        LE_ADVERTISEMENT_IFACE,
+        adv_properties,
+        [
+            ("Release", "", "", ""),
+        ],
+    )
+
+    return path
