@@ -128,6 +128,24 @@ class TestBlueZ5(dbusmock.DBusTestCase):
         self.assertIn("Discoverable: no", out)
         self.assertIn("Pairable: yes", out)
         self.assertIn("Discovering: no", out)
+        self.assertIn("Roles: central", out)
+        self.assertIn("Roles: peripheral", out)
+
+        # Advertising Manager
+        self.assertIn("Advertising Features:", out)
+        self.assertIn("ActiveInstances: 0x00 (0)", out)
+        self.assertIn("SupportedInstances: 0x05 (5)", out)
+        self.assertIn("SupportedIncludes: tx-power", out)
+        self.assertIn("SupportedIncludes: appearance", out)
+        self.assertIn("SupportedIncludes: local-name", out)
+        self.assertIn("SupportedSecondaryChannels: 1M", out)
+        self.assertIn("SupportedSecondaryChannels: 2M", out)
+        self.assertIn("SupportedCapabilities.MinTxPower: 0xffffffde (-34)", out)
+        self.assertIn("SupportedCapabilities.MaxTxPower: 0x0007 (7)", out)
+        self.assertIn("SupportedCapabilities.MaxAdvLen: 0xfb (251)", out)
+        self.assertIn("SupportedCapabilities.MaxScnRspLen: 0xfb (251)", out)
+        self.assertIn("SupportedFeatures: CanSetTxPower", out)
+        self.assertIn("SupportedFeatures: HardwareOffload", out)
 
     def test_no_devices(self):
         # Add an adapter.
@@ -186,6 +204,123 @@ class TestBlueZ5(dbusmock.DBusTestCase):
         out = "\n".join(_run_bluetoothctl("info " + address))
         self.assertIn("Device " + address, out)
         self.assertIn("Paired: yes", out)
+
+    def test_add_advertisement(self):
+        # When an advertisement is added
+        adv_path = self.dbusmock_bluez.AddAdvertisement("bc001")
+        # Then the path is returned
+        self.assertEqual(adv_path, "/org/dbusmock/bluez/advertisement/bc001")
+        # And the object is exported on the bus
+        adv = self.dbus_con.get_object("org.bluez", adv_path)
+        adv_type = adv.Get("org.bluez.LEAdvertisement1", "Type", dbus_interface="org.freedesktop.DBus.Properties")
+        # And has the correct properties
+        self.assertEqual(adv_type, "broadcast")
+
+    def test_register_advertisement(self):
+        # Given an adapter with the LEAdvertisingManager1 interface
+        path = self.dbusmock_bluez.AddAdapter("hci0", "my-computer")
+        adapter = self.dbus_con.get_object("org.bluez", path)
+        adv_manager = dbus.Interface(adapter, "org.bluez.LEAdvertisingManager1")
+        props = dbus.Interface(adapter, "org.freedesktop.DBus.Properties")
+        active_instances = props.Get(adv_manager.dbus_interface, "ActiveInstances")
+        supported_instances = props.Get(adv_manager.dbus_interface, "SupportedInstances")
+
+        # And no active instances
+        self.assertEqual(active_instances, 0)
+        self.assertEqual(supported_instances, 5)
+
+        # When an advertisement is registered
+        # Then no error is raised
+        adv_manager.RegisterAdvertisement("/adv0", {})
+
+        # And active instances is incremented
+        active_instances = props.Get(adv_manager.dbus_interface, "ActiveInstances")
+        self.assertEqual(active_instances, 1)
+        # And supported instances is decremented
+        supported_instances = props.Get(adv_manager.dbus_interface, "SupportedInstances")
+        self.assertEqual(supported_instances, 4)
+
+    def test_register_advertisement_duplicate(self):
+        # Given an adapter with the LEAdvertisingManager1 interface
+        path = self.dbusmock_bluez.AddAdapter("hci0", "my-computer")
+        adapter = self.dbus_con.get_object("org.bluez", path)
+        adv_manager = dbus.Interface(adapter, "org.bluez.LEAdvertisingManager1")
+        props = dbus.Interface(adapter, "org.freedesktop.DBus.Properties")
+
+        # When an advertisement is registered twice
+        adv_manager.RegisterAdvertisement("/adv0", {})
+
+        # Then an error is raised
+        with self.assertRaisesRegex(dbus.exceptions.DBusException, "Already registered") as ctx:
+            adv_manager.RegisterAdvertisement("/adv0", {})
+        self.assertEqual(ctx.exception.get_dbus_name(), "org.bluez.Error.AlreadyExists")
+
+        # And active instances is not incremented
+        active_instances = props.Get(adv_manager.dbus_interface, "ActiveInstances")
+        self.assertEqual(active_instances, 1)
+        # And supported instances is not decremented
+        supported_instances = props.Get(adv_manager.dbus_interface, "SupportedInstances")
+        self.assertEqual(supported_instances, 4)
+
+    def test_register_advertisement_max_instances(self):
+        # Given an adapter with the LEAdvertisingManager1 interface
+        path = self.dbusmock_bluez.AddAdapter("hci0", "my-computer")
+        adapter = self.dbus_con.get_object("org.bluez", path)
+        adv_manager = dbus.Interface(adapter, "org.bluez.LEAdvertisingManager1")
+        props = dbus.Interface(adapter, "org.freedesktop.DBus.Properties")
+        max_instances = props.Get(adv_manager.dbus_interface, "SupportedInstances")
+
+        # When more advertisements are registered than supported
+        for i in range(max_instances):
+            adv_manager.RegisterAdvertisement(f"/adv{i}", {})
+
+        # Then an error is raised
+        with self.assertRaisesRegex(dbus.exceptions.DBusException, "Maximum number of advertisements reached") as ctx:
+            adv_manager.RegisterAdvertisement(f"/adv{int(max_instances)}", {})
+        self.assertEqual(ctx.exception.get_dbus_name(), "org.bluez.Error.NotPermitted")
+
+        # And active instances is equal to the number of supported instances
+        active_instances = props.Get(adv_manager.dbus_interface, "ActiveInstances")
+        self.assertEqual(active_instances, max_instances)
+        # And supported instances is now zero
+        supported_instances = props.Get(adv_manager.dbus_interface, "SupportedInstances")
+        self.assertEqual(supported_instances, 0)
+
+    def test_unregister_advertisement(self):
+        # Given an adapter with the LEAdvertisingManager1 interface
+        path = self.dbusmock_bluez.AddAdapter("hci0", "my-computer")
+        adapter = self.dbus_con.get_object("org.bluez", path)
+        adv_manager = dbus.Interface(adapter, "org.bluez.LEAdvertisingManager1")
+        props = dbus.Interface(adapter, "org.freedesktop.DBus.Properties")
+
+        # And a registered advertisement
+        adv_manager.RegisterAdvertisement("/adv0", {})
+        active_instances = props.Get(adv_manager.dbus_interface, "ActiveInstances")
+        supported_instances = props.Get(adv_manager.dbus_interface, "SupportedInstances")
+        self.assertEqual(active_instances, 1)
+        self.assertEqual(supported_instances, 4)
+
+        # When the advertisement is unregistered
+        # Then no error is raised
+        adv_manager.UnregisterAdvertisement("/adv0")
+        # And active instances is decremented
+        active_instances = props.Get(adv_manager.dbus_interface, "ActiveInstances")
+        self.assertEqual(active_instances, 0)
+        # And supported instances is incremented
+        supported_instances = props.Get(adv_manager.dbus_interface, "SupportedInstances")
+        self.assertEqual(supported_instances, 5)
+
+    def test_unregister_advertisement_unknown(self):
+        # Given an adapter with the LEAdvertisingManager1 interface
+        path = self.dbusmock_bluez.AddAdapter("hci0", "my-computer")
+        adapter = self.dbus_con.get_object("org.bluez", path)
+        adv_manager = dbus.Interface(adapter, "org.bluez.LEAdvertisingManager1")
+
+        # When an advertisement is unregistered without registering it first
+        # Then an error is raised
+        with self.assertRaisesRegex(dbus.exceptions.DBusException, "Unknown advertisement") as ctx:
+            adv_manager.UnregisterAdvertisement("/adv0")
+        self.assertEqual(ctx.exception.get_dbus_name(), "org.bluez.Error.DoesNotExist")
 
 
 @unittest.skipUnless(have_pbap_client, "pbap-client not installed (copy it from bluez/test)")
