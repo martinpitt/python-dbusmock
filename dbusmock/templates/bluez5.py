@@ -40,6 +40,8 @@ DEVICE_IFACE = "org.bluez.Device1"
 
 LE_ADVERTISING_MANAGER_IFACE = "org.bluez.LEAdvertisingManager1"
 LE_ADVERTISEMENT_IFACE = "org.bluez.LEAdvertisement1"
+ADVERTISEMENT_MONITOR_MANAGER_IFACE = "org.bluez.AdvertisementMonitorManager1"
+ADVERTISEMENT_MONITOR_IFACE = "org.bluez.AdvertisementMonitor1"
 
 # The device class of some arbitrary Android phone.
 MOCK_PHONE_CLASS = 5898764
@@ -115,6 +117,9 @@ def load(mock, _parameters):
 
     # whether to expose the LEAdvertisingManager1 interface on adapters (BLE advertising)
     bluez.enable_advertise_api = _parameters.get("enable_advertise_api", True)
+    # whether to expose the AdvertisementMonitorManager1 interface on adapters (Passive scanning)
+    bluez.enable_monitor_api = _parameters.get("enable_monitor_api", True)
+
 
 @dbus.service.method(ADAPTER_IFACE, in_signature="o", out_signature="")
 def RemoveDevice(adapter, path):
@@ -301,6 +306,23 @@ def AddAdapter(self, device_name, system_name):
 
         # Track advertisements per adapter
         adapter.advertisements = []
+
+    # Advertisement Monitor Manager
+    if bluez.enable_monitor_api:
+        advertisement_monitor_manager_properties = {
+            "SupportedMonitorTypes": dbus.Array(["or_patterns"], variant_level=1),
+        }
+        adapter.AddProperties(ADVERTISEMENT_MONITOR_MANAGER_IFACE, advertisement_monitor_manager_properties)
+        adapter.AddMethods(
+            ADVERTISEMENT_MONITOR_MANAGER_IFACE,
+            [
+                ("RegisterMonitor", "o", "", RegisterMonitor),
+                ("UnregisterMonitor", "o", "", UnregisterMonitor),
+            ],
+        )
+
+        # Track advertisement monitors per adapter
+        adapter.monitors = []
 
     manager = mockobject.objects["/"]
     manager.EmitSignal(
@@ -772,3 +794,66 @@ def AddAdvertisement(self, adv_name):
     )
 
     return path
+
+
+@dbus.service.method(BLUEZ_MOCK_IFACE, in_signature="s", out_signature="s")
+def AddMonitor(self, monitor_name):
+    """Convenience method to add an Advertisement Monitor
+
+    Returns the new object path.
+    """
+    path = "/org/dbusmock/bluez/monitor/" + monitor_name
+
+    monitor_properties = {
+        "Type": dbus.String("or_patterns", variant_level=1),
+        # Example pattern that could be used to scan for an advertisement created by AddAdvertisement()
+        "Patterns": dbus.Struct(
+            (
+                # Start position: 0
+                dbus.Byte(0),
+                # AD data type: Manufacturer data
+                dbus.Byte(0xFF),
+                # Vaue of the pattern: 0xFFFF (company identifier), followed by 0x01
+                dbus.Array(
+                    [
+                        dbus.UInt16(0xFFFF),
+                        dbus.Byte(0x01),
+                    ]
+                ),
+            ),
+            signature="yyay",
+            variant_level=2,
+        ),
+    }
+
+    self.AddObject(
+        path,
+        ADVERTISEMENT_MONITOR_IFACE,
+        monitor_properties,
+        [
+            ("Release", "", "", ""),
+            ("Activate", "", "", ""),
+            ("DeviceFound", "o", "", ""),
+            ("DeviceLost", "o", "", ""),
+        ],
+    )
+
+    return path
+
+
+def RegisterMonitor(manager, monitor_path):
+    if monitor_path in manager.monitors:
+        raise dbus.exceptions.DBusException(
+            "Already registered: " + monitor_path, name="org.bluez.Error.AlreadyExists"
+        )
+
+    manager.monitors.append(monitor_path)
+
+
+def UnregisterMonitor(manager, monitor_path):
+    try:
+        manager.monitors.remove(monitor_path)
+    except ValueError:
+        raise dbus.exceptions.DBusException(
+            "Unknown monitor: " + monitor_path, name="org.bluez.Error.DoesNotExist"
+        ) from None
