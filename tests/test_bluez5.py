@@ -147,6 +147,10 @@ class TestBlueZ5(dbusmock.DBusTestCase):
         self.assertIn("SupportedFeatures: CanSetTxPower", out)
         self.assertIn("SupportedFeatures: HardwareOffload", out)
 
+        # Advertisement Monitor
+        self.assertIn("Advertisement Monitor Features:", out)
+        self.assertIn("SupportedMonitorTypes: or_patterns", out)
+
     def test_no_devices(self):
         # Add an adapter.
         adapter_name = "hci0"
@@ -320,6 +324,67 @@ class TestBlueZ5(dbusmock.DBusTestCase):
         # Then an error is raised
         with self.assertRaisesRegex(dbus.exceptions.DBusException, "Unknown advertisement") as ctx:
             adv_manager.UnregisterAdvertisement("/adv0")
+        self.assertEqual(ctx.exception.get_dbus_name(), "org.bluez.Error.DoesNotExist")
+
+    def test_add_monitor(self):
+        # When an advertisement monitor is added
+        adv_path = self.dbusmock_bluez.AddMonitor("mon001")
+        # Then the path is returned
+        self.assertEqual(adv_path, "/org/dbusmock/bluez/monitor/mon001")
+        # And the object is exported on the bus
+        adv = self.dbus_con.get_object("org.bluez", adv_path)
+        adv_type = adv.Get(
+            "org.bluez.AdvertisementMonitor1", "Type", dbus_interface="org.freedesktop.DBus.Properties"
+        )
+        # And has the correct properties
+        self.assertEqual(adv_type, "or_patterns")
+
+    def test_register_monitor(self):
+        # Given an adapter with the AdvertisementMonitorManager1 interface
+        path = self.dbusmock_bluez.AddAdapter("hci0", "my-computer")
+        adapter = self.dbus_con.get_object("org.bluez", path)
+        adv_monitor_manager = dbus.Interface(adapter, "org.bluez.AdvertisementMonitorManager1")
+
+        # When an advertisement monitor is registered
+        # Then no error is raised
+        adv_monitor_manager.RegisterMonitor("/monitor0")
+
+    def test_register_monitor_duplicate(self):
+        # Given an adapter with the AdvertisementMonitorManager1 interface
+        path = self.dbusmock_bluez.AddAdapter("hci0", "my-computer")
+        adapter = self.dbus_con.get_object("org.bluez", path)
+        adv_monitor_manager = dbus.Interface(adapter, "org.bluez.AdvertisementMonitorManager1")
+
+        # When an advertisement monitor is registered twice
+        adv_monitor_manager.RegisterMonitor("/monitor0")
+
+        # Then an error is raised
+        with self.assertRaisesRegex(dbus.exceptions.DBusException, "Already registered") as ctx:
+            adv_monitor_manager.RegisterMonitor("/monitor0")
+        self.assertEqual(ctx.exception.get_dbus_name(), "org.bluez.Error.AlreadyExists")
+
+    def test_unregister_monitor(self):
+        # Given an adapter with the AdvertisementMonitorManager1 interface
+        path = self.dbusmock_bluez.AddAdapter("hci0", "my-computer")
+        adapter = self.dbus_con.get_object("org.bluez", path)
+        adv_monitor_manager = dbus.Interface(adapter, "org.bluez.AdvertisementMonitorManager1")
+
+        # And a registered advertisement monitor
+        adv_monitor_manager.RegisterMonitor("/monitor0")
+        # When the advertisement monitor is unregistered
+        # Then no error is raised
+        adv_monitor_manager.UnregisterMonitor("/monitor0")
+
+    def test_unregister_monitor_unknown(self):
+        # Given an adapter with the AdvertisementMonitorManager1 interface
+        path = self.dbusmock_bluez.AddAdapter("hci0", "my-computer")
+        adapter = self.dbus_con.get_object("org.bluez", path)
+        adv_monitor_manager = dbus.Interface(adapter, "org.bluez.AdvertisementMonitorManager1")
+
+        # When an advertisement monitor is unregistered without registering it first
+        # Then an error is raised
+        with self.assertRaisesRegex(dbus.exceptions.DBusException, "Unknown monitor") as ctx:
+            adv_monitor_manager.UnregisterMonitor("/monitor0")
         self.assertEqual(ctx.exception.get_dbus_name(), "org.bluez.Error.DoesNotExist")
 
 
