@@ -59,6 +59,10 @@ def RegisterAgent(manager, agent_path, capability):
             "Another agent is already registered " + manager.agent_path, name="org.bluez.Error.AlreadyExists"
         )
 
+    # Fallback to "KeyboardDisplay" as per BlueZ spec
+    if not capability:
+        capability = "KeyboardDisplay"
+
     if capability not in all_caps:
         raise dbus.exceptions.DBusException(
             "Unsupported capability " + capability, name="org.bluez.Error.InvalidArguments"
