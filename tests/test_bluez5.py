@@ -387,6 +387,37 @@ class TestBlueZ5(dbusmock.DBusTestCase):
             adv_monitor_manager.UnregisterMonitor("/monitor0")
         self.assertEqual(ctx.exception.get_dbus_name(), "org.bluez.Error.DoesNotExist")
 
+    def test_advertise(self):
+        # Given an adapter with the LEAdvertisingManager1 interface
+        path = self.dbusmock_bluez.AddAdapter("hci0", "my-computer")
+        adapter = self.dbus_con.get_object("org.bluez", path)
+
+        # When an advertisement is started via bluetoothctl
+        _run_bluetoothctl("advertise broadcast")
+
+        # Then the RegisterAdvertisement method was called
+        mock_calls = adapter.GetMethodCalls("RegisterAdvertisement", dbus_interface="org.freedesktop.DBus.Mock")
+        self.assertEqual(len(mock_calls), 1)
+        path, *_ = mock_calls[0][1]
+        self.assertEqual(path, "/org/bluez/advertising")
+
+    def test_monitor(self):
+        # Given an adapter with the AdvertisementMonitorManager1 interface
+        path = self.dbusmock_bluez.AddAdapter("hci0", "my-computer")
+        adapter = self.dbus_con.get_object("org.bluez", path)
+
+        # When an advertisement monitor is configured via bluetoothctl
+        out = _run_bluetoothctl("monitor.add-or-pattern 0 255 0x01")
+
+        # Then bluetoothctl reports success
+        self.assertIn("Advertisement Monitor 0 added", out)
+
+        # And the RegisterMonitor method was called
+        mock_calls = adapter.GetMethodCalls("RegisterMonitor", dbus_interface="org.freedesktop.DBus.Mock")
+        self.assertEqual(len(mock_calls), 1)
+        path, *_ = mock_calls[0][1]
+        self.assertEqual(path, "/")
+
 
 @unittest.skipUnless(have_pbap_client, "pbap-client not installed (copy it from bluez/test)")
 class TestBlueZObex(dbusmock.DBusTestCase):
