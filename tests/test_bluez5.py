@@ -25,6 +25,7 @@ import dbus.mainloop.glib
 from gi.repository import GLib
 
 import dbusmock
+from packaging.version import Version
 
 tracemalloc.start(25)
 dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
@@ -89,6 +90,10 @@ class TestBlueZ5(dbusmock.DBusTestCase):
         cls.dbus_con = cls.get_dbus(True)
         (cls.p_mock, cls.obj_bluez) = cls.spawn_server_template("bluez5", {}, stdout=subprocess.PIPE)
 
+        out = _run_bluetoothctl("version")
+        version = next(line.split(" ")[-1] for line in out if line.startswith("Version"))
+        cls.bluez5_version = Version(version)
+
     def setUp(self):
         self.obj_bluez.Reset()
         self.dbusmock = dbus.Interface(self.obj_bluez, dbusmock.MOCK_IFACE)
@@ -140,12 +145,24 @@ class TestBlueZ5(dbusmock.DBusTestCase):
         self.assertIn("SupportedIncludes: local-name", out)
         self.assertIn("SupportedSecondaryChannels: 1M", out)
         self.assertIn("SupportedSecondaryChannels: 2M", out)
-        self.assertIn("SupportedCapabilities.MinTxPower: 0xffffffde (-34)", out)
-        self.assertIn("SupportedCapabilities.MaxTxPower: 0x0007 (7)", out)
-        self.assertIn("SupportedCapabilities.MaxAdvLen: 0xfb (251)", out)
-        self.assertIn("SupportedCapabilities.MaxScnRspLen: 0xfb (251)", out)
         self.assertIn("SupportedFeatures: CanSetTxPower", out)
         self.assertIn("SupportedFeatures: HardwareOffload", out)
+
+        # Capabilities key-value format depends on bluez version
+        if self.bluez5_version <= Version("5.70"):
+            capabilities = [
+                ["SupportedCapabilities Key: MinTxPower", "SupportedCapabilities Value: -34"],
+                ["SupportedCapabilities Key: MaxTxPower", "SupportedCapabilities Value: 7"],
+                ["SupportedCapabilities Key: MaxAdvLen", "SupportedCapabilities Value: 0xfb (251)"],
+                ["SupportedCapabilities Key: MaxScnRspLen", "SupportedCapabilities Value: 0xfb (251)"],
+            ]
+            for capability in capabilities:
+                self.assertTrue(all(cap in out for cap in capability), f"Expected ${capability} in: ${out}")
+        else:
+            self.assertIn("SupportedCapabilities.MinTxPower: 0xffffffde (-34)", out)
+            self.assertIn("SupportedCapabilities.MaxTxPower: 0x0007 (7)", out)
+            self.assertIn("SupportedCapabilities.MaxAdvLen: 0xfb (251)", out)
+            self.assertIn("SupportedCapabilities.MaxScnRspLen: 0xfb (251)", out)
 
         # Advertisement Monitor
         self.assertIn("Advertisement Monitor Features:", out)
