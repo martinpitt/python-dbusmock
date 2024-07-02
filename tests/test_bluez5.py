@@ -145,10 +145,13 @@ class TestBlueZ5(dbusmock.DBusTestCase):
         self.assertIn("SupportedIncludes: local-name", out)
         self.assertIn("SupportedSecondaryChannels: 1M", out)
         self.assertIn("SupportedSecondaryChannels: 2M", out)
-        self.assertIn("SupportedFeatures: CanSetTxPower", out)
-        self.assertIn("SupportedFeatures: HardwareOffload", out)
 
-        # Capabilities key-value format depends on bluez version
+        # SupportedFeatures was added to the API with BlueZ 5.57
+        if self.bluez5_version >= Version("5.57"):
+            self.assertIn("SupportedFeatures: CanSetTxPower", out)
+            self.assertIn("SupportedFeatures: HardwareOffload", out)
+
+        # Capabilities key-value format was changed in BlueZ 5.70
         if self.bluez5_version <= Version("5.70"):
             capabilities = [
                 ["SupportedCapabilities Key: MinTxPower", "SupportedCapabilities Value: -34"],
