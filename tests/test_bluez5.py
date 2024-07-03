@@ -438,6 +438,74 @@ class TestBlueZ5(dbusmock.DBusTestCase):
         path, *_ = mock_calls[0][1]
         self.assertEqual(path, "/")
 
+    def test_register_agent(self):
+        # Given BlueZ with the AgentManager1 interface
+        bluez = self.dbus_con.get_object("org.bluez", "/org/bluez")
+        agent_manager = dbus.Interface(bluez, "org.bluez.AgentManager1")
+        agent_path = "/org/dbusmock/bluezagent"
+
+        # When an agent with the default capabiities is registered
+        # Then no error is raised
+        agent_manager.RegisterAgent(agent_path, "")
+
+    def test_register_agent_duplicate(self):
+        # Given BlueZ with the AgentManager1 interface
+        bluez = self.dbus_con.get_object("org.bluez", "/org/bluez")
+        agent_manager = dbus.Interface(bluez, "org.bluez.AgentManager1")
+        agent_path = "/org/dbusmock/bluezagent"
+
+        # When an agent is registered twice
+        agent_manager.RegisterAgent(agent_path, "")
+
+        # Then an error is raised
+        with self.assertRaisesRegex(
+            dbus.exceptions.DBusException, f"Another agent is already registered {agent_path}"
+        ) as ctx:
+            agent_manager.RegisterAgent(agent_path, "")
+        self.assertEqual(ctx.exception.get_dbus_name(), "org.bluez.Error.AlreadyExists")
+
+    def test_unregister_agent(self):
+        # Given BlueZ with the AgentManager1 interface
+        bluez = self.dbus_con.get_object("org.bluez", "/org/bluez")
+        agent_manager = dbus.Interface(bluez, "org.bluez.AgentManager1")
+        agent_path = "/org/dbusmock/bluezagent"
+
+        # And a registered agent
+        agent_manager.RegisterAgent(agent_path, "")
+        # When the agent is unregistered
+        # Then no error is raised
+        agent_manager.UnregisterAgent(agent_path)
+
+    def test_unregister_agent_unknown(self):
+        # Given BlueZ with the AgentManager1 interface
+        bluez = self.dbus_con.get_object("org.bluez", "/org/bluez")
+        agent_manager = dbus.Interface(bluez, "org.bluez.AgentManager1")
+        agent_path = "/org/dbusmock/bluezagent"
+
+        # When an agent is unregistered without registering it first
+        # Then an error is raised
+        with self.assertRaisesRegex(dbus.exceptions.DBusException, f"Agent not registered {agent_path}") as ctx:
+            agent_manager.UnregisterAgent(agent_path)
+        self.assertEqual(ctx.exception.get_dbus_name(), "org.bluez.Error.DoesNotExist")
+
+    def test_agent(self):
+        # Given BlueZ with the AgentManager1 interface
+        bluez = self.dbus_con.get_object("org.bluez", "/org/bluez")
+
+        # When bluetoothctl is started
+        out = _run_bluetoothctl("list")
+
+        # Then it reports that the agent was registered
+        if self.bluez5_version >= Version("5.57"):
+            self.assertIn("Agent registered", out)
+
+        # And the RegisterAgent method was called
+        mock_calls = bluez.GetMethodCalls("RegisterAgent", dbus_interface="org.freedesktop.DBus.Mock")
+        self.assertEqual(len(mock_calls), 1)
+        path, capabilities = mock_calls[0][1]
+        self.assertEqual(path, "/org/bluez/agent")
+        self.assertEqual(capabilities, "")
+
 
 @unittest.skipUnless(have_pbap_client, "pbap-client not installed (copy it from bluez/test)")
 class TestBlueZObex(dbusmock.DBusTestCase):

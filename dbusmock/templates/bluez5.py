@@ -56,7 +56,7 @@ def RegisterAgent(manager, agent_path, capability):
 
     if agent_path in manager.agent_paths:
         raise dbus.exceptions.DBusException(
-            "Another agent is already registered " + manager.agent_path, name="org.bluez.Error.AlreadyExists"
+            "Another agent is already registered " + agent_path, name="org.bluez.Error.AlreadyExists"
         )
 
     # Fallback to "KeyboardDisplay" as per BlueZ spec
