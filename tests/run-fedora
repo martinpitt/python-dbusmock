@@ -2,11 +2,14 @@
 set -eux
 # install build dependencies
 dnf -y install python3-setuptools python3 python3-gobject-base \
-    python3-dbus python3-pytest dbus-x11 util-linux \
+    python3-dbus dbus-x11 util-linux \
     upower NetworkManager bluez libnotify polkit
 
 if ! grep -q :el /etc/os-release; then
-    dnf -y install power-profiles-daemon iio-sensor-proxy
+    dnf -y install power-profiles-daemon iio-sensor-proxy python3-pytest
+else
+    dnf -y install python3-pip
+    pip install pytest
 fi
 
 if [ "$SKIP_STATIC_CHECKS" != "1" ]; then
