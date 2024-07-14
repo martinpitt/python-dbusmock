@@ -28,6 +28,14 @@ jobs:
           # need this to also fetch tags
           fetch-depth: 0
 
+      - name: Workaround for https://github.com/actions/checkout/pull/697
+        run: |
+          set -ex
+          TAG=$(git describe --tags)
+          if echo "$TAG" | grep -q '^[0-9.]\+$'; then
+            git fetch --force origin $TAG:refs/tags/$TAG
+          fi
+
       - name: Run unit tests
         run: |
           dpkg -s podman docker || true
