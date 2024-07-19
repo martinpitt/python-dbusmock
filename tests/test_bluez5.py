@@ -18,6 +18,7 @@ import sys
 import time
 import tracemalloc
 import unittest
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import dbus
@@ -78,6 +79,18 @@ def _run_bluetoothctl(command):
 
     # Filter out the echoed commands. (bluetoothctl uses readline.)
     return list(filter(lambda line: line not in ["list", command, "quit"], lines))
+
+
+def _introspect_property_types(obj, interface):
+    dbus_introspect = dbus.Interface(obj, dbus.INTROSPECTABLE_IFACE)
+    xml = dbus_introspect.Introspect()
+    root = ET.fromstring(xml)
+
+    prop_types = {}
+    for prop in root.findall(f'./interface[@name="{interface}"]/property'):
+        name, type_sig = prop.attrib["name"], prop.attrib["type"]
+        prop_types[name] = type_sig
+    return prop_types
 
 
 @unittest.skipUnless(have_bluetoothctl, "bluetoothctl not installed")
@@ -170,6 +183,58 @@ class TestBlueZ5(dbusmock.DBusTestCase):
         # Advertisement Monitor
         self.assertIn("Advertisement Monitor Features:", out)
         self.assertIn("SupportedMonitorTypes: or_patterns", out)
+
+    def test_adapter_property_types(self):
+        adapter_name = "hci0"
+        system_name = "my-computer"
+
+        path = self.dbusmock_bluez.AddAdapter(adapter_name, system_name)
+        self.assertEqual(path, "/org/bluez/" + adapter_name)
+
+        # Test that the property types on the interfaces are defined correctly
+        adapter = self.dbus_con.get_object("org.bluez", path)
+
+        adapter_prop_types = _introspect_property_types(adapter, "org.bluez.Adapter1")
+        self.assertEqual(
+            adapter_prop_types,
+            {
+                "Address": "s",
+                "AddressType": "s",
+                "Alias": "s",
+                "Class": "u",
+                "Discoverable": "b",
+                "DiscoverableTimeout": "u",
+                "Discovering": "b",
+                "Modalias": "s",
+                "Name": "s",
+                "Pairable": "b",
+                "PairableTimeout": "u",
+                "Powered": "b",
+                "Roles": "as",
+                "UUIDs": "as",
+            },
+        )
+
+        adv_manager_prop_types = _introspect_property_types(adapter, "org.bluez.LEAdvertisingManager1")
+        self.assertEqual(
+            adv_manager_prop_types,
+            {
+                "ActiveInstances": "y",
+                "SupportedCapabilities": "a{sv}",
+                "SupportedFeatures": "as",
+                "SupportedIncludes": "as",
+                "SupportedInstances": "y",
+                "SupportedSecondaryChannels": "as",
+            },
+        )
+
+        adv_monitor_manager_prop_types = _introspect_property_types(adapter, "org.bluez.AdvertisementMonitorManager1")
+        self.assertEqual(
+            adv_monitor_manager_prop_types,
+            {
+                "SupportedMonitorTypes": "as",
+            },
+        )
 
     def test_no_devices(self):
         # Add an adapter.
