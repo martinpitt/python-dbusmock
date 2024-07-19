@@ -155,8 +155,8 @@ def StartDiscovery(adapter):
         [
             ADAPTER_IFACE,
             {
-                "Discoverable": dbus.Boolean(adapter.props[ADAPTER_IFACE]["Discoverable"], variant_level=1),
-                "Discovering": dbus.Boolean(adapter.props[ADAPTER_IFACE]["Discovering"], variant_level=1),
+                "Discoverable": dbus.Boolean(adapter.props[ADAPTER_IFACE]["Discoverable"]),
+                "Discovering": dbus.Boolean(adapter.props[ADAPTER_IFACE]["Discovering"]),
             },
             [],
         ],
@@ -177,8 +177,8 @@ def StopDiscovery(adapter):
         [
             ADAPTER_IFACE,
             {
-                "Discoverable": dbus.Boolean(adapter.props[ADAPTER_IFACE]["Discoverable"], variant_level=1),
-                "Discovering": dbus.Boolean(adapter.props[ADAPTER_IFACE]["Discovering"], variant_level=1),
+                "Discoverable": dbus.Boolean(adapter.props[ADAPTER_IFACE]["Discoverable"]),
+                "Discovering": dbus.Boolean(adapter.props[ADAPTER_IFACE]["Discovering"]),
             },
             [],
         ],
@@ -221,24 +221,23 @@ def AddAdapter(self, device_name, system_name):
                 # Audio/Video Remote Control Profile (target)
                 "0000110c-0000-1000-8000-00805f9b34fb",
             ],
-            variant_level=1,
         ),
-        "Discoverable": dbus.Boolean(False, variant_level=1),
-        "Discovering": dbus.Boolean(False, variant_level=1),
-        "Pairable": dbus.Boolean(True, variant_level=1),
-        "Powered": dbus.Boolean(True, variant_level=1),
-        "Address": dbus.String(address, variant_level=1),
-        "AddressType": dbus.String("public", variant_level=1),
-        "Alias": dbus.String(system_name, variant_level=1),
-        "Modalias": dbus.String("usb:v1D6Bp0245d050A", variant_level=1),
-        "Name": dbus.String(system_name, variant_level=1),
+        "Discoverable": dbus.Boolean(False),
+        "Discovering": dbus.Boolean(False),
+        "Pairable": dbus.Boolean(True),
+        "Powered": dbus.Boolean(True),
+        "Address": dbus.String(address),
+        "AddressType": dbus.String("public"),
+        "Alias": dbus.String(system_name),
+        "Modalias": dbus.String("usb:v1D6Bp0245d050A"),
+        "Name": dbus.String(system_name),
         # Reference:
         # http://bluetooth-pentest.narod.ru/software/
         # bluetooth_class_of_device-service_generator.html
-        "Class": dbus.UInt32(268, variant_level=1),  # Computer, Laptop
-        "DiscoverableTimeout": dbus.UInt32(180, variant_level=1),
-        "PairableTimeout": dbus.UInt32(0, variant_level=1),
-        "Roles": dbus.Array(["central", "peripheral"], variant_level=1),
+        "Class": dbus.UInt32(268),  # Computer, Laptop
+        "DiscoverableTimeout": dbus.UInt32(180),
+        "PairableTimeout": dbus.UInt32(0),
+        "Roles": dbus.Array(["central", "peripheral"]),
     }
 
     self.AddObject(
@@ -277,10 +276,10 @@ def AddAdapter(self, device_name, system_name):
     if bluez.enable_advertise_api:
         # Example values below from an Intel AX200 adapter
         advertising_manager_properties = {
-            "ActiveInstances": dbus.Byte(0, variant_level=1),
-            "SupportedInstances": dbus.Byte(MAX_ADVERTISEMENT_INSTANCES, variant_level=1),
-            "SupportedIncludes": dbus.Array(["tx-power", "appearance", "local-name", "rssi"], variant_level=1),
-            "SupportedSecondaryChannels": dbus.Array(["1M", "2M", "Coded"], variant_level=1),
+            "ActiveInstances": dbus.Byte(0),
+            "SupportedInstances": dbus.Byte(MAX_ADVERTISEMENT_INSTANCES),
+            "SupportedIncludes": dbus.Array(["tx-power", "appearance", "local-name", "rssi"]),
+            "SupportedSecondaryChannels": dbus.Array(["1M", "2M", "Coded"]),
             "SupportedCapabilities": dbus.Dictionary(
                 {
                     "MaxAdvLen": dbus.Byte(251),
@@ -289,14 +288,12 @@ def AddAdapter(self, device_name, system_name):
                     "MaxTxPower": dbus.Int16(7),
                 },
                 signature="sv",
-                variant_level=1,
             ),
             "SupportedFeatures": dbus.Array(
                 [
                     "CanSetTxPower",
                     "HardwareOffload",
                 ],
-                variant_level=1,
             ),
         }
         adapter.AddProperties(LE_ADVERTISING_MANAGER_IFACE, advertising_manager_properties)
@@ -314,7 +311,7 @@ def AddAdapter(self, device_name, system_name):
     # Advertisement Monitor Manager
     if bluez.enable_monitor_api:
         advertisement_monitor_manager_properties = {
-            "SupportedMonitorTypes": dbus.Array(["or_patterns"], variant_level=1),
+            "SupportedMonitorTypes": dbus.Array(["or_patterns"]),
         }
         adapter.AddProperties(ADVERTISEMENT_MONITOR_MANAGER_IFACE, advertisement_monitor_manager_properties)
         adapter.AddMethods(
@@ -423,7 +420,7 @@ def Connect(device):
         [
             DEVICE_IFACE,
             {
-                "Connected": dbus.Boolean(device.connected, variant_level=1),
+                "Connected": dbus.Boolean(device.connected),
             },
             [],
         ],
@@ -442,7 +439,7 @@ def Disconnect(device):
         [
             DEVICE_IFACE,
             {
-                "Connected": dbus.Boolean(device.connected, variant_level=1),
+                "Connected": dbus.Boolean(device.connected),
             },
             [],
         ],
@@ -474,29 +471,29 @@ def AddDevice(self, adapter_device_name, device_address, alias):
         )
 
     properties = {
-        "Address": dbus.String(device_address, variant_level=1),
-        "AddressType": dbus.String("public", variant_level=1),
-        "Name": dbus.String(alias, variant_level=1),
-        "Icon": dbus.String("phone", variant_level=1),
-        "Class": dbus.UInt32(MOCK_PHONE_CLASS, variant_level=1),
-        "Appearance": dbus.UInt16(0, variant_level=1),
-        "UUIDs": dbus.Array([], signature="s", variant_level=1),
-        "Paired": dbus.Boolean(False, variant_level=1),
-        "Connected": dbus.Boolean(False, variant_level=1),
-        "Trusted": dbus.Boolean(False, variant_level=1),
-        "Blocked": dbus.Boolean(False, variant_level=1),
-        "WakeAllowed": dbus.Boolean(False, variant_level=1),
-        "Alias": dbus.String(alias, variant_level=1),
-        "Adapter": dbus.ObjectPath(adapter_path, variant_level=1),
-        "LegacyPairing": dbus.Boolean(False, variant_level=1),
-        "Modalias": dbus.String("bluetooth:v000Fp1200d1436", variant_level=1),
-        "RSSI": dbus.Int16(-79, variant_level=1),  # arbitrary
-        "TxPower": dbus.Int16(0, variant_level=1),
-        "ManufacturerData": dbus.Array([], signature="a{qv}", variant_level=1),
-        "ServiceData": dbus.Array([], signature="a{sv}", variant_level=1),
-        "ServicesResolved": dbus.Boolean(False, variant_level=1),
-        "AdvertisingFlags": dbus.Array([], signature="ay", variant_level=1),
-        "AdvertisingData": dbus.Array([], signature="a{yv}", variant_level=1),
+        "Address": dbus.String(device_address),
+        "AddressType": dbus.String("public"),
+        "Name": dbus.String(alias),
+        "Icon": dbus.String("phone"),
+        "Class": dbus.UInt32(MOCK_PHONE_CLASS),
+        "Appearance": dbus.UInt16(0),
+        "UUIDs": dbus.Array([], signature="s"),
+        "Paired": dbus.Boolean(False),
+        "Connected": dbus.Boolean(False),
+        "Trusted": dbus.Boolean(False),
+        "Blocked": dbus.Boolean(False),
+        "WakeAllowed": dbus.Boolean(False),
+        "Alias": dbus.String(alias),
+        "Adapter": dbus.ObjectPath(adapter_path),
+        "LegacyPairing": dbus.Boolean(False),
+        "Modalias": dbus.String("bluetooth:v000Fp1200d1436"),
+        "RSSI": dbus.Int16(-79),  # arbitrary
+        "TxPower": dbus.Int16(0),
+        "ManufacturerData": dbus.Array([], signature="a{qv}"),
+        "ServiceData": dbus.Array([], signature="a{sv}"),
+        "ServicesResolved": dbus.Boolean(False),
+        "AdvertisingFlags": dbus.Array([], signature="ay"),
+        "AdvertisingData": dbus.Array([], signature="a{yv}"),
     }
 
     self.AddObject(
@@ -579,10 +576,10 @@ def PairDevice(_self, adapter_device_name, device_address):
     device.UpdateProperties(
         DEVICE_IFACE,
         {
-            "UUIDs": dbus.Array(uuids, variant_level=1),
-            "Paired": dbus.Boolean(True, variant_level=1),
-            "LegacyPairing": dbus.Boolean(True, variant_level=1),
-            "Blocked": dbus.Boolean(False, variant_level=1),
+            "UUIDs": dbus.Array(uuids),
+            "Paired": dbus.Boolean(True),
+            "LegacyPairing": dbus.Boolean(True),
+            "Blocked": dbus.Boolean(False),
         },
     )
 
@@ -617,8 +614,8 @@ def BlockDevice(_self, adapter_device_name, device_address):
 
     device = mockobject.objects[device_path]
 
-    device.props[DEVICE_IFACE]["Blocked"] = dbus.Boolean(True, variant_level=1)
-    device.props[DEVICE_IFACE]["Connected"] = dbus.Boolean(False, variant_level=1)
+    device.props[DEVICE_IFACE]["Blocked"] = dbus.Boolean(True)
+    device.props[DEVICE_IFACE]["Connected"] = dbus.Boolean(False)
 
     device.EmitSignal(
         dbus.PROPERTIES_IFACE,
@@ -627,8 +624,8 @@ def BlockDevice(_self, adapter_device_name, device_address):
         [
             DEVICE_IFACE,
             {
-                "Blocked": dbus.Boolean(True, variant_level=1),
-                "Connected": dbus.Boolean(False, variant_level=1),
+                "Blocked": dbus.Boolean(True),
+                "Connected": dbus.Boolean(False),
             },
             [],
         ],
@@ -665,8 +662,8 @@ def ConnectDevice(_self, adapter_device_name, device_address):
 
     device = mockobject.objects[device_path]
 
-    device.props[DEVICE_IFACE]["Blocked"] = dbus.Boolean(False, variant_level=1)
-    device.props[DEVICE_IFACE]["Connected"] = dbus.Boolean(True, variant_level=1)
+    device.props[DEVICE_IFACE]["Blocked"] = dbus.Boolean(False)
+    device.props[DEVICE_IFACE]["Connected"] = dbus.Boolean(True)
 
     device.EmitSignal(
         dbus.PROPERTIES_IFACE,
@@ -675,8 +672,8 @@ def ConnectDevice(_self, adapter_device_name, device_address):
         [
             DEVICE_IFACE,
             {
-                "Blocked": dbus.Boolean(False, variant_level=1),
-                "Connected": dbus.Boolean(True, variant_level=1),
+                "Blocked": dbus.Boolean(False),
+                "Connected": dbus.Boolean(True),
             },
             [],
         ],
@@ -713,7 +710,7 @@ def DisconnectDevice(_self, adapter_device_name, device_address):
 
     device = mockobject.objects[device_path]
 
-    device.props[DEVICE_IFACE]["Connected"] = dbus.Boolean(False, variant_level=1)
+    device.props[DEVICE_IFACE]["Connected"] = dbus.Boolean(False)
 
     device.EmitSignal(
         dbus.PROPERTIES_IFACE,
@@ -722,7 +719,7 @@ def DisconnectDevice(_self, adapter_device_name, device_address):
         [
             DEVICE_IFACE,
             {
-                "Connected": dbus.Boolean(False, variant_level=1),
+                "Connected": dbus.Boolean(False),
             },
             [],
         ],
@@ -778,14 +775,13 @@ def AddAdvertisement(self, adv_name):
     path = "/org/dbusmock/bluez/advertisement/" + adv_name
 
     adv_properties = {
-        "Type": dbus.String("broadcast", variant_level=1),
+        "Type": dbus.String("broadcast"),
         "ManufacturerData": dbus.Dictionary(
             # 0xFFFF is the Bluetooth Company Identifier reserved for internal use and testing.
-            {dbus.UInt16(0xFFFF): dbus.Array([0x00, 0x01], variant_level=2)},
+            {dbus.UInt16(0xFFFF): dbus.Array([0x00, 0x01])},
             signature="qv",
-            variant_level=1,
         ),
-        "Includes": dbus.Array(["local-name"], variant_level=1),
+        "Includes": dbus.Array(["local-name"]),
     }
 
     self.AddObject(
@@ -809,7 +805,7 @@ def AddMonitor(self, monitor_name):
     path = "/org/dbusmock/bluez/monitor/" + monitor_name
 
     monitor_properties = {
-        "Type": dbus.String("or_patterns", variant_level=1),
+        "Type": dbus.String("or_patterns"),
         # Example pattern that could be used to scan for an advertisement created by AddAdvertisement()
         "Patterns": dbus.Struct(
             (
@@ -826,7 +822,6 @@ def AddMonitor(self, monitor_name):
                 ),
             ),
             signature="yyay",
-            variant_level=2,
         ),
     }
 
