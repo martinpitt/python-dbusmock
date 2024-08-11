@@ -51,7 +51,7 @@ class TestURfkill(dbusmock.DBusTestCase):
     def test_mainobject(self):
         (remote_object, iface) = _get_urfkill_objects()
         self.assertFalse(iface.IsFlightMode())
-        propiface = dbus.Interface(remote_object, "org.freedesktop.DBus.Properties")
+        propiface = dbus.Interface(remote_object, dbus.PROPERTIES_IFACE)
         version = propiface.Get("org.freedesktop.URfkill", "DaemonVersion")
         self.assertEqual(version, "0.6.0")
 
@@ -61,7 +61,7 @@ class TestURfkill(dbusmock.DBusTestCase):
         for i in individual_objects:
             path = "/org/freedesktop/URfkill/" + i
             remote_object = bus.get_object("org.freedesktop.URfkill", path)
-            propiface = dbus.Interface(remote_object, "org.freedesktop.DBus.Properties")
+            propiface = dbus.Interface(remote_object, dbus.PROPERTIES_IFACE)
             state = propiface.Get("org.freedesktop.URfkill.Killswitch", "state")
             self.assertEqual(state, 0)
 
@@ -70,7 +70,7 @@ class TestURfkill(dbusmock.DBusTestCase):
         (_, iface) = _get_urfkill_objects()
 
         property_object = bus.get_object("org.freedesktop.URfkill", "/org/freedesktop/URfkill/WLAN")
-        propiface = dbus.Interface(property_object, "org.freedesktop.DBus.Properties")
+        propiface = dbus.Interface(property_object, dbus.PROPERTIES_IFACE)
         self.assertEqual(propiface.Get("org.freedesktop.URfkill.Killswitch", "state"), 0)
 
         self.assertTrue(iface.Block(1, True))
@@ -87,7 +87,7 @@ class TestURfkill(dbusmock.DBusTestCase):
         (_, iface) = _get_urfkill_objects()
 
         property_object = bus.get_object("org.freedesktop.URfkill", "/org/freedesktop/URfkill/WLAN")
-        propiface = dbus.Interface(property_object, "org.freedesktop.DBus.Properties")
+        propiface = dbus.Interface(property_object, dbus.PROPERTIES_IFACE)
 
         self.assertFalse(iface.IsFlightMode())
         self.assertEqual(propiface.Get("org.freedesktop.URfkill.Killswitch", "state"), 0)
@@ -104,7 +104,7 @@ class TestURfkill(dbusmock.DBusTestCase):
         (_, iface) = _get_urfkill_objects()
 
         property_object = bus.get_object("org.freedesktop.URfkill", "/org/freedesktop/URfkill/WLAN")
-        propiface = dbus.Interface(property_object, "org.freedesktop.DBus.Properties")
+        propiface = dbus.Interface(property_object, dbus.PROPERTIES_IFACE)
 
         self.assertFalse(iface.IsFlightMode())
         self.assertEqual(propiface.Get("org.freedesktop.URfkill.Killswitch", "state"), 0)
