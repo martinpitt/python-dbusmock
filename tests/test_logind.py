@@ -113,7 +113,7 @@ class TestLogind(dbusmock.DBusTestCase):
 
     def test_properties(self):
         (self.p_mock, obj_logind) = self.spawn_server_template("logind", {}, stdout=subprocess.PIPE)
-        props = obj_logind.GetAll("org.freedesktop.login1.Manager", interface="org.freedesktop.DBus.Properties")
+        props = obj_logind.GetAll("org.freedesktop.login1.Manager", interface=dbus.PROPERTIES_IFACE)
         self.assertEqual(props["PreparingForSleep"], False)
         self.assertEqual(props["IdleSinceHint"], 0)
 

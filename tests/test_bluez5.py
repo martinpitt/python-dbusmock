@@ -236,7 +236,7 @@ class TestBlueZ5(dbusmock.DBusTestCase):
         self.assertEqual(adv_path, "/org/dbusmock/bluez/advertisement/bc001")
         # And the object is exported on the bus
         adv = self.dbus_con.get_object("org.bluez", adv_path)
-        adv_type = adv.Get("org.bluez.LEAdvertisement1", "Type", dbus_interface="org.freedesktop.DBus.Properties")
+        adv_type = adv.Get("org.bluez.LEAdvertisement1", "Type", dbus_interface=dbus.PROPERTIES_IFACE)
         # And has the correct properties
         self.assertEqual(adv_type, "broadcast")
 
@@ -245,7 +245,7 @@ class TestBlueZ5(dbusmock.DBusTestCase):
         path = self.dbusmock_bluez.AddAdapter("hci0", "my-computer")
         adapter = self.dbus_con.get_object("org.bluez", path)
         adv_manager = dbus.Interface(adapter, "org.bluez.LEAdvertisingManager1")
-        props = dbus.Interface(adapter, "org.freedesktop.DBus.Properties")
+        props = dbus.Interface(adapter, dbus.PROPERTIES_IFACE)
         active_instances = props.Get(adv_manager.dbus_interface, "ActiveInstances")
         supported_instances = props.Get(adv_manager.dbus_interface, "SupportedInstances")
 
@@ -269,7 +269,7 @@ class TestBlueZ5(dbusmock.DBusTestCase):
         path = self.dbusmock_bluez.AddAdapter("hci0", "my-computer")
         adapter = self.dbus_con.get_object("org.bluez", path)
         adv_manager = dbus.Interface(adapter, "org.bluez.LEAdvertisingManager1")
-        props = dbus.Interface(adapter, "org.freedesktop.DBus.Properties")
+        props = dbus.Interface(adapter, dbus.PROPERTIES_IFACE)
 
         # When an advertisement is registered twice
         adv_manager.RegisterAdvertisement("/adv0", {})
@@ -291,7 +291,7 @@ class TestBlueZ5(dbusmock.DBusTestCase):
         path = self.dbusmock_bluez.AddAdapter("hci0", "my-computer")
         adapter = self.dbus_con.get_object("org.bluez", path)
         adv_manager = dbus.Interface(adapter, "org.bluez.LEAdvertisingManager1")
-        props = dbus.Interface(adapter, "org.freedesktop.DBus.Properties")
+        props = dbus.Interface(adapter, dbus.PROPERTIES_IFACE)
         max_instances = props.Get(adv_manager.dbus_interface, "SupportedInstances")
 
         # When more advertisements are registered than supported
@@ -315,7 +315,7 @@ class TestBlueZ5(dbusmock.DBusTestCase):
         path = self.dbusmock_bluez.AddAdapter("hci0", "my-computer")
         adapter = self.dbus_con.get_object("org.bluez", path)
         adv_manager = dbus.Interface(adapter, "org.bluez.LEAdvertisingManager1")
-        props = dbus.Interface(adapter, "org.freedesktop.DBus.Properties")
+        props = dbus.Interface(adapter, dbus.PROPERTIES_IFACE)
 
         # And a registered advertisement
         adv_manager.RegisterAdvertisement("/adv0", {})
@@ -353,9 +353,7 @@ class TestBlueZ5(dbusmock.DBusTestCase):
         self.assertEqual(adv_path, "/org/dbusmock/bluez/monitor/mon001")
         # And the object is exported on the bus
         adv = self.dbus_con.get_object("org.bluez", adv_path)
-        adv_type = adv.Get(
-            "org.bluez.AdvertisementMonitor1", "Type", dbus_interface="org.freedesktop.DBus.Properties"
-        )
+        adv_type = adv.Get("org.bluez.AdvertisementMonitor1", "Type", dbus_interface=dbus.PROPERTIES_IFACE)
         # And has the correct properties
         self.assertEqual(adv_type, "or_patterns")
 
