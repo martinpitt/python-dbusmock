@@ -345,7 +345,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
             dbus_proxy.AddObject('/com/example/Foo/Manager',
                                  'com.example.Foo.Control',
                                  {
-                                     'state': dbus.String('online', variant_level=1),
+                                     'state': dbus.String('online'),
                                  },
                                  [
                                      ('Start', '', '', ''),

@@ -89,11 +89,11 @@ def CreateSession(self, destination, args):
 
     path = client_path + "/session" + str(session_id)
     properties = {
-        "Source": dbus.String("FIXME", variant_level=1),
-        "Destination": dbus.String(destination, variant_level=1),
-        "Channel": dbus.Byte(0, variant_level=1),
-        "Target": dbus.String("FIXME", variant_level=1),
-        "Root": dbus.String("FIXME", variant_level=1),
+        "Source": dbus.String("FIXME"),
+        "Destination": dbus.String(destination),
+        "Channel": dbus.Byte(0),
+        "Target": dbus.String("FIXME"),
+        "Root": dbus.String("FIXME"),
     }
 
     self.AddObject(
@@ -213,11 +213,11 @@ def PullAll(self, target_file, filters):
         filename = Path(temp_file.name).resolve()
 
     props = {
-        "Status": dbus.String("queued", variant_level=1),
-        "Session": dbus.ObjectPath(session_path, variant_level=1),
-        "Name": dbus.String(target_file, variant_level=1),
-        "Filename": dbus.String(filename, variant_level=1),
-        "Transferred": dbus.UInt64(0, variant_level=1),
+        "Status": dbus.String("queued"),
+        "Session": dbus.ObjectPath(session_path),
+        "Name": dbus.String(target_file),
+        "Filename": dbus.String(filename),
+        "Transferred": dbus.UInt64(0),
     }
 
     self.AddObject(
@@ -299,7 +299,7 @@ def UpdateStatus(self, is_complete):
     transferred = Path(self.props[TRANSFER_IFACE]["Filename"]).stat().st_size
 
     self.props[TRANSFER_IFACE]["Status"] = status
-    self.props[TRANSFER_IFACE]["Transferred"] = dbus.UInt64(transferred, variant_level=1)
+    self.props[TRANSFER_IFACE]["Transferred"] = dbus.UInt64(transferred)
 
     self.EmitSignal(
         dbus.PROPERTIES_IFACE,
@@ -308,8 +308,8 @@ def UpdateStatus(self, is_complete):
         [
             TRANSFER_IFACE,
             {
-                "Status": dbus.String(status, variant_level=1),
-                "Transferred": dbus.UInt64(transferred, variant_level=1),
+                "Status": dbus.String(status),
+                "Transferred": dbus.UInt64(transferred),
             },
             [],
         ],

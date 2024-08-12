@@ -155,7 +155,7 @@ def AddSimpleModem(self):
     self.AddObject(modem_path, MODEM_IFACE, modem_props, [])
 
     modem_3gpp_props = {
-        "Imei": dbus.String("doesnotmatter", variant_level=1),
+        "Imei": dbus.String("doesnotmatter"),
         "OperatorName": dbus.String("TheOperator"),
         "Pco": dbus.Array([], signature="(ubay)"),
     }

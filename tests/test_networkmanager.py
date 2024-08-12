@@ -352,7 +352,7 @@ class TestNetworkManager(dbusmock.DBusTestCase):
 
         # Use the same settings, but this one will autoconnect.
         uuid2 = "22222222-2222-2222-2222-222222222222"
-        settings["connection"]["autoconnect"] = dbus.Boolean(True, variant_level=1)
+        settings["connection"]["autoconnect"] = dbus.Boolean(True)
         settings["connection"]["uuid"] = uuid2
 
         con2 = self.settings.AddConnection(settings)

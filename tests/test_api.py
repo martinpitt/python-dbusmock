@@ -236,8 +236,8 @@ assert args[2] == 5
             "/obj1",
             "org.freedesktop.Test.Sub",
             {
-                "state": dbus.String("online", variant_level=1),
-                "cute": dbus.Boolean(True, variant_level=1),
+                "state": dbus.String("online"),
+                "cute": dbus.Boolean(True),
             },
             [],
         )
@@ -276,8 +276,8 @@ assert args[2] == 5
             "/obj1",
             "org.freedesktop.Test.Sub",
             {
-                "state": dbus.String("online", variant_level=1),
-                "cute": dbus.Boolean(True, variant_level=1),
+                "state": dbus.String("online"),
+                "cute": dbus.Boolean(True),
             },
             [
                 ("Do0", "", "i", "ret = 42"),
@@ -308,12 +308,12 @@ assert args[2] == 5
             self.dbus_props.Set,
             "org.freedesktop.Test.Main",
             "version",
-            dbus.Int32(2, variant_level=1),
+            dbus.Int32(2),
         )
 
-        self.dbus_mock.AddProperty("org.freedesktop.Test.Main", "version", dbus.Int32(2, variant_level=1))
+        self.dbus_mock.AddProperty("org.freedesktop.Test.Main", "version", dbus.Int32(2))
         # once again on default interface
-        self.dbus_mock.AddProperty("", "connected", dbus.Boolean(True, variant_level=1))
+        self.dbus_mock.AddProperty("", "connected", dbus.Boolean(True))
 
         self.assertEqual(self.dbus_props.Get("org.freedesktop.Test.Main", "version"), 2)
         self.assertEqual(self.dbus_props.Get("org.freedesktop.Test.Main", "connected"), True)
@@ -326,7 +326,7 @@ assert args[2] == 5
         self.assertEqual(ctx.exception.get_dbus_message(), "no such interface org.freedesktop.Test.Bogus")
 
         # change property
-        self.dbus_props.Set("org.freedesktop.Test.Main", "version", dbus.Int32(4, variant_level=1))
+        self.dbus_props.Set("org.freedesktop.Test.Main", "version", dbus.Int32(4))
         self.assertEqual(self.dbus_props.Get("org.freedesktop.Test.Main", "version"), 4)
 
         # check that the Get/Set calls get logged
@@ -337,7 +337,7 @@ assert args[2] == 5
         self.assertRegex(log, "\n[0-9.]+ Set / org.freedesktop.Test.Main.version 4\n")
 
         # add property to different interface
-        self.dbus_mock.AddProperty("org.freedesktop.Test.Other", "color", dbus.String("yellow", variant_level=1))
+        self.dbus_mock.AddProperty("org.freedesktop.Test.Other", "color", dbus.String("yellow"))
 
         self.assertEqual(self.dbus_props.GetAll("org.freedesktop.Test.Main"), {"version": 4, "connected": True})
         self.assertEqual(self.dbus_props.GetAll("org.freedesktop.Test.Other"), {"color": "yellow"})
