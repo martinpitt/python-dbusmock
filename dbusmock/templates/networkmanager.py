@@ -285,20 +285,18 @@ def SetProperty(_self, path, iface, name, value):
 
 @dbus.service.method(MOCK_IFACE, in_signature="u", out_signature="")
 def SetGlobalConnectionState(self, state):
-    self.SetProperty(MANAGER_OBJ, MANAGER_IFACE, "State", dbus.UInt32(state, variant_level=1))
+    self.SetProperty(MANAGER_OBJ, MANAGER_IFACE, "State", dbus.UInt32(state))
     self.EmitSignal(MANAGER_IFACE, "StateChanged", "u", [state])
 
 
 @dbus.service.method(MOCK_IFACE, in_signature="u", out_signature="")
 def SetConnectivity(self, connectivity):
-    self.SetProperty(MANAGER_OBJ, MANAGER_IFACE, "Connectivity", dbus.UInt32(connectivity, variant_level=1))
+    self.SetProperty(MANAGER_OBJ, MANAGER_IFACE, "Connectivity", dbus.UInt32(connectivity))
 
 
 @dbus.service.method(MOCK_IFACE, in_signature="b", out_signature="")
 def SetNetworkingEnabled(self, networking_enabled):
-    self.SetProperty(
-        MANAGER_OBJ, MANAGER_IFACE, "NetworkingEnabled", dbus.Boolean(networking_enabled, variant_level=1)
-    )
+    self.SetProperty(MANAGER_OBJ, MANAGER_IFACE, "NetworkingEnabled", dbus.Boolean(networking_enabled))
 
 
 @dbus.service.method(MOCK_IFACE, in_signature="ss", out_signature="")

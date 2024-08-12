@@ -37,7 +37,7 @@ def load(mock, _parameters):
             {
                 "BackendName": "local",
                 "BackendVersion": "0.8.15",
-                "BackendFeatures": dbus.UInt32(1, variant_level=1),
+                "BackendFeatures": dbus.UInt32(1),
             },
             signature="sv",
         ),

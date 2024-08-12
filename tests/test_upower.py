@@ -92,7 +92,7 @@ class TestUPower(dbusmock.DBusTestCase):
 
         with subprocess.Popen(["upower", "--monitor-detail"], stdout=subprocess.PIPE, universal_newlines=True) as mon:
             time.sleep(0.3)
-            self.dbusmock.SetDeviceProperties(path, {"PowerSupply": dbus.Boolean(True, variant_level=1)})
+            self.dbusmock.SetDeviceProperties(path, {"PowerSupply": dbus.Boolean(True)})
             time.sleep(0.2)
 
             mon.terminate()
