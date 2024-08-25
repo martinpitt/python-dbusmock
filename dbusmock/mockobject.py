@@ -23,7 +23,7 @@ import time
 import types
 from pathlib import Path
 from typing import Any, Dict, KeysView, List, Optional, Sequence, Tuple
-from xml.etree import ElementTree
+from xml.etree import ElementTree as ET
 
 import dbus
 import dbus.service
@@ -789,7 +789,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
 
         xml = dbus.service.Object.Introspect(self, object_path, connection)
 
-        tree = ElementTree.fromstring(xml)
+        tree = ET.fromstring(xml)
 
         for name, name_props in self.props.items():
             # We might have properties for new interfaces we don't know about
@@ -797,14 +797,14 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
             # interface to append to, and create one if we can't.
             interface = tree.find(f".//interface[@name='{name}']")
             if interface is None:
-                interface = ElementTree.Element("interface", {"name": name})
+                interface = ET.Element("interface", {"name": name})
                 tree.append(interface)
 
             for prop, val in name_props.items():
                 if val is None:
                     # can't guess type from None, skip
                     continue
-                elem = ElementTree.Element(
+                elem = ET.Element(
                     "property",
                     {
                         "name": prop,
@@ -816,7 +816,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
 
                 interface.append(elem)
 
-        xml = ElementTree.tostring(tree, encoding="utf8", method="xml").decode("utf8")
+        xml = ET.tostring(tree, encoding="utf8", method="xml").decode("utf8")
 
         # restore original class table
         self._dbus_class_table[cls] = orig_interfaces

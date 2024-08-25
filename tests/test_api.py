@@ -44,7 +44,7 @@ class TestAPI(dbusmock.DBusTestCase):
 
     def setUp(self):
         # pylint: disable=consider-using-with
-        self.mock_log = tempfile.NamedTemporaryFile()
+        self.mock_log = tempfile.NamedTemporaryFile()  # noqa: SIM115
         self.p_mock = self.spawn_server(
             "org.freedesktop.Test", "/", "org.freedesktop.Test.Main", stdout=self.mock_log
         )
