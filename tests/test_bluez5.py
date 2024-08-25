@@ -34,6 +34,8 @@ dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 have_bluetoothctl = shutil.which("bluetoothctl")
 have_pbap_client = shutil.which("pbap-client")
 
+el10 = "platform:el10" in Path("/etc/os-release").read_text("UTF-8")
+
 
 def _run_bluetoothctl(command):
     """Run bluetoothctl with the given command.
@@ -470,6 +472,7 @@ class TestBlueZ5(dbusmock.DBusTestCase):
             adv_monitor_manager.UnregisterMonitor("/monitor0")
         self.assertEqual(ctx.exception.get_dbus_name(), "org.bluez.Error.DoesNotExist")
 
+    @unittest.skipIf(el10, "https://issues.redhat.com/browse/RHEL-56021")
     def test_advertise(self):
         # Given an adapter with the LEAdvertisingManager1 interface
         path = self.dbusmock_bluez.AddAdapter("hci0", "my-computer")
