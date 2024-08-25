@@ -35,6 +35,7 @@ from dbusmock.templates.networkmanager import (
     NMConnectivityState,
     NMState,
 )
+from packaging.version import Version
 
 tracemalloc.start(25)
 dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
@@ -170,6 +171,14 @@ class TestNetworkManager(dbusmock.DBusTestCase):
         self.assertNotEqual(res.returncode, 0)
         self.assertRegex(res.stderr, b"No network.*nonexisting")
         self.assertRegex(self.read_device(), r"wlan0.*\sconnected\s+--")
+
+        # TODO: for connecting to password protected Wifi we need to implement secrets agent
+        # https://github.com/martinpitt/python-dbusmock/issues/216
+        out = subprocess.check_output(["nmcli", "--version"], universal_newlines=True)
+        m = re.search(r"([1-9.]+[0-9])", out)
+        assert m, "could not parse version from " + out
+        if Version(m.group(1)) >= Version("1.49.3"):
+            self.skipTest("https://github.com/martinpitt/python-dbusmock/issues/216")
 
         # connect to existing wifi with password
         subprocess.check_call(

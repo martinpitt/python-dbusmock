@@ -48,6 +48,7 @@ class StaticCodeTests(unittest.TestCase):
                 "--disable=missing-module-docstring,missing-class-docstring",
                 "--disable=missing-function-docstring",
                 "--disable=too-many-public-methods,too-many-lines,too-many-statements,R0801",
+                "--disable=fixme",
                 "tests/",
             ]
         )
