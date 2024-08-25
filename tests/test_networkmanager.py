@@ -172,7 +172,9 @@ class TestNetworkManager(dbusmock.DBusTestCase):
         self.assertRegex(self.read_device(), r"wlan0.*\sconnected\s+--")
 
         # connect to existing wifi with password
-        subprocess.check_call(["nmcli", "dev", "wifi", "connect", "AP_3", "password", "s3kr1t"])
+        subprocess.check_call(
+            ["timeout", "--signal=KILL", "5", "nmcli", "dev", "wifi", "connect", "AP_3", "password", "s3kr1t"]
+        )
         self.assertRegex(self.read_device(), r"wlan0.*\sconnected\s+AP_3")
 
         # connect to existing wifi without password
