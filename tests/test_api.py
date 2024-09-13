@@ -923,6 +923,45 @@ def load(mock, parameters):
         self.assertIn('<node name="Thing1" />', xml)
         self.assertIn('<node name="Thing2" />', xml)
 
+    def test_add_object_with_subclass(self):
+        """Template with DBusMockObject subclass"""
+
+        with tempfile.NamedTemporaryFile(prefix="objmgr_", suffix=".py") as my_template:
+            my_template.write(
+                b"""
+import dbus
+import dbusmock
+BUS_NAME = 'org.test.Things'
+MAIN_OBJ = '/org/test/Things'
+MAIN_IFACE = 'org.test.Do'
+SYSTEM_BUS = False
+
+class Thing1(dbusmock.mockobject.DBusMockObject):
+    def __init__(self, *args, **kwargs):
+        super(Thing1, self).__init__(*args, **kwargs)
+        self.magic = kwargs.get('mock_data')
+
+    @dbus.service.method(MAIN_IFACE, in_signature='i', out_signature='i')
+    def Do0(self, input):
+        return self.magic + input
+
+def load(mock, parameters):
+    mock.AddObject('/org/test/Things/Thing1', MAIN_IFACE, {}, [],
+                   mock_class=Thing1,
+                   mock_data=42)
+"""
+            )
+            my_template.flush()
+            (p_mock, _) = self.spawn_server_template(my_template.name, stdout=subprocess.PIPE, system_bus=False)
+            self.addCleanup(p_mock.wait)
+            self.addCleanup(p_mock.terminate)
+            self.addCleanup(p_mock.stdout.close)
+
+        dbus_con = self.get_dbus(system_bus=False)
+        thing1 = dbus_con.get_object("org.test.Things", "/org/test/Things/Thing1")
+        self.assertEqual(thing1.Do0(0), 42)
+        self.assertEqual(thing1.Do0(1), 43)
+
     def test_reset(self):
         """Reset() puts the template back to pristine state"""
 
