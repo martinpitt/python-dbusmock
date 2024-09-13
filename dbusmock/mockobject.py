@@ -199,6 +199,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
         props: PropsType,
         logfile: Optional[str] = None,
         is_object_manager: bool = False,
+        mock_data: Any = None,
     ) -> None:
         """Create a new DBusMockObject
 
@@ -234,6 +235,7 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
         self.logfile = open(logfile, "wb") if logfile else None  # noqa: SIM115
         self.is_logfile_owner = True
         self.call_log: List[CallLogType] = []
+        self.mock_data = mock_data
 
         if props is None:
             props = {}
@@ -323,7 +325,9 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
         )
 
     @dbus.service.method(MOCK_IFACE, in_signature="ssa{sv}a(ssss)", out_signature="")
-    def AddObject(self, path: str, interface: str, properties: PropsType, methods: List[MethodType]) -> None:
+    def AddObject(
+        self, path: str, interface: str, properties: PropsType, methods: List[MethodType], **kwargs
+    ) -> None:
         """Dynamically add a new D-Bus object to the mock
 
         :param path: D-Bus object path
@@ -334,6 +338,12 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
         :param methods: An array of 4-tuples (name, in_sig, out_sig, code) describing
                  methods to add to "interface"; see AddMethod() for details of
                  the tuple values
+
+        Keyword Arguments:
+        :param mock_class: A DBusMockObject derived class name (this is only possible
+              when the method is not called via dbus)
+        :param mock_data: Additional data which will be passed to the DBusMockObject
+              constructor
 
         If this is a D-Bus ObjectManager instance, the InterfacesAdded signal
         will *not* be emitted for the object automatically; it must be emitted
@@ -352,13 +362,33 @@ class DBusMockObject(dbus.service.Object):  # pylint: disable=too-many-instance-
                                      ('EchoInt', 'i', 'i', 'ret = args[0]'),
                                      ('GetClients', '', 'ao', 'ret = ["/com/example/Foo/Client1"]'),
                                  ])
+
+        Example 2 (in a template)::
+
+            class FooManager(dbusmock.mockobject.DBusMockObject):
+                def __init__(self, *args, **kwargs):
+                    super(FooManager, self).__init__(*args, **kwargs)
+                    self.magic = kwargs.get('mock_data')
+
+                @dbus.service.method('com.example.Foo.Control', in_signature='i', out_signature='i')
+                def EchoMagic(self, input):
+                    return self.magic + input
+
+            dbus_proxy.AddObject('/com/example/Foo/Manager',
+                                 'com.example.Foo.Control',
+                                 {}, [],
+                                 mock_class=FooManager,
+                                 mock_data=42)
         """
         if path in objects:
             raise dbus.exceptions.DBusException(
                 f"object {path} already exists", name="org.freedesktop.DBus.Mock.NameError"
             )
 
-        obj = DBusMockObject(self.bus_name, path, interface, properties)
+        mock_class = kwargs.get("mock_class", DBusMockObject)
+        mock_data = kwargs.get("mock_data")
+
+        obj = mock_class(self.bus_name, path, interface, properties, mock_data=mock_data)
         # make sure created objects inherit the log file stream
         obj.logfile = self.logfile
         obj.object_manager = self.object_manager
