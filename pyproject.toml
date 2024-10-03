@@ -24,7 +24,7 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dynamic = ["version"]
-requires-python = ">=3.6"
+requires-python = ">=3.8"
 
 dependencies = ["dbus-python"]
 
