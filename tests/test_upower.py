@@ -60,7 +60,7 @@ class TestUPower(dbusmock.DBusTestCase):
         self.p_mock.wait()
 
     def test_no_devices(self):
-        out = subprocess.check_output(["upower", "--dump"], universal_newlines=True)
+        out = subprocess.check_output(["upower", "--dump"], text=True)
         self.assertIn("/DisplayDevice\n", out)
         # should not have any other device
         for line in out.splitlines():
@@ -82,7 +82,7 @@ class TestUPower(dbusmock.DBusTestCase):
             b'emit /org/freedesktop/UPower org.freedesktop.UPower.DeviceAdded "/org/freedesktop/UPower/devices/mock_AC"\n',
         )
 
-        out = subprocess.check_output(["upower", "--dump"], universal_newlines=True)
+        out = subprocess.check_output(["upower", "--dump"], text=True)
         self.assertRegex(out, "Device: " + path)
         # note, Add* is not magic: this just adds an object, not change
         # properties
@@ -109,7 +109,7 @@ class TestUPower(dbusmock.DBusTestCase):
             b'emit /org/freedesktop/UPower org.freedesktop.UPower.DeviceAdded "/org/freedesktop/UPower/devices/mock_BAT"\n',
         )
 
-        out = subprocess.check_output(["upower", "--dump"], universal_newlines=True)
+        out = subprocess.check_output(["upower", "--dump"], text=True)
         self.assertRegex(out, "Device: " + path)
         # note, Add* is not magic: this just adds an object, not change
         # properties
@@ -129,7 +129,7 @@ class TestUPower(dbusmock.DBusTestCase):
             b'emit /org/freedesktop/UPower org.freedesktop.UPower.DeviceAdded "/org/freedesktop/UPower/devices/mock_BAT"\n',
         )
 
-        out = subprocess.check_output(["upower", "--dump"], universal_newlines=True)
+        out = subprocess.check_output(["upower", "--dump"], text=True)
         self.assertRegex(out, "Device: " + path)
         # note, Add* is not magic: this just adds an object, not change
         # properties
@@ -193,7 +193,7 @@ class TestUPower(dbusmock.DBusTestCase):
         except KeyError:
             pass
 
-        out = subprocess.check_output(["upower", "--dump"], universal_newlines=True, env=env)
+        out = subprocess.check_output(["upower", "--dump"], text=True, env=env)
         self.assertIn("/DisplayDevice\n", out)
         self.assertIn("  battery\n", out)  # type
         self.assertRegex(out, r"state:\s+charging")

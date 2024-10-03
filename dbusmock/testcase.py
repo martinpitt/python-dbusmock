@@ -321,7 +321,7 @@ class DBusTestCase(unittest.TestCase):
             argv.append("--config-file=" + str(conf))
         else:
             argv.append("--session")
-        lines = subprocess.check_output(argv, universal_newlines=True).strip().splitlines()
+        lines = subprocess.check_output(argv, text=True).strip().splitlines()
         assert len(lines) == 2, "expected exactly 2 lines of output from dbus-daemon"
         # usually the first line is the address, but be lenient and accept any order
         try:

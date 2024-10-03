@@ -79,31 +79,27 @@ class TestNetworkManager(dbusmock.DBusTestCase):
         self.p_mock.wait()
 
     def read_general(self):
-        return subprocess.check_output(["nmcli", "--nocheck", "general"], env=self.lang_env, universal_newlines=True)
+        return subprocess.check_output(["nmcli", "--nocheck", "general"], env=self.lang_env, text=True)
 
     def read_networking(self):
-        return subprocess.check_output(
-            ["nmcli", "--nocheck", "networking"], env=self.lang_env, universal_newlines=True
-        )
+        return subprocess.check_output(["nmcli", "--nocheck", "networking"], env=self.lang_env, text=True)
 
     def read_connection(self):
-        return subprocess.check_output(
-            ["nmcli", "--nocheck", "connection"], env=self.lang_env, universal_newlines=True
-        )
+        return subprocess.check_output(["nmcli", "--nocheck", "connection"], env=self.lang_env, text=True)
 
     def read_active_connection(self):
         return subprocess.check_output(
-            ["nmcli", "--nocheck", "connection", "show", "--active"], env=self.lang_env, universal_newlines=True
+            ["nmcli", "--nocheck", "connection", "show", "--active"], env=self.lang_env, text=True
         )
 
     def read_device(self):
-        return subprocess.check_output(["nmcli", "--nocheck", "dev"], env=self.lang_env, universal_newlines=True)
+        return subprocess.check_output(["nmcli", "--nocheck", "dev"], env=self.lang_env, text=True)
 
     def read_device_wifi(self):
         return subprocess.check_output(
             ["nmcli", "--nocheck", "dev", "wifi", "list", "--rescan", "no"],
             env=self.lang_env,
-            universal_newlines=True,
+            text=True,
         )
 
     def test_one_eth_disconnected(self):
@@ -174,7 +170,7 @@ class TestNetworkManager(dbusmock.DBusTestCase):
 
         # TODO: for connecting to password protected Wifi we need to implement secrets agent
         # https://github.com/martinpitt/python-dbusmock/issues/216
-        out = subprocess.check_output(["nmcli", "--version"], universal_newlines=True)
+        out = subprocess.check_output(["nmcli", "--version"], text=True)
         m = re.search(r"([1-9.]+[0-9])", out)
         assert m, "could not parse version from " + out
         if Version(m.group(1)) >= Version("1.49.3"):
@@ -254,7 +250,7 @@ class TestNetworkManager(dbusmock.DBusTestCase):
         self.assertEqual(con1, "/org/freedesktop/NetworkManager/Settings/Mock_Con1")
 
         settings = subprocess.check_output(
-            ["nmcli", "--nocheck", "connection", "show", "The_SSID"], env=self.lang_env, universal_newlines=True
+            ["nmcli", "--nocheck", "connection", "show", "The_SSID"], env=self.lang_env, text=True
         )
         self.assertRegex(settings, r"ipv4.method:\s*auto")
         self.assertRegex(settings, r"ipv4.gateway:\s*--")

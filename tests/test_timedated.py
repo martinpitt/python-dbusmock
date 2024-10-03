@@ -45,7 +45,7 @@ class TestTimedated(dbusmock.DBusTestCase):
             self.p_mock.wait()
 
     def run_timedatectl(self):
-        return subprocess.check_output(["timedatectl"], universal_newlines=True)
+        return subprocess.check_output(["timedatectl"], text=True)
 
     def test_default_timezone(self):
         out = self.run_timedatectl()

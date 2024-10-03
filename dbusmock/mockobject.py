@@ -1,4 +1,3 @@
-# coding: UTF-8
 """Mock D-Bus objects for test suites."""
 
 # This program is free software; you can redistribute it and/or modify it under

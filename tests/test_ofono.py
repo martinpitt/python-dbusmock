@@ -104,7 +104,7 @@ class TestOfono(dbusmock.DBusTestCase):
     def test_list_operators(self):
         """list operators"""
 
-        out = subprocess.check_output([script_dir / "list-operators"], universal_newlines=True)
+        out = subprocess.check_output([script_dir / "list-operators"], text=True)
         self.assertTrue(out.startswith("[ /ril_0 ]"), out)
         self.assertIn("[ /ril_0/operator/op1 ]", out)
         self.assertIn("Status = current", out)

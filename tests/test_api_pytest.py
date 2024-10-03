@@ -35,6 +35,6 @@ def fixture_upower_mock(dbusmock_system):
 
 def test_dbusmock_test_template(upower_mock):
     assert upower_mock
-    out = subprocess.check_output(["upower", "--dump"], universal_newlines=True)
+    out = subprocess.check_output(["upower", "--dump"], text=True)
     assert "version:" in out
     assert "0.99" in out

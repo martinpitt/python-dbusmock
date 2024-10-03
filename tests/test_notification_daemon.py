@@ -21,7 +21,7 @@ import dbus
 import dbusmock
 
 try:
-    notify_send_version = subprocess.check_output(["notify-send", "--version"], universal_newlines=True)
+    notify_send_version = subprocess.check_output(["notify-send", "--version"], text=True)
     notify_send_version = notify_send_version.split()[-1]
 except (OSError, subprocess.CalledProcessError):
     notify_send_version = ""

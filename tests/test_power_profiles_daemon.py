@@ -64,7 +64,7 @@ class TestPowerProfilesDaemon(dbusmock.DBusTestCase):
     def test_list_profiles(self):
         """List Profiles and check active profile"""
 
-        out = subprocess.check_output(["powerprofilesctl"], universal_newlines=True)
+        out = subprocess.check_output(["powerprofilesctl"], text=True)
 
         self.assertIn("performance:\n", out)
         self.assertIn("\n* balanced:\n", out)
@@ -72,12 +72,12 @@ class TestPowerProfilesDaemon(dbusmock.DBusTestCase):
     def test_change_profile(self):
         """Change ActiveProfile"""
 
-        subprocess.check_output(["powerprofilesctl", "set", "performance"], universal_newlines=True)
-        out = subprocess.check_output(["powerprofilesctl", "get"], universal_newlines=True)
+        subprocess.check_output(["powerprofilesctl", "set", "performance"], text=True)
+        out = subprocess.check_output(["powerprofilesctl", "get"], text=True)
         self.assertEqual(out, "performance\n")
 
     def run_powerprofilesctl_list_holds(self):
-        return subprocess.check_output(["powerprofilesctl", "list-holds"], universal_newlines=True)
+        return subprocess.check_output(["powerprofilesctl", "list-holds"], text=True)
 
     def test_list_holds(self):
         """Test holds"""
