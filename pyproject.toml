@@ -36,8 +36,7 @@ packages = ["dbusmock", "dbusmock.templates"]
 
 [tool.setuptools_scm]
 write_to = "dbusmock/_version.py"
-# otherwise pylint complains about missing-module-docstring
-write_to_template = """'''auto-generated version from setuptools_scm'''
+write_to_template = """
 __version__ = "{version}"
 """
 version_scheme = 'post-release'
