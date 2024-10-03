@@ -1,4 +1,3 @@
-# coding: UTF-8
 """Main entry point for running mock server."""
 
 # This program is free software; you can redistribute it and/or modify it under

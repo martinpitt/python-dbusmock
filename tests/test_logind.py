@@ -37,7 +37,7 @@ class TestLogind(dbusmock.DBusTestCase):
         cls.dbus_con = cls.get_dbus(True)
 
         if have_loginctl:
-            out = subprocess.check_output(["loginctl", "--version"], universal_newlines=True)
+            out = subprocess.check_output(["loginctl", "--version"], text=True)
             cls.version = re.search(r"(\d+)", out.splitlines()[0]).group(1)
 
     def setUp(self):
@@ -54,13 +54,13 @@ class TestLogind(dbusmock.DBusTestCase):
         cmd = ["loginctl"]
         if self.version >= "209":
             cmd.append("--no-legend")
-        out = subprocess.check_output([*cmd, "list-sessions"], universal_newlines=True)
+        out = subprocess.check_output([*cmd, "list-sessions"], text=True)
         self.assertEqual(out, "")
 
-        out = subprocess.check_output([*cmd, "list-seats"], universal_newlines=True)
+        out = subprocess.check_output([*cmd, "list-seats"], text=True)
         self.assertEqual(out, "")
 
-        out = subprocess.check_output([*cmd, "list-users"], universal_newlines=True)
+        out = subprocess.check_output([*cmd, "list-users"], text=True)
         self.assertEqual(out, "")
 
     def test_session(self):
@@ -68,16 +68,16 @@ class TestLogind(dbusmock.DBusTestCase):
 
         obj_logind.AddSession("c1", "seat0", 500, "joe", True)
 
-        out = subprocess.check_output(["loginctl", "list-seats"], universal_newlines=True)
+        out = subprocess.check_output(["loginctl", "list-seats"], text=True)
         self.assertRegex(out, r"(^|\n)seat0\s+")
 
-        out = subprocess.check_output(["loginctl", "show-seat", "seat0"], universal_newlines=True)
+        out = subprocess.check_output(["loginctl", "show-seat", "seat0"], text=True)
         self.assertRegex(out, "Id=seat0")
         if self.version <= "208":
             self.assertRegex(out, "ActiveSession=c1")
             self.assertRegex(out, "Sessions=c1")
 
-        out = subprocess.check_output(["loginctl", "list-users"], universal_newlines=True)
+        out = subprocess.check_output(["loginctl", "list-users"], text=True)
         self.assertRegex(out, r"(^|\n)\s*500\s+joe\s*")
 
         # note, this does an actual getpwnam() in the client, so we cannot call
@@ -90,10 +90,10 @@ class TestLogind(dbusmock.DBusTestCase):
         # self.assertRegex(out, 'Sessions=c1')
         # self.assertRegex(out, 'State=active')
 
-        out = subprocess.check_output(["loginctl", "list-sessions"], universal_newlines=True)
+        out = subprocess.check_output(["loginctl", "list-sessions"], text=True)
         self.assertRegex(out, "c1 +500 +joe +seat0")
 
-        out = subprocess.check_output(["loginctl", "show-session", "c1"], universal_newlines=True)
+        out = subprocess.check_output(["loginctl", "show-session", "c1"], text=True)
         self.assertRegex(out, "Id=c1")
         self.assertRegex(out, "Class=user")
         self.assertRegex(out, "Active=yes")
@@ -107,7 +107,7 @@ class TestLogind(dbusmock.DBusTestCase):
         )
         session_mock.SetLockedHint(True)
 
-        out = subprocess.check_output(["loginctl", "show-session", "c1"], universal_newlines=True)
+        out = subprocess.check_output(["loginctl", "show-session", "c1"], text=True)
         self.assertRegex(out, "Id=c1")
         self.assertRegex(out, "LockedHint=yes")
 
@@ -124,7 +124,7 @@ class TestLogind(dbusmock.DBusTestCase):
         fd = obj_logind.Inhibit("suspend", "testcode", "purpose", "delay")
 
         # Our inhibitor is held
-        out = subprocess.check_output(["systemd-inhibit"], universal_newlines=True)
+        out = subprocess.check_output(["systemd-inhibit"], text=True)
         self.assertRegex(
             out.replace("\n", " "),
             "(testcode +[0-9]+ +[^ ]* +[0-9]+ +[^ ]* +suspend purpose delay)|"
@@ -133,7 +133,7 @@ class TestLogind(dbusmock.DBusTestCase):
 
         del fd
         # No inhibitor is held
-        out = subprocess.check_output(["systemd-inhibit"], universal_newlines=True)
+        out = subprocess.check_output(["systemd-inhibit"], text=True)
         self.assertRegex(out, "No inhibitors|0 inhibitors listed")
 
 

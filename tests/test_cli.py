@@ -59,7 +59,7 @@ class TestCLI(dbusmock.DBusTestCase):
         self.wait_for_bus_object(wait_name, wait_path, wait_system)
 
     def start_mock_process(self, args):
-        return subprocess.check_output([sys.executable, "-m", "dbusmock", *args], universal_newlines=True)
+        return subprocess.check_output([sys.executable, "-m", "dbusmock", *args], text=True)
 
     def test_session_bus(self):
         self.start_mock(["com.example.Test", "/", "TestIface"], "com.example.Test", "/")
@@ -80,7 +80,7 @@ class TestCLI(dbusmock.DBusTestCase):
     def check_upower_running(self):
         # check that it actually ran the template, if we have upower
         if have_upower:
-            out = subprocess.check_output(["upower", "--dump"], universal_newlines=True)
+            out = subprocess.check_output(["upower", "--dump"], text=True)
             self.assertRegex(out, r"on-battery:\s+no")
 
             mock_out = self.p_mock.stdout.readline()
@@ -99,7 +99,7 @@ class TestCLI(dbusmock.DBusTestCase):
             subprocess.check_output(
                 [sys.executable, "-m", "dbusmock", "--system", "--session", "-t", "upower"],
                 stderr=subprocess.STDOUT,
-                universal_newlines=True,
+                text=True,
             )
         err = cm.exception
         self.assertEqual(err.returncode, 2)
@@ -115,7 +115,7 @@ class TestCLI(dbusmock.DBusTestCase):
 
         # check that it actually ran the template, if we have upower
         if have_upower:
-            out = subprocess.check_output(["upower", "--dump"], universal_newlines=True)
+            out = subprocess.check_output(["upower", "--dump"], text=True)
             self.assertRegex(out, r"daemon-version:\s+0\.99\.0")
             self.assertRegex(out, r"on-battery:\s+yes")
 
@@ -124,7 +124,7 @@ class TestCLI(dbusmock.DBusTestCase):
             subprocess.check_output(
                 [sys.executable, "-m", "dbusmock", "-t", "upower", "-p", '{"DaemonVersion: "0.99.0"}'],
                 stderr=subprocess.STDOUT,
-                universal_newlines=True,
+                text=True,
             )
         err = cm.exception
         self.assertEqual(err.returncode, 2)
@@ -135,7 +135,7 @@ class TestCLI(dbusmock.DBusTestCase):
             subprocess.check_output(
                 [sys.executable, "-m", "dbusmock", "-t", "upower", "-p", '"banana"'],
                 stderr=subprocess.STDOUT,
-                universal_newlines=True,
+                text=True,
             )
         err = cm.exception
         self.assertEqual(err.returncode, 2)
