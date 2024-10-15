@@ -494,7 +494,7 @@ class TestBlueZ5(dbusmock.DBusTestCase):
         adapter = self.dbus_con.get_object("org.bluez", path)
 
         # When an advertisement monitor is configured via bluetoothctl
-        out = _run_bluetoothctl("monitor.add-or-pattern 0 255 0x01")
+        out = _run_bluetoothctl("monitor.add-or-pattern 0 255 01")
 
         # Then bluetoothctl reports success
         self.assertIn("Advertisement Monitor 0 added", out)
