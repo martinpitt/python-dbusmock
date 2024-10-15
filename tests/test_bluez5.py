@@ -34,7 +34,8 @@ dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 have_bluetoothctl = shutil.which("bluetoothctl")
 have_pbap_client = shutil.which("pbap-client")
 
-el10 = "platform:el10" in Path("/etc/os-release").read_text("UTF-8")
+os_release = Path("/etc/os-release")
+el10 = os_release.exists() and "platform:el10" in os_release.read_text("UTF-8")
 
 
 def _run_bluetoothctl(command):
