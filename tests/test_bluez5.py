@@ -12,6 +12,7 @@ __copyright__ = """
 
 
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -59,21 +60,14 @@ def _run_bluetoothctl(command):
                 name="org.freedesktop.DBus.Mock.Error",
             )
 
-    # Strip the prompt from the start of every line, then remove empty
-    # lines.
+    # Strip the prompt and escape sequences from the start of every line,
+    # then remove empty lines.
     #
     # The prompt looks like `[bluetooth]# `, potentially containing command
-    # line colour control codes. Split at the first space.
-    #
-    # Sometimes we end up with the final line being `\x1b[K` (partial
-    # control code), which we need to ignore.
+    # line colour control codes.
     def remove_prefix(line):
-        if line.startswith(("[bluetooth]#", "\x1b")):
-            parts = line.split(" ", 1)
-            try:
-                return parts[1].strip()
-            except IndexError:
-                return ""
+        line = re.sub(r"\x1b\[[0-9;]*[mPK]", "", line)
+        line = re.sub(r"^\[bluetooth\]# ", "", line)
         return line.strip()
 
     lines = out.split("\n")
