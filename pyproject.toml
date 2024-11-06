@@ -43,7 +43,7 @@ version_scheme = 'post-release'
 
 [tool.pylint]
 format = { max-line-length = 130 }
-"messages control" = { disable = ["invalid-name", "too-many-arguments"] }
+"messages control" = { disable = ["invalid-name", "too-many-arguments", "too-many-positional-arguments"] }
 design = { max-args = 7, max-locals = 25,  max-public-methods = 25 }
 
 [tool.mypy]
