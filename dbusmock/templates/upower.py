@@ -196,7 +196,7 @@ def AddChargingBattery(self, device_name, model_name, percentage, seconds_to_ful
 @dbus.service.method(MOCK_IFACE, in_signature="uuddddxxbsu", out_signature="")
 def SetupDisplayDevice(
     self,
-    _type,
+    _type,  # noqa: RUF052 (access to local dummy variable); but this is API now
     state,
     percentage,
     energy,
