@@ -95,7 +95,7 @@ def RequestDefaultAgent(manager, agent_path):
     manager.default_agent = agent_path
 
 
-def load(mock, _parameters):
+def load(mock, parameters):
     mock.AddObject(
         "/org/bluez",
         AGENT_MANAGER_IFACE,
@@ -120,9 +120,9 @@ def load(mock, _parameters):
     bluez.default_agent = None
 
     # whether to expose the LEAdvertisingManager1 interface on adapters (BLE advertising)
-    bluez.enable_advertise_api = _parameters.get("enable_advertise_api", True)
+    bluez.enable_advertise_api = parameters.get("enable_advertise_api", True)
     # whether to expose the AdvertisementMonitorManager1 interface on adapters (Passive scanning)
-    bluez.enable_monitor_api = _parameters.get("enable_monitor_api", True)
+    bluez.enable_monitor_api = parameters.get("enable_monitor_api", True)
 
 
 @dbus.service.method(ADAPTER_IFACE, in_signature="o", out_signature="")

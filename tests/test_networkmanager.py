@@ -338,7 +338,7 @@ class TestNetworkManager(dbusmock.DBusTestCase):
         self.assertRegex(self.read_device_wifi(), "The_SSID")
 
         self.dbusmock.RemoveAccessPoint(wifi1, ap1)
-        self.assertFalse(re.compile("The_SSID").search(self.read_device_wifi()))
+        self.assertFalse(re.compile(r"The_SSID").search(self.read_device_wifi()))
 
     def test_add_connection(self):
         self.dbusmock.AddWiFiDevice("mock_WiFi1", "wlan0", DeviceState.ACTIVATED)
