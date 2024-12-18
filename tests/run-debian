@@ -38,13 +38,6 @@ wait
 
 my_version=\$(git describe --abbrev=0)
 
-# test sdist with direct setuptools
-./setup.py sdist
-tar --wildcards --strip-components=1 -xvf dist/python[_-]dbusmock-\${my_version}*.tar.gz '*/PKG-INFO'
-grep "^Version: \${my_version}" PKG-INFO
-grep "^## Purpose" PKG-INFO
-git clean -ffdx
-
 # test sdist with PyPA build
 python3 -m build --sdist
 tar --wildcards --strip-components=1 -xvf dist/python_dbusmock-\${my_version}*.tar.gz '*/PKG-INFO'

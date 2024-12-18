@@ -1,2 +1,2 @@
 assets:
-  - path: dist/python-dbusmock*.tar.*
+  - path: dist/python_dbusmock*.tar.*
