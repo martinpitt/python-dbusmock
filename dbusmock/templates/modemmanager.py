@@ -22,7 +22,7 @@ BUS_NAME = "org.freedesktop.ModemManager1"
 MAIN_OBJ = "/org/freedesktop/ModemManager1"
 MAIN_IFACE = "org.freedesktop.ModemManager1"
 SYSTEM_BUS = True
-IS_OBJECT_MANAGER = True
+IS_OBJECT_MANAGER = False
 MODEM_IFACE = "org.freedesktop.ModemManager1.Modem"
 MODEM_3GPP_IFACE = "org.freedesktop.ModemManager1.Modem.Modem3gpp"
 MODEM_VOICE_IFACE = "org.freedesktop.ModemManager1.Modem.Voice"
@@ -118,6 +118,10 @@ def load(mock, parameters):
     mock.AddMethods(MAIN_IFACE, methods)
     mock.AddProperties(MAIN_IFACE, props)
 
+    cond = "k != '/'" if mock.path == "/" else f"k.startswith('{mock.path}/Modems/')"
+    code = f"ret = {{dbus.ObjectPath(k): objects[k].props for k in objects.keys() if {cond} }}"
+    mock.AddMethod(OBJECT_MANAGER_IFACE, "GetManagedObjects", "", "a{oa{sa{sv}}}", code)
+
 
 @dbus.service.method(MOCK_IFACE, in_signature="", out_signature="ss")
 def AddSimpleModem(self):
@@ -195,14 +199,5 @@ def AddSimpleModem(self):
         "PreferredNetworks": dbus.Array([], signature="(su)"),
     }
     self.AddObject(sim_path, SIM_IFACE, sim_props, [])
-    manager.EmitSignal(
-        OBJECT_MANAGER_IFACE,
-        "InterfacesAdded",
-        "oa{sa{sv}}",
-        [
-            dbus.ObjectPath(sim_path),
-            {SIM_IFACE: sim_props},
-        ],
-    )
 
     return (modem_path, sim_path)
