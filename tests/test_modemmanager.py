@@ -21,7 +21,11 @@ import dbusmock
 
 dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 
+mmcli_has_cbm_support = False
 have_mmcli = shutil.which("mmcli")
+if have_mmcli:
+    out = subprocess.run(["mmcli", "--help"], capture_output=True, text=True)  # pylint: disable=subprocess-run-check
+    mmcli_has_cbm_support = "--help-cell-broadcast" in out.stdout
 
 
 class TestModemManagerBase(dbusmock.DBusTestCase):
@@ -135,6 +139,18 @@ class TestModemManagerModemMmcli(TestModemManagerMmcliBase):
         self.p_obj.AddSimpleModem()
         self.run_mmcli(["-m", "any", "--voice-status"])
         self.assertOutputContainsLine("emergency only: no\n")
+
+    @unittest.skipUnless(mmcli_has_cbm_support, "mmcli has no CBM suppot")
+    def test_cbm(self):
+        self.p_obj.AddSimpleModem()
+        self.p_obj.AddCbm(2, 4383, "This is a test")
+        self.run_mmcli(["-m", "any", "--cell-broadcast-list-cbm"])
+        self.assertOutputEquals(
+            [
+                "    /org/freedesktop/ModemManager1/Cbm/1 (received)",
+                "",
+            ]
+        )
 
 
 if __name__ == "__main__":

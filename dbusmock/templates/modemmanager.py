@@ -25,8 +25,11 @@ SYSTEM_BUS = True
 IS_OBJECT_MANAGER = False
 MODEM_IFACE = "org.freedesktop.ModemManager1.Modem"
 MODEM_3GPP_IFACE = "org.freedesktop.ModemManager1.Modem.Modem3gpp"
+MODEM_CELL_BROADCAST_IFACE = "org.freedesktop.ModemManager1.Modem.CellBroadcast"
 MODEM_VOICE_IFACE = "org.freedesktop.ModemManager1.Modem.Voice"
 SIM_IFACE = "org.freedesktop.ModemManager1.Sim"
+CBM_IFACE = "org.freedesktop.ModemManager1.Cbm"
+SIMPLE_MODEM_PATH = "/org/freedesktop/ModemManager1/Modems/8"
 
 
 class MMModemMode:
@@ -123,6 +126,31 @@ def load(mock, parameters):
     mock.AddMethod(OBJECT_MANAGER_IFACE, "GetManagedObjects", "", "a{oa{sa{sv}}}", code)
 
 
+def listCbm(_):
+    paths = []
+    for path in mockobject.objects:
+        if path.startswith("/org/freedesktop/ModemManager1/Cbm/"):
+            paths.append(dbus.ObjectPath(path))
+    return paths
+
+
+def deleteCbm(self, cbm_path):
+    obj = mockobject.objects.get(cbm_path)
+    if obj is None:
+        return
+
+    modem_obj = mockobject.objects[SIMPLE_MODEM_PATH]
+    self.RemoveObject(cbm_path)
+    modem_obj.EmitSignal(
+        MODEM_CELL_BROADCAST_IFACE,
+        "Deleted",
+        "o",
+        [
+            cbm_path,
+        ],
+    )
+
+
 @dbus.service.method(MOCK_IFACE, in_signature="", out_signature="ss")
 def AddSimpleModem(self):
     """Convenience method to add a simple Modem object
@@ -131,7 +159,7 @@ def AddSimpleModem(self):
 
     Returns the new object path.
     """
-    modem_path = "/org/freedesktop/ModemManager1/Modems/8"
+    modem_path = SIMPLE_MODEM_PATH
     sim_path = "/org/freedesktop/ModemManager1/SIM/2"
     manager = mockobject.objects[MAIN_OBJ]
 
@@ -166,6 +194,16 @@ def AddSimpleModem(self):
     modem = mockobject.objects[modem_path]
     modem.AddProperties(MODEM_3GPP_IFACE, modem_3gpp_props)
 
+    modem_cell_broadcast_props = {
+        "CellBroadcasts": dbus.Array([], signature="o"),
+    }
+    modem_cell_broadcast_methods = [
+        ("List", "", "ao", listCbm),
+        ("Delete", "o", "", deleteCbm),
+    ]
+    modem.AddProperties(MODEM_CELL_BROADCAST_IFACE, modem_cell_broadcast_props)
+    modem.AddMethods(MODEM_CELL_BROADCAST_IFACE, modem_cell_broadcast_methods)
+
     modem_voice_props = {
         "Calls": dbus.Array([], signature="o"),
         "EmergencyOnly": False,
@@ -188,6 +226,7 @@ def AddSimpleModem(self):
             {
                 MODEM_IFACE: modem_props,
                 MODEM_3GPP_IFACE: modem_3gpp_props,
+                MODEM_CELL_BROADCAST_IFACE: modem_cell_broadcast_props,
                 MODEM_VOICE_IFACE: modem_voice_props,
             },
         ],
@@ -201,3 +240,44 @@ def AddSimpleModem(self):
     self.AddObject(sim_path, SIM_IFACE, sim_props, [])
 
     return (modem_path, sim_path)
+
+
+@dbus.service.method(MOCK_IFACE, in_signature="uus", out_signature="s")
+def AddCbm(self, state, channel, text):
+    """Convenience method to add a cell broadcast message
+
+    Returns the new object path.
+    """
+    n = 1
+    while mockobject.objects.get(f"/org/freedesktop/ModemManager1/Cbm/{n}") is not None:
+        n += 1
+    cbm_path = f"/org/freedesktop/ModemManager1/Cbm/{n}"
+
+    cbm_props = {
+        "State": dbus.UInt32(state),
+        "Channel": dbus.UInt32(channel),
+        "Text": dbus.String(text),
+        "MessageCode": dbus.UInt32(0),
+        "Update": dbus.UInt32(0),
+    }
+    self.AddObject(cbm_path, CBM_IFACE, cbm_props, [])
+
+    modem_obj = mockobject.objects[SIMPLE_MODEM_PATH]
+    paths = listCbm(self)
+    modem_obj.UpdateProperties(
+        MODEM_CELL_BROADCAST_IFACE,
+        {
+            "CellBroadcasts": dbus.Array(paths),
+        },
+    )
+
+    modem_obj.EmitSignal(
+        MODEM_CELL_BROADCAST_IFACE,
+        "Added",
+        "o",
+        [
+            dbus.ObjectPath(cbm_path),
+        ],
+    )
+
+    return cbm_path
