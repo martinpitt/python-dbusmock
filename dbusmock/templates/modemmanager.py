@@ -172,7 +172,6 @@ def AddSimpleModem(self):
         ("CallWaitingQuery", "", "b", "ret = self.call_waiting"),
         ("CallWaitingSetup", "b", "", "self.call_waiting = args[0]"),
     ]
-    modem = mockobject.objects[modem_path]
     modem.AddProperties(MODEM_VOICE_IFACE, modem_voice_props)
     modem.AddMethods(MODEM_VOICE_IFACE, modem_voice_methods)
 
