@@ -26,18 +26,17 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y python3-setuptools python3-setuptools-scm python3-dbus
-          dpkg -l
+          sudo apt-get install -y python3-build python3-setuptools python3-setuptools-scm python3-venv
 
       - name: Build release tarball
-        run: ./setup.py sdist
+        run: python3 -m build --sdist
 
       - name: Sanity check
         run: |
           set -eux
           mkdir tmp
           cd tmp
-          tar xf ../dist/python-dbusmock-${{ github.ref_name }}.tar.gz
+          tar xf ../dist/python_dbusmock-${{ github.ref_name }}.tar.gz
           cd python-dbusmock-*
           test "$(PYTHONPATH=. python3 -c 'import dbusmock; print(dbusmock.__version__)')" = "${{ github.ref_name }}"
           PYTHONPATH=. python3 tests/test_api.py
@@ -47,7 +46,7 @@ jobs:
       - name: Create GitHub release
         uses: cockpit-project/action-release@7d2e2657382e8d34f88a24b5987f2b81ea165785
         with:
-          filename: "dist/python-dbusmock-${{ github.ref_name }}.tar.gz"
+          filename: "dist/python_dbusmock-${{ github.ref_name }}.tar.gz"
 
       - name: Create PyPy release
         uses: pypa/gh-action-pypi-publish@release/v1

@@ -10,13 +10,14 @@ downstream_package_name: python-dbusmock
 
 actions:
   create-archive:
-    - ./setup.py sdist
+    - python3 -m build --sdist
     # spec and tarball need to be in the same directory
-    - sh -c 'mv dist/*.tar.* packaging; ls packaging/python[-_]dbusmock-*.tar.*'
+    - sh -c 'mv dist/*.tar.* packaging; ls packaging/python_dbusmock-*.tar.*'
 
 srpm_build_deps:
-  - python3-setuptools
+  - python3-build
   - python3-setuptools_scm
+  - python3dist(wheel)
 
 jobs:
   - job: copr_build
