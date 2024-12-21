@@ -37,7 +37,7 @@ jobs:
           mkdir tmp
           cd tmp
           tar xf ../dist/python_dbusmock-${{ github.ref_name }}.tar.gz
-          cd python-dbusmock-*
+          cd python_dbusmock-*
           test "$(PYTHONPATH=. python3 -c 'import dbusmock; print(dbusmock.__version__)')" = "${{ github.ref_name }}"
           PYTHONPATH=. python3 tests/test_api.py
           cd ../..
