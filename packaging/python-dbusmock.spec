@@ -34,7 +34,7 @@ Requires:         python3-dbus, python3-gobject, dbus-x11
 %description -n python3-dbusmock %_description
 
 %prep
-%autosetup -n %{name}-%{version}
+%autosetup -n python_%{modname}-%{version}
 rm -rf python-%{modname}.egg-info
 
 
