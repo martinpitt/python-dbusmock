@@ -60,14 +60,11 @@ class TestNotificationDaemon(dbusmock.DBusTestCase):
         subprocess.check_call(["notify-send", "-t", "27", "-a", "fooApp", "-i", "warning_icon", "title", "my text"])
         log = self.p_mock.stdout.read()
         # HACK: Why is the timeout missing on s390x?
-        if os.uname().machine == "s390x":
-            self.assertRegex(
-                log, b'[0-9.]+ Notify "fooApp" 0 "warning_icon" "title" "my text" \\[\\] {.*"urgency": 1'
-            )
-        else:
-            self.assertRegex(
-                log, b'[0-9.]+ Notify "fooApp" 0 "warning_icon" "title" "my text" \\[\\] {.*"urgency": 1.* 27\n'
-            )
+        if os.uname().machine != "s390x":
+            self.assertRegex(log, rb"[0-9.]+ Notify.* 27\n")
+        # libnotify 0.8.4 changes warning_icon from positional to optional argument, so check that separately
+        self.assertRegex(log, rb'[0-9.]+ Notify "fooApp" 0 "(warning_icon)?" "title" "my text" \[\] {.*"urgency": 1')
+        self.assertRegex(log, rb"[0-9.]+ Notify .*warning_icon")
 
     def test_id(self):
         """ID handling"""
