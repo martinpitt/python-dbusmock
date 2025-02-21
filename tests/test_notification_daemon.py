@@ -54,7 +54,6 @@ class TestNotificationDaemon(dbusmock.DBusTestCase):
         log = self.p_mock.stdout.read()
         self.assertRegex(log, b'[0-9.]+ Notify "notify-send" 0 "" "title" "my text" \\[\\]')
 
-    @unittest.skipIf(notify_send_version < "0.7.5", "this requires libnotify >= 0.7.5")
     def test_options(self):
         """notify-send with some options"""
 
