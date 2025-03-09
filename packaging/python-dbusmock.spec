@@ -13,6 +13,8 @@ BuildArch:        noarch
 BuildRequires:    git
 BuildRequires:    python3-dbus
 BuildRequires:    python3-devel
+BuildRequires:    python3dist(setuptools-scm)
+BuildRequires:    python3dist(wheel)
 BuildRequires:    python3-setuptools
 BuildRequires:    python3-gobject
 BuildRequires:    python3-pytest
@@ -37,18 +39,21 @@ Requires:         python3-dbus, python3-gobject, dbus-x11
 %autosetup -n python_%{modname}-%{version}
 rm -rf python-%{modname}.egg-info
 
+%generate_buildrequires
+%pyproject_buildrequires
 
 %build
-%py3_build
+%pyproject_wheel
 
 %install
-%py3_install
+%pyproject_install
 
 %check
 %{__python3} -m unittest -v
 
 %files -n python3-dbusmock
+/usr/lib/python*
+
 %doc README.md COPYING
-%{python3_sitelib}/*%{modname}*
 
 %changelog
