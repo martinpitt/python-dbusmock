@@ -189,6 +189,7 @@ def AddSimpleModem(self):
     modem_3gpp_props = {
         "Imei": dbus.String("doesnotmatter"),
         "OperatorName": dbus.String("TheOperator"),
+        "OperatorCode": dbus.String("00101"),
         "Pco": dbus.Array([], signature="(ubay)"),
     }
     modem = mockobject.objects[modem_path]

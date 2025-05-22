@@ -108,6 +108,7 @@ class TestModemManagerModemMmcli(TestModemManagerMmcliBase):
                 "           |           current: allowed: 4g; preferred: 4g",
                 "  -----------------------------",
                 "  3GPP     |              imei: doesnotmatter",
+                "           |       operator id: 00101",
                 "           |     operator name: TheOperator",
                 "           |      registration: idle",
                 "  -----------------------------",
