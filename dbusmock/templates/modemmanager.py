@@ -151,6 +151,17 @@ def deleteCbm(self, cbm_path):
     )
 
 
+def setChannels(_self, channels):
+    modem_obj = mockobject.objects[SIMPLE_MODEM_PATH]
+
+    modem_obj.UpdateProperties(
+        MODEM_CELL_BROADCAST_IFACE,
+        {
+            "Channels": dbus.Array(channels),
+        },
+    )
+
+
 @dbus.service.method(MOCK_IFACE, in_signature="", out_signature="ss")
 def AddSimpleModem(self):
     """Convenience method to add a simple Modem object
@@ -196,11 +207,13 @@ def AddSimpleModem(self):
     modem.AddProperties(MODEM_3GPP_IFACE, modem_3gpp_props)
 
     modem_cell_broadcast_props = {
+        "Channels": dbus.Array([], signature="(uu)"),
         "CellBroadcasts": dbus.Array([], signature="o"),
     }
     modem_cell_broadcast_methods = [
         ("List", "", "ao", listCbm),
         ("Delete", "o", "", deleteCbm),
+        ("SetChannels", "a(uu)", "", setChannels),
     ]
     modem.AddProperties(MODEM_CELL_BROADCAST_IFACE, modem_cell_broadcast_props)
     modem.AddMethods(MODEM_CELL_BROADCAST_IFACE, modem_cell_broadcast_methods)
