@@ -25,9 +25,9 @@ from pathlib import Path
 import dbus
 import dbus.mainloop.glib
 from gi.repository import GLib
+from packaging.version import Version
 
 import dbusmock
-from packaging.version import Version
 
 tracemalloc.start(25)
 dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
