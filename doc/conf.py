@@ -7,7 +7,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "python-dbusmock"
-copyright = "2023, Martin Pitt"  # noqa: A001
+copyright = "2023 - 2025, Martin Pitt"  # noqa: A001
 author = "Martin Pitt"
 
 try:
