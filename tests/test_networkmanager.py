@@ -21,6 +21,7 @@ import unittest
 import dbus
 import dbus.mainloop.glib
 from gi.repository import GLib
+from packaging.version import Version
 
 import dbusmock
 from dbusmock.templates.networkmanager import (
@@ -35,7 +36,6 @@ from dbusmock.templates.networkmanager import (
     NMConnectivityState,
     NMState,
 )
-from packaging.version import Version
 
 tracemalloc.start(25)
 dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
