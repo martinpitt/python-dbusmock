@@ -28,6 +28,10 @@ jobs:
       - fedora-latest-ppc64le
       - fedora-latest-s390x
       - fedora-latest-armhfp
+      # needed for tests
+      - fedora-all
+      - centos-stream-9-x86_64
+      - centos-stream-10-x86_64
 
   - job: tests
     trigger: pull_request
