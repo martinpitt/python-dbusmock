@@ -343,6 +343,32 @@ assert args[2] == 5
         self.assertEqual(self.dbus_props.GetAll("org.freedesktop.Test.Other"), {"color": "yellow"})
         self.assertEqual(self.dbus_props.Get("org.freedesktop.Test.Other", "color"), "yellow")
 
+        # add properties with complex types
+        self.dbus_mock.AddProperty("org.freedesktop.Test.Main", "intarray", dbus.Array([1, 2]))
+        self.dbus_mock.AddProperty("org.freedesktop.Test.Main", "vardict", dbus.Dictionary({"a": 1}))
+        self.dbus_mock.AddProperty("org.freedesktop.Test.Main", "struct", dbus.Struct((1, "a")))
+
+        changes = [
+            {
+                "version": 5,
+                "connected": False,
+            },
+            {
+                "intarray": [1, 3],
+            },
+            {
+                "vardict": {"b": "2"},
+            },
+            {
+                "struct": (2, "b"),
+            },
+            {
+                "intarray": [3, 7],
+                "vardict": {"d": dbus.Array([42, 1])},
+                "struct": (0, "test"),
+            },
+        ]
+
         changed_props = []
         ml = GLib.MainLoop()
 
@@ -357,28 +383,26 @@ assert args[2] == 5
             self.assertEqual(iface, "org.freedesktop.Test.Main")
 
             changed_props.append(changed)
-            ml.quit()
+
+            if len(changed_props) == len(changes):
+                ml.quit()
 
         match = self.dbus_con.add_signal_receiver(
             catch, interface_keyword="interface", path_keyword="path", member_keyword="member"
         )
 
         # change property using mock helper
-        self.dbus_mock.UpdateProperties(
-            "org.freedesktop.Test.Main",
-            {
-                "version": 5,
-                "connected": False,
-            },
-        )
+        for change in changes:
+            self.dbus_mock.UpdateProperties("org.freedesktop.Test.Main", change)
+            self.assertTrue(change.items() <= self.dbus_props.GetAll("org.freedesktop.Test.Main").items())
 
         GLib.timeout_add(3000, ml.quit)
         ml.run()
 
         match.remove()
 
-        self.assertEqual(self.dbus_props.GetAll("org.freedesktop.Test.Main"), {"version": 5, "connected": False})
-        self.assertEqual(changed_props, [{"version": 5, "connected": False}])
+        for i, change in enumerate(changes):
+            self.assertEqual(changed_props[i], change)
 
         # test adding properties with the array type
         self.dbus_mock.AddProperty("org.freedesktop.Test.Main", "array", dbus.Array(["first"], signature="s"))

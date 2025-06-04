@@ -116,10 +116,8 @@ def _wrap_in_dbus_variant(value):
         dbus.types.ByteArray,
         dbus.types.Int16,
         dbus.types.ObjectPath,
-        dbus.types.Struct,
         dbus.types.UInt64,
         dbus.types.Boolean,
-        dbus.types.Dictionary,
         dbus.types.Int32,
         dbus.types.Signature,
         dbus.types.UInt16,
@@ -130,9 +128,14 @@ def _wrap_in_dbus_variant(value):
         dbus.types.String,
         dbus.types.UInt32,
     ]
+    container_types = [
+        dbus.types.Array,
+        dbus.types.Struct,
+        dbus.types.Dictionary,
+    ]
     if isinstance(value, dbus.String):
         return dbus.String(str(value), variant_level=1)
-    if isinstance(value, dbus.types.Array):
+    if type(value) in container_types:
         return value
     if type(value) in dbus_types:
         return type(value)(value.conjugate(), variant_level=1)
