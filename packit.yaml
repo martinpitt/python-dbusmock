@@ -30,14 +30,12 @@ jobs:
       - fedora-latest-armhfp
       # needed for tests
       - fedora-all
-      - centos-stream-9-x86_64
       - centos-stream-10-x86_64
 
   - job: tests
     trigger: pull_request
     targets:
       - fedora-all
-      - centos-stream-9-x86_64
       - centos-stream-10-x86_64
 
   - job: propose_downstream
