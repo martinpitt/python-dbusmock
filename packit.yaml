@@ -2,7 +2,7 @@
 # https://packit.dev/docs/configuration/
 upstream_project_url: https://github.com/martinpitt/python-dbusmock
 # HACK: should work without, but propose_downstream fails; https://github.com/packit/packit-service/issues/1511
-specfile_path: packaging/python-dbusmock.spec
+specfile_path: distro/python-dbusmock.spec
 issue_repository: https://github.com/martinpitt/python-dbusmock
 copy_upstream_release_description: true
 upstream_package_name: python-dbusmock
@@ -12,7 +12,7 @@ actions:
   create-archive:
     - python3 -m build --sdist
     # spec and tarball need to be in the same directory
-    - sh -c 'mv dist/*.tar.* packaging; ls packaging/python_dbusmock-*.tar.*'
+    - sh -c 'mv dist/*.tar.* distro; ls distro/python_dbusmock-*.tar.*'
 
 srpm_build_deps:
   - python3-build
