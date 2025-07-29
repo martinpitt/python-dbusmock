@@ -11,11 +11,7 @@ Source0:          https://files.pythonhosted.org/packages/source/p/%{name}/pytho
 
 BuildArch:        noarch
 BuildRequires:    git
-BuildRequires:    python3-dbus
 BuildRequires:    python3-devel
-BuildRequires:    python3dist(setuptools-scm)
-BuildRequires:    python3dist(wheel)
-BuildRequires:    python3-setuptools
 BuildRequires:    python3-gobject
 BuildRequires:    python3-pytest
 BuildRequires:    dbus-x11
