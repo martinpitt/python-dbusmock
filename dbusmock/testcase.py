@@ -13,10 +13,8 @@ __copyright__ = """
 """
 
 import enum
-import errno
 import os
 import shutil
-import signal
 import subprocess
 import sys
 import tempfile
@@ -306,57 +304,6 @@ class DBusTestCase(unittest.TestCase):
         This gets stopped automatically at class teardown.
         """
         cls.__start_bus("system")
-
-    @staticmethod
-    def start_dbus(conf: Optional[str] = None) -> Tuple[int, str]:
-        """Start a D-Bus daemon
-
-        Return (pid, address) pair.
-
-        Normally you do not need to call this directly. Use start_system_bus()
-        and start_session_bus() instead.
-        """
-        argv = ["dbus-daemon", "--fork", "--print-address=1", "--print-pid=1"]
-        if conf:
-            argv.append("--config-file=" + str(conf))
-        else:
-            argv.append("--session")
-        lines = subprocess.check_output(argv, text=True).strip().splitlines()
-        assert len(lines) == 2, "expected exactly 2 lines of output from dbus-daemon"
-        # usually the first line is the address, but be lenient and accept any order
-        try:
-            return (int(lines[1]), lines[0])
-        except ValueError:
-            return (int(lines[0]), lines[1])
-
-    @staticmethod
-    def stop_dbus(pid: int) -> None:
-        """Stop a D-Bus daemon
-
-        Normally you do not need to call this directly. When you use
-        start_system_bus() and start_session_bus(), these buses are
-        automatically stopped in tearDownClass().
-        """
-        signal.signal(signal.SIGTERM, signal.SIG_IGN)
-        for _ in range(50):
-            try:
-                os.kill(pid, signal.SIGTERM)
-                os.waitpid(pid, os.WNOHANG)
-            except ChildProcessError:
-                break
-            except OSError as e:
-                if e.errno == errno.ESRCH:
-                    break
-                raise
-            time.sleep(0.1)
-        else:
-            sys.stderr.write("ERROR: timed out waiting for bus process to terminate\n")
-            os.kill(pid, signal.SIGKILL)
-            try:
-                os.waitpid(pid, 0)
-            except ChildProcessError:
-                pass
-        signal.signal(signal.SIGTERM, signal.SIG_DFL)
 
     @staticmethod
     def get_dbus(system_bus: bool = False) -> dbus.Bus:
