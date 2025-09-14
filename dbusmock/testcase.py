@@ -170,15 +170,17 @@ class PrivateDBus:
 
     def start(self):
         """Start the D-Bus daemon"""
-        argv = ["dbus-daemon", f"--config-file={self._config}"]
+        argv = ["dbus-daemon", f"--config-file={self._config}", "--print-pid=1"]
         # pylint: disable=consider-using-with
-        self._daemon = subprocess.Popen(argv)
-        for _ in range(10):
-            if self._socket.exists():
-                break
-            time.sleep(0.1)
-        else:
-            assert self._socket.exists(), "D-Bus socket never created"
+        self._daemon = subprocess.Popen(argv, stdout=subprocess.PIPE)
+        # we don't need the value, but waiting for it ensures that the bus has
+        # started up and is listening
+        assert self._daemon.stdout is not None
+        pid = self._daemon.stdout.readline().strip()
+        assert int(pid) == self._daemon.pid, "dbus-daemon pid mismatch"
+        self._daemon.stdout.close()
+
+        assert self._socket.exists(), "D-Bus socket not created"
 
         env, _ = self.bustype.environ
         os.environ[env] = self.address
