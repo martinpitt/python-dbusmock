@@ -15,7 +15,7 @@ jobs:
       contents: write
     steps:
       - name: Clone repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           # need this to also fetch tags
           fetch-depth: 0
