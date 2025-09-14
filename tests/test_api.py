@@ -13,6 +13,7 @@ __copyright__ = """
 import importlib.util
 import os
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
@@ -1026,7 +1027,8 @@ class TestCleanup(dbusmock.DBusTestCase):
 
         self.start_session_bus()
         p_mock = self.spawn_server("org.freedesktop.Test", "/", "org.freedesktop.Test.Main")
-        self.stop_dbus(self.session_bus_pid)
+        assert self.session_bus_pid is not None
+        os.kill(self.session_bus_pid, signal.SIGTERM)
 
         # give the mock 2 seconds to terminate
         timeout = 20
