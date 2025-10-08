@@ -28,6 +28,7 @@ except (OSError, subprocess.CalledProcessError):
 
 
 @unittest.skipUnless(notify_send_version, "notify-send not installed")
+@unittest.skipIf(os.path.exists("/etc/apparmor.d/notify-send"), "AppArmor profile for notify-send active")
 class TestNotificationDaemon(dbusmock.DBusTestCase):
     """Test mocking notification-daemon"""
 
