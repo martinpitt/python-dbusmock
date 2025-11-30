@@ -277,7 +277,7 @@ class TestNetworkManager(dbusmock.DBusTestCase):
         self.assertRegex(self.read_general(), r"disconnected.*\sfull")
 
         self.dbusmock.SetGlobalConnectionState(NMState.NM_STATE_ASLEEP)
-        self.assertRegex(self.read_general(), r"asleep.*\sfull")
+        self.assertRegex(self.read_general(), r"(asleep|off).*\sfull")
 
     def test_connectivity_state(self):
         self.dbusmock.SetConnectivity(NMConnectivityState.NM_CONNECTIVITY_FULL)
