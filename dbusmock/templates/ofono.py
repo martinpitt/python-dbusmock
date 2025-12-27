@@ -109,9 +109,11 @@ def AddModem(self, name, _properties):
                 "SetProperty",
                 "sv",
                 "",
-                'self.Set("org.ofono.Modem", args[0], args[1]); '
-                'self.EmitSignal("org.ofono.Modem", "PropertyChanged",'
-                ' "sv", [args[0], args[1]])',
+                (
+                    'self.Set("org.ofono.Modem", args[0], args[1]); '
+                    'self.EmitSignal("org.ofono.Modem", "PropertyChanged",'
+                    ' "sv", [args[0], args[1]])'
+                ),
             ),
         ],
     )
@@ -235,9 +237,11 @@ def Dial(self, number, _hide_callerid):
                 "Hangup",
                 "",
                 "",
-                "self.parent.calls.remove(self._object_path);"
-                "self.parent.RemoveObject(self._object_path);"
-                'self.EmitSignal("org.ofono.VoiceCallManager", "CallRemoved", "o", [self._object_path])',
+                (
+                    "self.parent.calls.remove(self._object_path);"
+                    "self.parent.RemoveObject(self._object_path);"
+                    'self.EmitSignal("org.ofono.VoiceCallManager", "CallRemoved", "o", [self._object_path])'
+                ),
             ),
             ("Answer", "", "", NOT_IMPLEMENTED),
         ],
@@ -331,8 +335,10 @@ def add_netreg_api(mock):
                 "SetProperty",
                 "sv",
                 "",
-                'self.Set("org.ofono.NetworkRegistration", args[0], args[1]); '
-                'self.EmitSignal("org.ofono.NetworkRegistration", "PropertyChanged", "sv", [args[0], args[1]])',
+                (
+                    'self.Set("org.ofono.NetworkRegistration", args[0], args[1]); '
+                    'self.EmitSignal("org.ofono.NetworkRegistration", "PropertyChanged", "sv", [args[0], args[1]])'
+                ),
             ),
             ("Register", "", "", ""),
             ("GetOperators", "", "a(oa{sv})", get_all_operators(mock)),
@@ -395,46 +401,52 @@ def add_simmanager_api(self, mock):
                 "SetProperty",
                 "sv",
                 "",
-                f'self.Set("{iface}", args[0], args[1]); '
-                f'self.EmitSignal("{iface}", "PropertyChanged", "sv", [args[0], args[1]])',
+                (
+                    f'self.Set("{iface}", args[0], args[1]); '
+                    f'self.EmitSignal("{iface}", "PropertyChanged", "sv", [args[0], args[1]])'
+                ),
             ),
             ("ChangePin", "sss", "", ""),
             (
                 "EnterPin",
                 "ss",
                 "",
-                'correctPin = "1234"\n'
-                f'iface = "{iface}"\n'
-                'newRetries = self.Get(iface, "Retries")\n'
-                'if args[0] == "pin" and args[1] != correctPin:\n'
-                '    newRetries["pin"] = dbus.Byte(newRetries["pin"] - 1)\n'
-                'elif args[0] == "pin":\n'
-                '    newRetries["pin"] = dbus.Byte(3)\n'
-                'self.Set(iface, "Retries", newRetries)\n'
-                'self.EmitSignal(iface, "PropertyChanged", "sv", ["Retries", newRetries])\n'
-                'if args[0] == "pin" and args[1] != correctPin:\n'
-                "    class Failed(dbus.exceptions.DBusException):\n"
-                '        _dbus_error_name = "org.ofono.Error.Failed"\n'
-                '    raise Failed("Operation failed")',
+                (
+                    'correctPin = "1234"\n'
+                    f'iface = "{iface}"\n'
+                    'newRetries = self.Get(iface, "Retries")\n'
+                    'if args[0] == "pin" and args[1] != correctPin:\n'
+                    '    newRetries["pin"] = dbus.Byte(newRetries["pin"] - 1)\n'
+                    'elif args[0] == "pin":\n'
+                    '    newRetries["pin"] = dbus.Byte(3)\n'
+                    'self.Set(iface, "Retries", newRetries)\n'
+                    'self.EmitSignal(iface, "PropertyChanged", "sv", ["Retries", newRetries])\n'
+                    'if args[0] == "pin" and args[1] != correctPin:\n'
+                    "    class Failed(dbus.exceptions.DBusException):\n"
+                    '        _dbus_error_name = "org.ofono.Error.Failed"\n'
+                    '    raise Failed("Operation failed")'
+                ),
             ),
             (
                 "ResetPin",
                 "sss",
                 "",
-                'correctPuk = "12345678"\n'
-                f'iface = "{iface}"\n'
-                'newRetries = self.Get(iface, "Retries")\n'
-                'if args[0] == "puk" and args[1] != correctPuk:\n'
-                '    newRetries["puk"] = dbus.Byte(newRetries["puk"] - 1)\n'
-                'elif args[0] == "puk":\n'
-                '    newRetries["pin"] = dbus.Byte(3)\n'
-                '    newRetries["puk"] = dbus.Byte(10)\n'
-                'self.Set(iface, "Retries", newRetries)\n'
-                'self.EmitSignal(iface, "PropertyChanged", "sv", ["Retries", newRetries])\n'
-                'if args[0] == "puk" and args[1] != correctPuk:\n'
-                "    class Failed(dbus.exceptions.DBusException):\n"
-                '        _dbus_error_name = "org.ofono.Error.Failed"\n'
-                '    raise Failed("Operation failed")',
+                (
+                    'correctPuk = "12345678"\n'
+                    f'iface = "{iface}"\n'
+                    'newRetries = self.Get(iface, "Retries")\n'
+                    'if args[0] == "puk" and args[1] != correctPuk:\n'
+                    '    newRetries["puk"] = dbus.Byte(newRetries["puk"] - 1)\n'
+                    'elif args[0] == "puk":\n'
+                    '    newRetries["pin"] = dbus.Byte(3)\n'
+                    '    newRetries["puk"] = dbus.Byte(10)\n'
+                    'self.Set(iface, "Retries", newRetries)\n'
+                    'self.EmitSignal(iface, "PropertyChanged", "sv", ["Retries", newRetries])\n'
+                    'if args[0] == "puk" and args[1] != correctPuk:\n'
+                    "    class Failed(dbus.exceptions.DBusException):\n"
+                    '        _dbus_error_name = "org.ofono.Error.Failed"\n'
+                    '    raise Failed("Operation failed")'
+                ),
             ),
             ("LockPin", "ss", "", ""),
             ("UnlockPin", "ss", "", ""),
@@ -480,8 +492,10 @@ def add_connectionmanager_api(mock):
                 "SetProperty",
                 "sv",
                 "",
-                f'self.Set("{iface}", args[0], args[1]); '
-                f'self.EmitSignal("{iface}", "PropertyChanged", "sv", [args[0], args[1]])',
+                (
+                    f'self.Set("{iface}", args[0], args[1]); '
+                    f'self.EmitSignal("{iface}", "PropertyChanged", "sv", [args[0], args[1]])'
+                ),
             ),
             ("AddContext", "s", "o", 'ret = "/"'),
             ("RemoveContext", "o", "", ""),
