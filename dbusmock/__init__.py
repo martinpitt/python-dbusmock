@@ -6,17 +6,10 @@
 # later version.  See http://www.gnu.org/copyleft/lgpl.html for the full text
 # of the license.
 
-__author__ = "Martin Pitt"
-__copyright__ = """
-(c) 2012 Canonical Ltd.
-(c) 2017 - 2022 Martin Pitt <martin@piware.de>
-"""
-
-
 from dbusmock.mockobject import MOCK_IFACE, OBJECT_MANAGER_IFACE, DBusMockObject, get_object, get_objects
 from dbusmock.testcase import BusType, DBusTestCase, PrivateDBus, SpawnedMock
 
-try:
+try:  # noqa: RUF067
     # created by setuptools_scm
     from dbusmock._version import __version__
 except ImportError:
