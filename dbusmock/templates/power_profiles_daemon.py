@@ -8,11 +8,7 @@ Note that this template is deprecated: Version 0.20 listens on a different
 bus name/object path, it is provided in upower_power_profiles_daemon.py
 """
 
-# This program is free software; you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the Free
-# Software Foundation; either version 3 of the License, or (at your option) any
-# later version.  See http://www.gnu.org/copyleft/lgpl.html for the full text
-# of the license.
+# SPDX-License-Identifier: LGPL-3.0-or-later
 
 __author__ = "Bastien Nocera"
 __copyright__ = """
