@@ -6,6 +6,8 @@ __copyright__ = """
 (c) 2017 - 2025 Martin Pitt <martin@piware.de>
 """
 
+import fcntl
+import os
 import re
 import shutil
 import subprocess
@@ -41,6 +43,9 @@ class TestLogind(dbusmock.DBusTestCase):
         self.addCleanup(self.p_mock.wait)
         self.addCleanup(self.p_mock.terminate)
         self.addCleanup(self.p_mock.stdout.close)
+
+        flags = fcntl.fcntl(self.p_mock.stdout, fcntl.F_GETFL)
+        fcntl.fcntl(self.p_mock.stdout, fcntl.F_SETFL, flags | os.O_NONBLOCK)
 
     def test_empty(self):
         cmd = ["loginctl"]
@@ -122,6 +127,17 @@ class TestLogind(dbusmock.DBusTestCase):
         # No inhibitor is held
         out = subprocess.check_output(["systemd-inhibit"], text=True)
         self.assertRegex(out, "No inhibitors|0 inhibitors listed")
+
+    def test_suspend(self):
+        (p_mock_polkit, _obj_polkitd) = self.spawn_server_template("polkitd", {}, stdout=subprocess.DEVNULL)
+        self.addCleanup(p_mock_polkit.wait)
+        self.addCleanup(p_mock_polkit.terminate)
+
+        subprocess.check_call(["systemctl", "suspend"])
+
+        log = self.p_mock.stdout.read().decode()
+        self.assertIn('SetWallMessage "" True', log)
+        self.assertIn("Suspend True", log)
 
 
 if __name__ == "__main__":
