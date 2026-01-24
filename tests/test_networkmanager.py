@@ -66,13 +66,11 @@ class TestNetworkManager(dbusmock.DBusTestCase):
         (self.p_mock, self.obj_networkmanager) = self.spawn_server_template(
             "networkmanager", {"NetworkingEnabled": True, "WwanEnabled": False}, stdout=subprocess.PIPE
         )
+        self.addCleanup(self.p_mock.wait)
+        self.addCleanup(self.p_mock.terminate)
+        self.addCleanup(self.p_mock.stdout.close)
         self.dbusmock = dbus.Interface(self.obj_networkmanager, dbusmock.MOCK_IFACE)
         self.settings = dbus.Interface(self.dbus_con.get_object(MANAGER_IFACE, SETTINGS_OBJ), SETTINGS_IFACE)
-
-    def tearDown(self):
-        self.p_mock.stdout.close()
-        self.p_mock.terminate()
-        self.p_mock.wait()
 
     def read_general(self):
         return subprocess.check_output(["nmcli", "--nocheck", "general"], env=self.lang_env, text=True)

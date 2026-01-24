@@ -47,15 +47,13 @@ class TestPowerProfilesDaemon(dbusmock.DBusTestCase):
             template = "upower_power_profiles_daemon"
 
         (self.p_mock, self.obj_ppd) = self.spawn_server_template(template, {}, stdout=subprocess.PIPE)
+        self.addCleanup(self.p_mock.wait)
+        self.addCleanup(self.p_mock.terminate)
+        self.addCleanup(self.p_mock.stdout.close)
         # set log to nonblocking
         flags = fcntl.fcntl(self.p_mock.stdout, fcntl.F_GETFL)
         fcntl.fcntl(self.p_mock.stdout, fcntl.F_SETFL, flags | os.O_NONBLOCK)
         self.dbusmock = dbus.Interface(self.obj_ppd, dbusmock.MOCK_IFACE)
-
-    def tearDown(self):
-        self.p_mock.stdout.close()
-        self.p_mock.terminate()
-        self.p_mock.wait()
 
     def test_list_profiles(self):
         """List Profiles and check active profile"""

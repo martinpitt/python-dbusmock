@@ -31,12 +31,10 @@ class TestPolkit(dbusmock.DBusTestCase):
 
     def setUp(self):
         (self.p_mock, self.obj_polkitd) = self.spawn_server_template("polkitd", {}, stdout=subprocess.PIPE)
+        self.addCleanup(self.p_mock.wait)
+        self.addCleanup(self.p_mock.terminate)
+        self.addCleanup(self.p_mock.stdout.close)
         self.dbusmock = dbus.Interface(self.obj_polkitd, dbusmock.MOCK_IFACE)
-
-    def tearDown(self):
-        self.p_mock.stdout.close()
-        self.p_mock.terminate()
-        self.p_mock.wait()
 
     def test_default(self):
         self.check_action("org.freedesktop.test.frobnicate", False)

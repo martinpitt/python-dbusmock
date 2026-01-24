@@ -27,6 +27,8 @@ have_gdbus = shutil.which("gdbus")
 class TestCLI(dbusmock.DBusTestCase):
     """Test running dbusmock from the command line"""
 
+    p_mock = None
+
     @classmethod
     def setUpClass(cls):
         cls.start_system_bus()
@@ -34,24 +36,14 @@ class TestCLI(dbusmock.DBusTestCase):
         cls.system_con = cls.get_dbus(True)
         cls.session_con = cls.get_dbus()
 
-    def setUp(self):
-        self.p_mock = None
-
-    def tearDown(self):
-        if self.p_mock:
-            if self.p_mock.stdout:
-                self.p_mock.stdout.close()
-            if self.p_mock.stderr:
-                self.p_mock.stdout.close()
-            self.p_mock.terminate()
-            self.p_mock.wait()
-            self.p_mock = None
-
     def start_mock(self, args, wait_name, wait_path, wait_system=False):
         # pylint: disable=consider-using-with
         self.p_mock = subprocess.Popen(
             [sys.executable, "-m", "dbusmock", *args], stdout=subprocess.PIPE, universal_newlines=True
         )
+        self.addCleanup(self.p_mock.wait)
+        self.addCleanup(self.p_mock.terminate)
+        self.addCleanup(self.p_mock.stdout.close)
         self.wait_for_bus_object(wait_name, wait_path, wait_system)
 
     def start_mock_process(self, args):
