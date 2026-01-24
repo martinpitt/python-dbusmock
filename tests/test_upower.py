@@ -45,15 +45,13 @@ class TestUPower(dbusmock.DBusTestCase):
             },
             stdout=subprocess.PIPE,
         )
+        self.addCleanup(self.p_mock.wait)
+        self.addCleanup(self.p_mock.terminate)
+        self.addCleanup(self.p_mock.stdout.close)
         # set log to nonblocking
         flags = fcntl.fcntl(self.p_mock.stdout, fcntl.F_GETFL)
         fcntl.fcntl(self.p_mock.stdout, fcntl.F_SETFL, flags | os.O_NONBLOCK)
         self.dbusmock = dbus.Interface(self.obj_upower, dbusmock.MOCK_IFACE)
-
-    def tearDown(self):
-        self.p_mock.stdout.close()
-        self.p_mock.terminate()
-        self.p_mock.wait()
 
     def test_no_devices(self):
         out = subprocess.check_output(["upower", "--dump"], text=True)

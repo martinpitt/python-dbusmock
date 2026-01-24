@@ -32,13 +32,10 @@ class TestTimedated(dbusmock.DBusTestCase):
 
     def setUp(self):
         (self.p_mock, _) = self.spawn_server_template("timedated", {}, stdout=subprocess.PIPE)
+        self.addCleanup(self.p_mock.wait)
+        self.addCleanup(self.p_mock.terminate)
+        self.addCleanup(self.p_mock.stdout.close)
         self.obj_timedated = self.dbus_con.get_object("org.freedesktop.timedate1", "/org/freedesktop/timedate1")
-
-    def tearDown(self):
-        if self.p_mock:
-            self.p_mock.stdout.close()
-            self.p_mock.terminate()
-            self.p_mock.wait()
 
     def run_timedatectl(self):
         return subprocess.check_output(["timedatectl"], text=True)

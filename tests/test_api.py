@@ -45,6 +45,8 @@ class TestAPI(dbusmock.DBusTestCase):
         self.p_mock = self.spawn_server(
             "org.freedesktop.Test", "/", "org.freedesktop.Test.Main", stdout=self.mock_log
         )
+        self.addCleanup(self.p_mock.wait)
+        self.addCleanup(self.p_mock.terminate)
 
         self.obj_test = self.dbus_con.get_object("org.freedesktop.Test", "/")
         self.dbus_test = dbus.Interface(self.obj_test, "org.freedesktop.Test.Main")
@@ -53,12 +55,6 @@ class TestAPI(dbusmock.DBusTestCase):
 
     def assertLog(self, regex):
         self.assertRegex(Path(self.mock_log.name).read_bytes(), regex)
-
-    def tearDown(self):
-        if self.p_mock.stdout:
-            self.p_mock.stdout.close()
-        self.p_mock.terminate()
-        self.p_mock.wait()
 
     def test_noarg_noret(self):
         """no arguments, no return value"""

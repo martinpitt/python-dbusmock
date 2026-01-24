@@ -25,14 +25,12 @@ class TestGnomeScreensaver(dbusmock.DBusTestCase):
 
     def setUp(self):
         (self.p_mock, self.obj_ss) = self.spawn_server_template("gnome_screensaver", {}, stdout=subprocess.PIPE)
+        self.addCleanup(self.p_mock.wait)
+        self.addCleanup(self.p_mock.terminate)
+        self.addCleanup(self.p_mock.stdout.close)
         # set log to nonblocking
         flags = fcntl.fcntl(self.p_mock.stdout, fcntl.F_GETFL)
         fcntl.fcntl(self.p_mock.stdout, fcntl.F_SETFL, flags | os.O_NONBLOCK)
-
-    def tearDown(self):
-        self.p_mock.stdout.close()
-        self.p_mock.terminate()
-        self.p_mock.wait()
 
     def test_default_state(self):
         """Not locked by default"""

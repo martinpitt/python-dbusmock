@@ -30,16 +30,14 @@ class TestLowMemoryMonitor(dbusmock.DBusTestCase):
 
     def setUp(self):
         (self.p_mock, self.obj_lmm) = self.spawn_server_template("low_memory_monitor", {}, stdout=subprocess.PIPE)
+        self.addCleanup(self.p_mock.wait)
+        self.addCleanup(self.p_mock.terminate)
+        self.addCleanup(self.p_mock.stdout.close)
         # set log to nonblocking
         flags = fcntl.fcntl(self.p_mock.stdout, fcntl.F_GETFL)
         fcntl.fcntl(self.p_mock.stdout, fcntl.F_SETFL, flags | os.O_NONBLOCK)
         self.last_warning = -1
         self.dbusmock = dbus.Interface(self.obj_lmm, dbusmock.MOCK_IFACE)
-
-    def tearDown(self):
-        self.p_mock.stdout.close()
-        self.p_mock.terminate()
-        self.p_mock.wait()
 
     def test_low_memory_warning_signal(self):
         """LowMemoryWarning signal"""
