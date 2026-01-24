@@ -58,6 +58,7 @@ def load(mock, parameters):
             ("GetUser", "u", "o", 'ret = "/org/freedesktop/login1/user/" + args[0]'),
             ("KillUser", "us", "", ""),
             ("TerminateUser", "u", "", ""),
+            ("SetWallMessage", "sb", "", ""),
         ],
     )
 
