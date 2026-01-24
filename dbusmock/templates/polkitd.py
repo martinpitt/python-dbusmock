@@ -67,6 +67,11 @@ def RegisterAuthenticationAgent(_self, _subject, _locale, _object_path):
     pass
 
 
+@dbus.service.method(MAIN_IFACE, in_signature="(sa{sv})ssa{sv}")
+def RegisterAuthenticationAgentWithOptions(_self, _subject, _locale, _object_path, _options):
+    pass
+
+
 @dbus.service.method(MOCK_IFACE, in_signature="b", out_signature="")
 def AllowUnknown(self, default):
     """Control whether unknown actions are allowed
