@@ -135,7 +135,7 @@ class PrivateDBus:
     """
         )
 
-    def __enter__(self) -> "PrivateDBus":
+    def __enter__(self):
         # Allow for start() to be called manually even before the `with`
         if self._daemon is None:
             self.start()
@@ -439,7 +439,7 @@ class SpawnedMock:
         """The D-Bus object this server was spawned for"""
         return self._obj
 
-    def __enter__(self) -> "SpawnedMock":
+    def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
