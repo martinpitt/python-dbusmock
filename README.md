@@ -11,20 +11,20 @@ D-Bus services such as upower, systemd, logind, gnome-session or others,
 and it is hard (or impossible without root privileges) to set the state
 of the real services to what you expect in your tests.
 
-Suppose you want to write tests for gnome-settings-daemon's power
-plugin, or another program that talks to upower. You want to verify that
-after the configured idle time the program suspends the machine. So your
-program calls `org.freedesktop.UPower.Suspend()` on the system D-Bus.
+Suppose you want to write tests for a desktop environment's power management:
+You want to verify that after the configured idle time the program suspends the
+machine. So your program calls `org.freedesktop.login1.Manager.Suspend()` on
+the system D-Bus.
 
-Now, your test suite should not really talk to the actual system D-Bus
-and the real upower; a `make check` that suspends your machine will not
-be considered very friendly by most people, and if you want to run this
-in continuous integration test servers or package build environments,
-chances are that your process does not have the privilege to suspend, or
-there is no system bus or upower to begin with. Likewise, there is no
-way for an user process to forcefully set the system/seat idle flag in
-logind, so your tests cannot set up the expected test environment on the
-real daemon.
+Now, your test suite should not really talk to the actual system D-Bus and
+the real systemd; a `make check` that suspends your machine will not be
+considered very friendly by most people, and if you want to run this in
+continuous integration test servers or package build environments, chances
+are that your process does not have the privilege to suspend, or there is
+no system bus or running systemd to begin with. Likewise, there is no way
+for an user process to forcefully set the system/seat idle flag in logind,
+so your tests cannot set up the expected test environment on the real
+daemon.
 
 That's where mock objects come into play: They look like the real API
 (or at least the parts that you actually need), but they do not actually
@@ -47,11 +47,12 @@ convenience D-Bus launch API that way.
 
 ## Simple example using Python's unittest
 
-Picking up the above example about mocking upower's `Suspend()` method,
-this is how you would set up a mock upower in your test case:
+Picking up the above example about mocking systemd-logind's `Suspend()`
+method, this is how you would set up a mock logind in your test case:
 
 ```python
 import subprocess
+import unittest
 
 import dbus
 
@@ -65,29 +66,32 @@ class TestMyProgram(dbusmock.DBusTestCase):
         cls.dbus_con = cls.get_dbus(system_bus=True)
 
     def setUp(self):
-        self.p_mock = self.spawn_server('org.freedesktop.UPower',
-                                        '/org/freedesktop/UPower',
-                                        'org.freedesktop.UPower',
+        self.p_mock = self.spawn_server('org.freedesktop.login1',
+                                        '/org/freedesktop/login1',
+                                        'org.freedesktop.login1.Manager',
                                         system_bus=True,
                                         stdout=subprocess.PIPE)
+        self.addCleanup(self.p_mock.wait)
+        self.addCleanup(self.p_mock.terminate)
+        self.addCleanup(self.p_mock.stdout.close)
 
-        # Get a proxy for the UPower object's Mock interface
-        self.dbus_upower_mock = dbus.Interface(self.dbus_con.get_object(
-            'org.freedesktop.UPower', '/org/freedesktop/UPower'),
+        # Get a proxy for the logind object's Mock interface
+        self.dbus_logind_mock = dbus.Interface(self.dbus_con.get_object(
+            'org.freedesktop.login1', '/org/freedesktop/login1'),
             dbusmock.MOCK_IFACE)
 
-        self.dbus_upower_mock.AddMethod('', 'Suspend', '', '', '')
-
-    def tearDown(self):
-        self.p_mock.stdout.close()
-        self.p_mock.terminate()
-        self.p_mock.wait()
+        self.dbus_logind_mock.AddMethod('', 'Suspend', 'b', '', '')
 
     def test_suspend_on_idle(self):
         # run your program in a way that should trigger one suspend call
+        # represented here as direct D-Bus call
+        subprocess.check_call(
+            ["busctl", "call", "org.freedesktop.login1",
+            "/org/freedesktop/login1", "org.freedesktop.login1.Manager",
+            "Suspend", "b", "false"])
 
         # now check the log that we got one Suspend() call
-        self.assertRegex(self.p_mock.stdout.readline(), b'^[0-9.]+ Suspend$')
+        self.assertRegex(self.p_mock.stdout.readline(), b'^[0-9.]+ Suspend False$')
 ```
 
 Let's walk through:
@@ -103,7 +107,7 @@ Let's walk through:
      instead of `setUp()` is enough.
 
  -   `setUp()` spawns the mock D-Bus server process for an initial
-     `/org/freedesktop/UPower` object with an `org.freedesktop.UPower`
+     `/org/freedesktop/login1` object with an `org.freedesktop.login1`
      D-Bus interface on the system bus. We capture its stdout to be
      able to verify that methods were called.
 
@@ -113,18 +117,21 @@ Let's walk through:
      stdout). It takes no input arguments, returns nothing, and does
      not run any custom code.
 
- -   `tearDown()` stops our mock D-Bus server again. We do this so that
-     each test case has a fresh and clean upower instance, but of
-     course you can also set up everything in `setUpClass()` if tests
+     We use `addCleanup()` to register cleanup handlers that will
+     stop our mock D-Bus server after each test. This ensures each
+     test case has a fresh and clean logind mock instance. Of course
+     you can also set up everything in `setUpClass()` if tests
      do not interfere with each other on setting up the mock.
 
  -   `test_suspend_on_idle()` is the actual test case. It needs to run
-     your program in a way that should trigger one suspend call. Your
-     program will try to call `Suspend()`, but as that's now being
-     served by our mock instead of upower, there will not be any actual
-     machine suspend. Our mock process will log the method call
-     together with a time stamp; you can use the latter for doing
-     timing related tests, but we just ignore it here.
+     your program in a way that should trigger one suspend call. For this
+     example this is represented by doing just a direct D-Bus call using
+     `busctl`.
+
+     That `Suspend()` call is now being served by our mock instead of the real
+     logind, there will not be any actual machine suspend. Our mock process
+     will log the method call together with a time stamp; you can use the
+     latter for doing timing related tests, but we just ignore it here.
 
 ## Simple example using pytest
 
@@ -132,73 +139,68 @@ The same functionality as above but instead using the pytest fixture provided
 by this package.
 
 ```python
+# Enable dbusmock's pytest fixtures (can also go in conftest.py)
+pytest_plugins = "dbusmock.pytest_fixtures"
+
 import subprocess
 
 import dbus
-import pytest
 
 import dbusmock
 
 
-@pytest.fixture
-def upower_mock(dbusmock_system):
-    p_mock = dbusmock_system.spawn_server(
-        'org.freedesktop.UPower',
-        '/org/freedesktop/UPower',
-        'org.freedesktop.UPower',
-        system_bus=True,
-        stdout=subprocess.PIPE)
+def test_suspend_on_idle(dbusmock_system):
+    # Spawn the mock D-Bus server for logind on the system bus
+    with dbusmock.SpawnedMock.spawn_for_name(
+        'org.freedesktop.login1',
+        '/org/freedesktop/login1',
+        'org.freedesktop.login1.Manager',
+        dbusmock.BusType.SYSTEM,
+        stdout=subprocess.PIPE) as p_mock:
 
-    # Get a proxy for the UPower object's Mock interface
-    dbus_upower_mock = dbus.Interface(dbusmock_system.get_dbus(True).get_object(
-        'org.freedesktop.UPower',
-        '/org/freedesktop/UPower'
-    ), dbusmock.MOCK_IFACE)
-    dbus_upower_mock.AddMethod('', 'Suspend', '', '', '')
+        # Get a proxy for the logind object's Mock interface
+        obj_logind = p_mock.obj
+        obj_logind.AddMethod('', 'Suspend', 'b', '', '', interface_name=dbusmock.MOCK_IFACE)
 
-    yield p_mock
+        # Run your program in a way that should trigger one suspend call
+        # represented here as direct D-Bus call
+        subprocess.check_call(
+            ["busctl", "call", "org.freedesktop.login1",
+            "/org/freedesktop/login1", "org.freedesktop.login1.Manager",
+            "Suspend", "b", "false"])
 
-    p_mock.stdout.close()
-    p_mock.terminate()
-    p_mock.wait()
-
-
-def test_suspend_on_idle(upower_mock):
-    # run your program in a way that should trigger one suspend call
-
-    # now check the log that we got one Suspend() call
-    assert upower_mock.stdout.readline() == b'^[0-9.]+ Suspend$'
+        # Check the log that we got one Suspend() call
+        assert b'Suspend False\n' in p_mock.stdout.readline()
 ```
 
 Let's walk through:
 
+- We enable dbusmock's pytest fixtures with `pytest_plugins = "dbusmock.pytest_fixtures"`.
+  This makes fixtures like `dbusmock_system` and `dbusmock_session` available to your
+  tests. In a real project, you would typically put this line in your `conftest.py`
+  instead of in each test file.
+
 - We import the `dbusmock_system` fixture from dbusmock which provides us
-  with a system bus started for our test case wherever the
-  `dbusmock_system` argument is used by a test case and/or a pytest
-  fixture.
+  with a system bus started for our test case. Even though we don't use it
+  directly in this simple example, it ensures the test environment is set up.
 
-- The `upower_mock` fixture spawns the mock D-Bus server process for an initial
-  `/org/freedesktop/UPower` object with an `org.freedesktop.UPower`
-  D-Bus interface on the system bus. We capture its stdout to be
-  able to verify that methods were called.
+- `test_suspend_on_idle()` is the actual test. It uses
+  `SpawnedMock.spawn_for_name()` to spawn the mock D-Bus server process for
+  `/org/freedesktop/login1` object with `org.freedesktop.login1.Manager`
+  interface. We capture its stdout to verify that methods were called.
 
-  We then call `org.freedesktop.DBus.Mock.AddMethod()` to add a
-  `Suspend()` method to our new object to the default D-Bus
-  interface. This will not do anything (except log its call to
-  stdout). It takes no input arguments, returns nothing, and does
-  not run any custom code.
+  We then call `org.freedesktop.DBus.Mock.AddMethod()` to add a `Suspend()`
+  method to our new logind mock object to the default D-Bus interface. This
+  will not do anything (except log its call to stdout). It takes one boolean
+  input argument, returns nothing, and does not run any custom code.
 
-  This mock server process is yielded to the test function that uses
-  the `upower_mock` fixture - once the test is complete the process is
-  terminated again.
+  Exactly like in the unittest example above, we then run our program in a way that
+  should trigger one suspend call. For this example this is again represented
+  by doing just a direct D-Bus call using `busctl`. The log of the call gets
+  asserted.
 
-- `test_suspend_on_idle()` is the actual test case. It needs to run
-  your program in a way that should trigger one suspend call. Your
-  program will try to call `Suspend()`, but as that's now being
-  served by our mock instead of upower, there will not be any actual
-  machine suspend. Our mock process will log the method call
-  together with a time stamp; you can use the latter for doing
-  timing related tests, but we just ignore it here.
+  The context manager automatically terminates the mock server process after
+  the test completes.
 
 ## Simple example from shell
 
