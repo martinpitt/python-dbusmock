@@ -89,5 +89,9 @@ ignore = [
     "SIM105", # Use `contextlib.suppress(KeyError)` instead of `try`-`except`-`pass`
 ]
 
+[tool.pytest.ini_options]
+# avoid warnings if python3-pytest-asyncio is installed
+addopts = "-p no:asyncio"
+
 [tool.black]
 line-length = 118
