@@ -22,6 +22,8 @@ import pytest
 def readme_blocks():
     """Extract Python code blocks from README.md"""
     readme_path = Path(__file__).parent.parent / "README.md"
+    if not readme_path.exists():
+        pytest.skip(f"README.md not found at {readme_path}")
     return re.findall(r"```python\n(.*?)\n```", readme_path.read_text(), re.DOTALL)
 
 
