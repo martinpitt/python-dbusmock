@@ -22,8 +22,7 @@ mkdir -p /run/systemd/system
 
 # run build and test as user
 useradd build
-su -s /bin/sh - build << EOF || { [ -z "$DEBUG" ] || sleep infinity; exit 1; }
-set -ex
+runuser -u build -- sh -ex << EOF || { [ -z "$DEBUG" ] || sleep infinity; exit 1; }
 cd /source
 export SKIP_STATIC_CHECKS="$SKIP_STATIC_CHECKS"
 
