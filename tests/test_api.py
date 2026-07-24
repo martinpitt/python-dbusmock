@@ -697,8 +697,7 @@ class TestTemplates(dbusmock.DBusTestCase):
         """Load a local template *.py file"""
 
         with tempfile.NamedTemporaryFile(prefix="answer_", suffix=".py") as my_template:
-            my_template.write(
-                b"""import dbus
+            my_template.write(b"""import dbus
 BUS_NAME = 'universe.Ultimate'
 MAIN_OBJ = '/'
 MAIN_IFACE = 'universe.Ultimate'
@@ -706,10 +705,9 @@ SYSTEM_BUS = False
 
 def load(mock, parameters):
     mock.AddMethods(MAIN_IFACE, [('Answer', 's', 'i', 'ret = 42')])
-"""
-            )
+""")
             my_template.flush()
-            (p_mock, dbus_ultimate) = self.spawn_server_template(my_template.name, stdout=subprocess.PIPE)
+            p_mock, dbus_ultimate = self.spawn_server_template(my_template.name, stdout=subprocess.PIPE)
             self.addCleanup(p_mock.wait)
             self.addCleanup(p_mock.terminate)
             self.addCleanup(p_mock.stdout.close)
@@ -765,8 +763,7 @@ def load(mock, parameters):
             template_dir = Path(xdg_data_dir) / "python-dbusmock" / "templates"
             template_dir.mkdir(parents=True)
 
-            (template_dir / "answer.py").write_text(
-                """
+            (template_dir / "answer.py").write_text("""
 BUS_NAME = 'universe.Ultimate'
 MAIN_OBJ = '/'
 MAIN_IFACE = 'universe.Ultimate'
@@ -774,10 +771,9 @@ SYSTEM_BUS = False
 
 def load(mock, parameters):
     mock.AddMethods(MAIN_IFACE, [('Answer', 's', 'i', 'ret = 42')])
-"""
-            )
+""")
 
-            (p_mock, dbus_ultimate) = self.spawn_server_template("answer", stdout=subprocess.PIPE)
+            p_mock, dbus_ultimate = self.spawn_server_template("answer", stdout=subprocess.PIPE)
             self.addCleanup(p_mock.wait)
             self.addCleanup(p_mock.terminate)
             self.addCleanup(p_mock.stdout.close)
@@ -790,8 +786,7 @@ def load(mock, parameters):
         """Static method in a template"""
 
         with tempfile.NamedTemporaryFile(prefix="answer_", suffix=".py") as my_template:
-            my_template.write(
-                b"""import dbus
+            my_template.write(b"""import dbus
 BUS_NAME = 'universe.Ultimate'
 MAIN_OBJ = '/'
 MAIN_IFACE = 'universe.Ultimate'
@@ -805,10 +800,9 @@ def load(mock, parameters):
                      out_signature='i')
 def Answer(self, string):
     return 42
-"""
-            )
+""")
             my_template.flush()
-            (p_mock, dbus_ultimate) = self.spawn_server_template(my_template.name, stdout=subprocess.PIPE)
+            p_mock, dbus_ultimate = self.spawn_server_template(my_template.name, stdout=subprocess.PIPE)
             self.addCleanup(p_mock.wait)
             self.addCleanup(p_mock.terminate)
             self.addCleanup(p_mock.stdout.close)
@@ -854,18 +848,16 @@ def Answer(self, string):
         """Explicitly set the bus for a template that does not specify SYSTEM_BUS"""
 
         with tempfile.NamedTemporaryFile(prefix="answer_", suffix=".py") as my_template:
-            my_template.write(
-                b"""import dbus
+            my_template.write(b"""import dbus
 BUS_NAME = 'universe.Ultimate'
 MAIN_OBJ = '/'
 MAIN_IFACE = 'universe.Ultimate'
 
 def load(mock, parameters):
     mock.AddMethods(MAIN_IFACE, [('Answer', '', 'i', 'ret = 42')])
-"""
-            )
+""")
             my_template.flush()
-            (p_mock, dbus_ultimate) = self.spawn_server_template(
+            p_mock, dbus_ultimate = self.spawn_server_template(
                 my_template.name, stdout=subprocess.PIPE, system_bus=False
             )
             self.addCleanup(p_mock.wait)
@@ -879,8 +871,7 @@ def load(mock, parameters):
         """Override the bus for a template"""
 
         with tempfile.NamedTemporaryFile(prefix="answer_", suffix=".py") as my_template:
-            my_template.write(
-                b"""import dbus
+            my_template.write(b"""import dbus
 BUS_NAME = 'universe.Ultimate'
 MAIN_OBJ = '/'
 MAIN_IFACE = 'universe.Ultimate'
@@ -888,10 +879,9 @@ SYSTEM_BUS = True
 
 def load(mock, parameters):
     mock.AddMethods(MAIN_IFACE, [('Answer', '', 'i', 'ret = 42')])
-"""
-            )
+""")
             my_template.flush()
-            (p_mock, dbus_ultimate) = self.spawn_server_template(
+            p_mock, dbus_ultimate = self.spawn_server_template(
                 my_template.name, stdout=subprocess.PIPE, system_bus=False
             )
             self.addCleanup(p_mock.wait)
@@ -905,8 +895,7 @@ def load(mock, parameters):
         """Template with ObjectManager API"""
 
         with tempfile.NamedTemporaryFile(prefix="objmgr_", suffix=".py") as my_template:
-            my_template.write(
-                b"""import dbus
+            my_template.write(b"""import dbus
 BUS_NAME = 'org.test.Things'
 MAIN_OBJ = '/org/test/Things'
 IS_OBJECT_MANAGER = True
@@ -916,10 +905,9 @@ def load(mock, parameters):
     mock.AddObject('/org/test/Things/Thing1', 'org.test.Do', {'name': 'one'}, [])
     mock.AddObject('/org/test/Things/Thing2', 'org.test.Do', {'name': 'two'}, [])
     mock.AddObject('/org/test/Peer', 'org.test.Do', {'name': 'peer'}, [])
-"""
-            )
+""")
             my_template.flush()
-            (p_mock, dbus_objmgr) = self.spawn_server_template(my_template.name, stdout=subprocess.PIPE)
+            p_mock, dbus_objmgr = self.spawn_server_template(my_template.name, stdout=subprocess.PIPE)
             self.addCleanup(p_mock.wait)
             self.addCleanup(p_mock.terminate)
             self.addCleanup(p_mock.stdout.close)
@@ -944,8 +932,7 @@ def load(mock, parameters):
         """Template with DBusMockObject subclass"""
 
         with tempfile.NamedTemporaryFile(prefix="objmgr_", suffix=".py") as my_template:
-            my_template.write(
-                b"""
+            my_template.write(b"""
 import dbus
 import dbusmock
 BUS_NAME = 'org.test.Things'
@@ -966,10 +953,9 @@ def load(mock, parameters):
     mock.AddObject('/org/test/Things/Thing1', MAIN_IFACE, {}, [],
                    mock_class=Thing1,
                    mock_data=42)
-"""
-            )
+""")
             my_template.flush()
-            (p_mock, _) = self.spawn_server_template(my_template.name, stdout=subprocess.PIPE, system_bus=False)
+            p_mock, _ = self.spawn_server_template(my_template.name, stdout=subprocess.PIPE, system_bus=False)
             self.addCleanup(p_mock.wait)
             self.addCleanup(p_mock.terminate)
             self.addCleanup(p_mock.stdout.close)
@@ -982,7 +968,7 @@ def load(mock, parameters):
     def test_reset(self):
         """Reset() puts the template back to pristine state"""
 
-        (p_mock, obj_logind) = self.spawn_server_template("logind", stdout=subprocess.PIPE)
+        p_mock, obj_logind = self.spawn_server_template("logind", stdout=subprocess.PIPE)
         self.addCleanup(p_mock.wait)
         self.addCleanup(p_mock.terminate)
         self.addCleanup(p_mock.stdout.close)

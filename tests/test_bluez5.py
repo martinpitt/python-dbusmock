@@ -94,7 +94,7 @@ class TestBlueZ5(dbusmock.DBusTestCase):
     def setUpClass(cls):
         cls.start_system_bus()
         cls.dbus_con = cls.get_dbus(True)
-        (cls.p_mock, cls.obj_bluez) = cls.spawn_server_template("bluez5", {}, stdout=subprocess.PIPE)
+        cls.p_mock, cls.obj_bluez = cls.spawn_server_template("bluez5", {}, stdout=subprocess.PIPE)
         cls.addClassCleanup(cls.p_mock.wait)
         cls.addClassCleanup(cls.p_mock.terminate)
         cls.addClassCleanup(cls.p_mock.stdout.close)
@@ -579,14 +579,14 @@ class TestBlueZObex(dbusmock.DBusTestCase):
 
     def setUp(self):
         # bluetoothd
-        (self.p_mock, self.obj_bluez) = self.spawn_server_template("bluez5", {}, stdout=subprocess.PIPE)
+        self.p_mock, self.obj_bluez = self.spawn_server_template("bluez5", {}, stdout=subprocess.PIPE)
         self.addCleanup(self.p_mock.wait)
         self.addCleanup(self.p_mock.terminate)
         self.addCleanup(self.p_mock.stdout.close)
         self.dbusmock_bluez = dbus.Interface(self.obj_bluez, "org.bluez.Mock")
 
         # obexd
-        (self.p_mock_obex, self.obj_obex) = self.spawn_server_template("bluez5-obex", {}, stdout=subprocess.PIPE)
+        self.p_mock_obex, self.obj_obex = self.spawn_server_template("bluez5-obex", {}, stdout=subprocess.PIPE)
         self.addCleanup(self.p_mock_obex.wait)
         self.addCleanup(self.p_mock_obex.terminate)
         self.addCleanup(self.p_mock_obex.stdout.close)

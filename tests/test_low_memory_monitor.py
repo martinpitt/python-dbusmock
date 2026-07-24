@@ -29,7 +29,7 @@ class TestLowMemoryMonitor(dbusmock.DBusTestCase):
         cls.dbus_con = cls.get_dbus(True)
 
     def setUp(self):
-        (self.p_mock, self.obj_lmm) = self.spawn_server_template("low_memory_monitor", {}, stdout=subprocess.PIPE)
+        self.p_mock, self.obj_lmm = self.spawn_server_template("low_memory_monitor", {}, stdout=subprocess.PIPE)
         self.addCleanup(self.p_mock.wait)
         self.addCleanup(self.p_mock.terminate)
         self.addCleanup(self.p_mock.stdout.close)

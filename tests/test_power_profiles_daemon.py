@@ -46,7 +46,7 @@ class TestPowerProfilesDaemon(dbusmock.DBusTestCase):
             print("Failed to get powerprofilesctl version, assuming >= 0.20:", e, file=sys.stderr)
             template = "upower_power_profiles_daemon"
 
-        (self.p_mock, self.obj_ppd) = self.spawn_server_template(template, {}, stdout=subprocess.PIPE)
+        self.p_mock, self.obj_ppd = self.spawn_server_template(template, {}, stdout=subprocess.PIPE)
         self.addCleanup(self.p_mock.wait)
         self.addCleanup(self.p_mock.terminate)
         self.addCleanup(self.p_mock.stdout.close)

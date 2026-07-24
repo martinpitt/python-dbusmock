@@ -23,7 +23,7 @@ class TestGsdRfkill(dbusmock.DBusTestCase):
         cls.dbus_con = cls.get_dbus()
 
     def setUp(self):
-        (self.p_mock, self.p_obj) = self.spawn_server_template("gsd_rfkill", {}, stdout=subprocess.PIPE)
+        self.p_mock, self.p_obj = self.spawn_server_template("gsd_rfkill", {}, stdout=subprocess.PIPE)
         self.addCleanup(self.p_mock.wait)
         self.addCleanup(self.p_mock.terminate)
         self.addCleanup(self.p_mock.stdout.close)

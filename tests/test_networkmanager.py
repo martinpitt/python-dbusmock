@@ -63,7 +63,7 @@ class TestNetworkManager(dbusmock.DBusTestCase):
         cls.lang_env["LC_MESSAGES"] = "C"
 
     def setUp(self):
-        (self.p_mock, self.obj_networkmanager) = self.spawn_server_template(
+        self.p_mock, self.obj_networkmanager = self.spawn_server_template(
             "networkmanager", {"NetworkingEnabled": True, "WwanEnabled": False}, stdout=subprocess.PIPE
         )
         self.addCleanup(self.p_mock.wait)

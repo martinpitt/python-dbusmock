@@ -37,7 +37,7 @@ class TestModemManagerBase(dbusmock.DBusTestCase):
 
     def setUp(self):
         super().setUp()
-        (self.p_mock, self.p_obj) = self.spawn_server_template("modemmanager", {}, stdout=subprocess.PIPE)
+        self.p_mock, self.p_obj = self.spawn_server_template("modemmanager", {}, stdout=subprocess.PIPE)
         self.addCleanup(self.p_mock.wait)
         self.addCleanup(self.p_mock.terminate)
         self.addCleanup(self.p_mock.stdout.close)

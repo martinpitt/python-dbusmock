@@ -39,7 +39,7 @@ class TestLogind(dbusmock.DBusTestCase):
             cls.version = re.search(r"(\d+)", out.splitlines()[0]).group(1)
 
     def setUp(self):
-        (self.p_mock, self.obj_logind) = self.spawn_server_template("logind", {}, stdout=subprocess.PIPE)
+        self.p_mock, self.obj_logind = self.spawn_server_template("logind", {}, stdout=subprocess.PIPE)
         self.addCleanup(self.p_mock.wait)
         self.addCleanup(self.p_mock.terminate)
         self.addCleanup(self.p_mock.stdout.close)
@@ -129,7 +129,7 @@ class TestLogind(dbusmock.DBusTestCase):
         self.assertRegex(out, "No inhibitors|0 inhibitors listed")
 
     def test_suspend(self):
-        (p_mock_polkit, _obj_polkitd) = self.spawn_server_template("polkitd", {}, stdout=subprocess.DEVNULL)
+        p_mock_polkit, _obj_polkitd = self.spawn_server_template("polkitd", {}, stdout=subprocess.DEVNULL)
         self.addCleanup(p_mock_polkit.wait)
         self.addCleanup(p_mock_polkit.terminate)
 

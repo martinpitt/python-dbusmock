@@ -36,7 +36,7 @@ class TestUPower(dbusmock.DBusTestCase):
         cls.dbus_con = cls.get_dbus(True)
 
     def setUp(self):
-        (self.p_mock, self.obj_upower) = self.spawn_server_template(
+        self.p_mock, self.obj_upower = self.spawn_server_template(
             "upower",
             {
                 "OnBattery": True,

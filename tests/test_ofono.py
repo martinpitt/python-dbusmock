@@ -29,7 +29,7 @@ class TestOfono(dbusmock.DBusTestCase):
     def setUpClass(cls):
         cls.start_system_bus()
         cls.dbus_con = cls.get_dbus(True)
-        (cls.p_mock, cls.obj_ofono) = cls.spawn_server_template("ofono", {}, stdout=subprocess.PIPE)
+        cls.p_mock, cls.obj_ofono = cls.spawn_server_template("ofono", {}, stdout=subprocess.PIPE)
         cls.addClassCleanup(cls.p_mock.wait)
         cls.addClassCleanup(cls.p_mock.terminate)
         cls.addClassCleanup(cls.p_mock.stdout.close)

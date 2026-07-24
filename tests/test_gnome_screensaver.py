@@ -24,7 +24,7 @@ class TestGnomeScreensaver(dbusmock.DBusTestCase):
         cls.dbus_con = cls.get_dbus(False)
 
     def setUp(self):
-        (self.p_mock, self.obj_ss) = self.spawn_server_template("gnome_screensaver", {}, stdout=subprocess.PIPE)
+        self.p_mock, self.obj_ss = self.spawn_server_template("gnome_screensaver", {}, stdout=subprocess.PIPE)
         self.addCleanup(self.p_mock.wait)
         self.addCleanup(self.p_mock.terminate)
         self.addCleanup(self.p_mock.stdout.close)

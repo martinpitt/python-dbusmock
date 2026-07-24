@@ -113,8 +113,7 @@ class PrivateDBus:
         self._servicedir.mkdir(parents=True)
 
         self._config = self._servicedir / f"dbusmock_{self.bustype.value}_cfg"
-        self._config.write_text(
-            f"""<!DOCTYPE busconfig PUBLIC "-//freedesktop//DTD D-Bus Bus Configuration 1.0//EN"
+        self._config.write_text(f"""<!DOCTYPE busconfig PUBLIC "-//freedesktop//DTD D-Bus Bus Configuration 1.0//EN"
      "http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
     <busconfig>
       <type>{self.bustype.value}</type>
@@ -128,8 +127,7 @@ class PrivateDBus:
         <allow own="*"/>
       </policy>
     </busconfig>
-    """
-        )
+    """)
 
     def __enter__(self):
         # Allow for start() to be called manually even before the `with`

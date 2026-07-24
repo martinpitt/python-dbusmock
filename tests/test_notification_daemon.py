@@ -34,7 +34,7 @@ class TestNotificationDaemon(dbusmock.DBusTestCase):
         cls.dbus_con = cls.get_dbus(False)
 
     def setUp(self):
-        (self.p_mock, self.obj_daemon) = self.spawn_server_template("notification_daemon", {}, stdout=subprocess.PIPE)
+        self.p_mock, self.obj_daemon = self.spawn_server_template("notification_daemon", {}, stdout=subprocess.PIPE)
         self.addCleanup(self.p_mock.wait)
         self.addCleanup(self.p_mock.terminate)
         self.addCleanup(self.p_mock.stdout.close)

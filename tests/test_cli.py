@@ -158,8 +158,7 @@ class TestCLI(dbusmock.DBusTestCase):
 
     def test_template_local(self):
         with tempfile.NamedTemporaryFile(prefix="answer_", suffix=".py") as my_template:
-            my_template.write(
-                b"""import dbus
+            my_template.write(b"""import dbus
 BUS_NAME = 'universe.Ultimate'
 MAIN_OBJ = '/'
 MAIN_IFACE = 'universe.Ultimate'
@@ -167,8 +166,7 @@ SYSTEM_BUS = False
 
 def load(mock, parameters):
     mock.AddMethods(MAIN_IFACE, [('Answer', '', 'i', 'ret = 42')])
-"""
-            )
+""")
             my_template.flush()
             # template specifies session bus
             self.start_mock(["-t", my_template.name], "universe.Ultimate", "/", False)
@@ -179,8 +177,7 @@ def load(mock, parameters):
 
     def test_template_override_system(self):
         with tempfile.NamedTemporaryFile(prefix="answer_", suffix=".py") as my_template:
-            my_template.write(
-                b"""import dbus
+            my_template.write(b"""import dbus
 BUS_NAME = 'universe.Ultimate'
 MAIN_OBJ = '/'
 MAIN_IFACE = 'universe.Ultimate'
@@ -188,8 +185,7 @@ SYSTEM_BUS = False
 
 def load(mock, parameters):
     mock.AddMethods(MAIN_IFACE, [('Answer', '', 'i', 'ret = 42')])
-"""
-            )
+""")
             my_template.flush()
             # template specifies session bus, but CLI overrides to system
             self.start_mock(["--system", "-t", my_template.name], "universe.Ultimate", "/", True)
@@ -217,7 +213,7 @@ def load(mock, parameters):
             stderr=subprocess.PIPE,
             universal_newlines=True,
         ) as p:
-            (out, err) = p.communicate()
+            out, err = p.communicate()
             self.assertEqual(out, "")
             self.assertIn("must specify NAME", err)
             self.assertNotEqual(p.returncode, 0)
@@ -229,7 +225,7 @@ def load(mock, parameters):
             stderr=subprocess.PIPE,
             universal_newlines=True,
         ) as p:
-            (out, err) = p.communicate()
+            out, err = p.communicate()
             self.assertEqual(err, "")
             self.assertIn("INTERFACE", out)
             self.assertIn("--system", out)

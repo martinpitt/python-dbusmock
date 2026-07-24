@@ -36,7 +36,7 @@ class TestSystemd(dbusmock.DBusTestCase):
     def _test_base(self, bus, system_bus=True):
         dummy_service = "dummy-dbusmock.service"
 
-        (p_mock, obj_systemd) = self.spawn_server_template("systemd", {}, subprocess.PIPE, system_bus=system_bus)
+        p_mock, obj_systemd = self.spawn_server_template("systemd", {}, subprocess.PIPE, system_bus=system_bus)
         self.addCleanup(p_mock.wait)
         self.addCleanup(p_mock.terminate)
         self.addCleanup(p_mock.stdout.close)

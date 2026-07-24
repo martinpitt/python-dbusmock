@@ -33,7 +33,7 @@ class TestURfkill(dbusmock.DBusTestCase):
         cls.dbus_con = cls.get_dbus(True)
 
     def setUp(self):
-        (self.p_mock, self.obj_urfkill) = self.spawn_server_template("urfkill", {}, stdout=subprocess.PIPE)
+        self.p_mock, self.obj_urfkill = self.spawn_server_template("urfkill", {}, stdout=subprocess.PIPE)
         self.addCleanup(self.p_mock.wait)
         self.addCleanup(self.p_mock.terminate)
         self.addCleanup(self.p_mock.stdout.close)
@@ -43,7 +43,7 @@ class TestURfkill(dbusmock.DBusTestCase):
         self.dbusmock = dbus.Interface(self.obj_urfkill, dbusmock.MOCK_IFACE)
 
     def test_mainobject(self):
-        (remote_object, iface) = _get_urfkill_objects()
+        remote_object, iface = _get_urfkill_objects()
         self.assertFalse(iface.IsFlightMode())
         propiface = dbus.Interface(remote_object, dbus.PROPERTIES_IFACE)
         version = propiface.Get("org.freedesktop.URfkill", "DaemonVersion")
@@ -61,7 +61,7 @@ class TestURfkill(dbusmock.DBusTestCase):
 
     def test_block(self):
         bus = dbus.SystemBus()
-        (_, iface) = _get_urfkill_objects()
+        _, iface = _get_urfkill_objects()
 
         property_object = bus.get_object("org.freedesktop.URfkill", "/org/freedesktop/URfkill/WLAN")
         propiface = dbus.Interface(property_object, dbus.PROPERTIES_IFACE)
@@ -78,7 +78,7 @@ class TestURfkill(dbusmock.DBusTestCase):
 
     def test_flightmode(self):
         bus = dbus.SystemBus()
-        (_, iface) = _get_urfkill_objects()
+        _, iface = _get_urfkill_objects()
 
         property_object = bus.get_object("org.freedesktop.URfkill", "/org/freedesktop/URfkill/WLAN")
         propiface = dbus.Interface(property_object, dbus.PROPERTIES_IFACE)
@@ -95,7 +95,7 @@ class TestURfkill(dbusmock.DBusTestCase):
     def test_flightmode_restore(self):
         # An interface that was blocked remains blocked once flightmode is removed.
         bus = dbus.SystemBus()
-        (_, iface) = _get_urfkill_objects()
+        _, iface = _get_urfkill_objects()
 
         property_object = bus.get_object("org.freedesktop.URfkill", "/org/freedesktop/URfkill/WLAN")
         propiface = dbus.Interface(property_object, dbus.PROPERTIES_IFACE)
