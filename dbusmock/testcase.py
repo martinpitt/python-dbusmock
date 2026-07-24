@@ -376,7 +376,7 @@ class DBusTestCase(unittest.TestCase):
         This is a legacy method kept for backwards compatibility,
         use SpawnedMock.spawn_with_template() instead.
         """
-        if system_bus is not None:  # noqa: SIM108
+        if system_bus is not None:  # ruff: ignore[if-else-block-instead-of-if-exp]
             bustype = BusType.SYSTEM if system_bus else BusType.SESSION
         else:
             bustype = None
@@ -546,7 +546,7 @@ class SpawnedMock:
 
         is_object_manager = module.IS_OBJECT_MANAGER if hasattr(module, "IS_OBJECT_MANAGER") else False
 
-        if is_object_manager and not hasattr(module, "MAIN_IFACE"):  # noqa: SIM108
+        if is_object_manager and not hasattr(module, "MAIN_IFACE"):  # ruff: ignore[if-else-block-instead-of-if-exp]
             interface_name = OBJECT_MANAGER_IFACE
         else:
             interface_name = module.MAIN_IFACE

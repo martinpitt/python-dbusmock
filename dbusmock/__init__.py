@@ -5,7 +5,7 @@
 from dbusmock.mockobject import MOCK_IFACE, OBJECT_MANAGER_IFACE, DBusMockObject, get_object, get_objects
 from dbusmock.testcase import BusType, DBusTestCase, PrivateDBus, SpawnedMock
 
-try:  # noqa: RUF067
+try:  # ruff: ignore[non-empty-init-module]
     # created by setuptools_scm
     from dbusmock._version import __version__
 except ImportError:

@@ -85,8 +85,8 @@ select = [
 ]
 
 ignore = [
-    "RUF012", # Mutable class attributes should be annotated with `typing.ClassVar`
-    "SIM105", # Use `contextlib.suppress(KeyError)` instead of `try`-`except`-`pass`
+    "mutable-class-default", # Mutable class attributes should be annotated with `typing.ClassVar`
+    "suppressible-exception", # Use `contextlib.suppress(KeyError)` instead of `try`-`except`-`pass`
 ]
 
 [tool.pytest.ini_options]
