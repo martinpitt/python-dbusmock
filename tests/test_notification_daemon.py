@@ -13,6 +13,7 @@ import sys
 import unittest
 
 import dbus
+import gi
 
 import dbusmock
 
@@ -105,6 +106,56 @@ class TestNotificationDaemon(dbusmock.DBusTestCase):
         notify_proxy.CloseNotification(id_ + 1)
         log = self.p_mock.stdout.read()
         self.assertNotIn(b"NotificationClosed", log)
+
+
+class TestNotificationActions(unittest.TestCase):
+    def test_notification_action(self):
+        """Inspect a libnotify notification and simulate activating its action."""
+        gi.require_version("Notify", "0.7")
+        from gi.repository import GLib, Notify  # pylint: disable=import-outside-toplevel
+
+        with dbusmock.PrivateDBus(dbusmock.BusType.SESSION), dbusmock.SpawnedMock.spawn_with_template(
+            "notification_daemon", {"capabilities": "body actions"}
+        ) as server:
+            mock = dbus.Interface(server.obj, dbusmock.MOCK_IFACE)
+            Notify.init("Example application")
+            try:
+                notification = Notify.Notification.new("Download complete", "report.pdf")
+                received_actions = []
+                loop = GLib.MainLoop()
+
+                def on_action(_notification, action):
+                    received_actions.append(action)
+                    loop.quit()
+
+                notification.add_action("default", "Open", on_action)
+                self.assertTrue(notification.show())
+
+                calls = mock.GetMethodCalls("Notify")
+                self.assertEqual(len(calls), 1)
+                _timestamp, arguments = calls[0]
+                self.assertEqual(arguments[3:5], ["Download complete", "report.pdf"])
+                self.assertEqual(arguments[5], ["default", "Open"])
+
+                # Bound the wait so a missing signal fails instead of hanging.
+                def stop_waiting():
+                    loop.quit()
+                    return GLib.SOURCE_CONTINUE
+
+                timeout_id = GLib.timeout_add_seconds(2, stop_waiting)
+                try:
+                    mock.EmitSignal(
+                        "org.freedesktop.Notifications",
+                        "ActionInvoked",
+                        "us",
+                        [notification.props.id, "default"],
+                    )
+                    loop.run()
+                finally:
+                    GLib.source_remove(timeout_id)
+                self.assertEqual(received_actions, ["default"])
+            finally:
+                Notify.uninit()
 
 
 if __name__ == "__main__":

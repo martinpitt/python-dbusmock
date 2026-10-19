@@ -3,6 +3,36 @@
 This creates the expected methods and properties of the notification-daemon
 services, but no devices. You can specify non-default capabilities in
 "parameters".
+
+
+Testing applications
+--------------------
+
+Start the template on a private session bus before starting the application
+under test. Importing the template alone does not start a service. Processes
+started inside the private bus context inherit its ``DBUS_SESSION_BUS_ADDRESS``;
+already connected clients can retain their previous connection.
+
+See ``TestNotificationActions.test_notification_action`` in
+``tests/test_notification_daemon.py`` for a complete libnotify example. It starts
+``PrivateDBus`` and ``SpawnedMock``, sends a notification, inspects its contents
+with ``GetMethodCalls("Notify")``, and simulates a user action with ``EmitSignal``.
+Run it with ``python3 -m unittest tests.test_notification_daemon.TestNotificationActions``.
+It requires PyGObject and the Notify introspection data (``python3-gi`` and
+``gir1.2-notify-0.7`` on Debian/Ubuntu), in addition to dbus-daemon.
+
+In your own test, replace notification creation with your application's code or
+subprocess. ``GetMethodCalls("Notify")`` records the timestamps and arguments,
+including application name, summary, body, actions, and hints.
+
+The template does not display notifications or click buttons. Emit
+``ActionInvoked`` with the ID returned to the client and the requested action key.
+The client must process D-Bus signals: the example uses a GLib main loop with a
+bounded wait, while a separate application uses its normal event loop.
+
+Nested context managers stop the mock before the bus even when an assertion
+fails. Run the example in its own process, since the private bus changes the
+process's session-bus environment variable.
 """
 
 # SPDX-License-Identifier: LGPL-3.0-or-later
