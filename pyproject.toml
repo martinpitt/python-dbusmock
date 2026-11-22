@@ -49,7 +49,7 @@ design = { max-args = 7, max-locals = 25,  max-public-methods = 25 }
 [tool.mypy]
 warn_unused_configs = true
 [[tool.mypy.overrides]]
-module = ["dbus.*", "gi.repository", "dbusmock._version"]
+module = ["dbus.*", "gi", "gi.repository", "dbusmock._version"]
 ignore_missing_imports = true
 
 [tool.ruff]

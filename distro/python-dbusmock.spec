@@ -14,6 +14,7 @@ BuildRequires:    git
 BuildRequires:    python3-devel
 BuildRequires:    python3-gobject
 BuildRequires:    python3-pytest
+BuildRequires:    libnotify
 BuildRequires:    dbus-x11
 BuildRequires:    upower
 

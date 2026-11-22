@@ -343,7 +343,7 @@ A template can be loaded from these locations:
 
 ## More Examples
 
-Have a look at the test suite for two real-live use cases:
+Have a look at the test suite for real-life use cases:
 
  -   `tests/test_upower.py` simulates upowerd, in a more complete way
      than in above example and using the `upower` template. It verifies
@@ -352,6 +352,9 @@ Have a look at the test suite for two real-live use cases:
      all available functionality, such as adding additional objects,
      properties, multiple methods, input arguments, return values, code
      in methods, sending signals, raising exceptions, and introspection.
+ -   `tests/test_notification_daemon.py` inspects a libnotify notification and
+     simulates activating an action on a private session bus. See the
+     `notification_daemon` template docstring for setup and adaptation guidance.
 
 ## Documentation
 
