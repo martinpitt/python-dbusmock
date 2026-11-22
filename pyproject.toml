@@ -78,7 +78,7 @@ select = [
     "RUF",     # ruff rules
     "SIM",     # flake8-simplify
     "T10",     # flake8-debugger
-    "TCH",     # flake8-type-checking
+    "TC",      # flake8-type-checking
     "UP",      # pyupgrade, e.g. f-string checks
     "W",       # warnings (mostly whitespace)
     "YTT",     # flake8-2020
